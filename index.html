@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Listeners, One Question — demo</title>
+<script src="lib/d3.v7.min.js"></script>
+<style>
+  /* ---- palette: exactly two people, Wong colorblind-safe pair, reused everywhere ---- */
+  :root {
+    --or: #E69F00;          /* Or (Apple Music) */
+    --roman: #0072B2;       /* Roman (Spotify) */
+    --or-ink: #8a5f00;      /* darkened variants: readable as text on white */
+    --roman-ink: #005a8e;
+    --ink: #1d1d1f;
+    --ink-2: #55555c;
+    --ink-3: #8a8a92;
+    --line: #e4e4e0;
+    --surface: #fafaf8;
+    --panel: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--surface); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1060px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 36px 0 4px; }
+  h3 { font-size: 16px; margin: 0 0 2px; }
+  .sub { color: var(--ink-2); margin: 0 0 14px; max-width: 72ch; }
+  .dash-sub { color: var(--ink-2); margin: 0 0 12px; }
+
+  /* header controls: legend + the global period selector, one row */
+  .controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+              padding: 10px 0; border-top: 1px solid var(--line);
+              border-bottom: 1px solid var(--line); position: sticky; top: 0;
+              background: var(--surface); z-index: 5; }
+  .legend { display: flex; gap: 14px; align-items: center; font-size: 14px; }
+  .legend .swatch { display: inline-block; width: 12px; height: 12px;
+                    border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .periods { display: flex; gap: 6px; margin-left: auto; }
+  .periods button {
+    font: inherit; font-size: 14px; padding: 4px 12px; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 15px; background: var(--panel);
+    color: var(--ink-2);
+  }
+  .periods button.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .caveat { font-size: 13px; color: var(--ink-2); background: #f3efe2;
+            border-left: 3px solid #d8cba0; padding: 6px 10px; border-radius: 0 6px 6px 0;
+            margin: 12px 0 0; }
+  .caveat:empty { display: none; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+           padding: 16px 18px 12px; margin-top: 14px; }
+  .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .row .panel { flex: 1 1 300px; }
+  .q { color: var(--ink-2); font-size: 13.5px; margin: 0 0 8px; }
+  .note { color: var(--ink-3); font-size: 12.5px; margin: 8px 0 0; }
+  svg { display: block; max-width: 100%; height: auto; }
+  svg text { font-family: inherit; }
+
+  /* dashboard 2 headline cards */
+  .card .person { margin: 10px 0 2px; }
+  .card .who { font-size: 13px; font-weight: 600; }
+  .who.or { color: var(--or-ink); } .who.roman { color: var(--roman-ink); }
+  .card .big { font-size: 34px; font-weight: 700; line-height: 1.1;
+               font-variant-numeric: tabular-nums; }
+  .card .detail { font-size: 12.5px; color: var(--ink-2); }
+  .card .bar { height: 8px; border-radius: 4px; background: #efefec;
+               margin: 4px 0 2px; overflow: hidden; }
+  .card .bar > div { height: 100%; border-radius: 4px; transition: width .6s ease; }
+  .sentence { font-size: 13.5px; color: var(--ink-2); margin: 6px 0 0; }
+
+  #tooltip {
+    position: absolute; pointer-events: none; display: none; z-index: 10;
+    background: var(--ink); color: #fff; font-size: 12.5px; line-height: 1.4;
+    padding: 6px 9px; border-radius: 6px; max-width: 260px;
+  }
+  #tooltip b { font-weight: 600; }
+  footer { color: var(--ink-3); font-size: 12.5px; margin-top: 34px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Two listeners, one question</h1>
+  <p class="sub">Or (Apple Music) and Roman (Spotify) share almost no musical taste
+    (~0.6% time-weighted overlap, 0 shared top-100 artists). Does similarity between
+    listeners have to live in <em>taste</em> — or can it live in listening patterns,
+    routine, and intensity of connection to music?</p>
+
+  <div class="controls">
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--or)"></span>Or</span>
+      <span><span class="swatch" style="background:var(--roman)"></span>Roman</span>
+    </div>
+    <div class="periods" id="period-buttons"></div>
+  </div>
+  <p class="caveat" id="period-caveat"></p>
+
+  <h2>Dashboard 1 — Two rhythms</h2>
+  <p class="dash-sub">Routine and intensity: when and how heavily each person listens.</p>
+
+  <div class="panel" id="river-panel">
+    <h3>Intensity river</h3>
+    <p class="q">How does each person's monthly listening volume rise and fall across
+      life periods — and when do they converge or diverge?</p>
+    <svg id="river"></svg>
+    <p class="note">Mapping: x = month, height = hours listened that month (Or drawn
+      up, Roman drawn down from a flat shared baseline); color = person.
+      Interactions: hover shows a guide line with both people's hours; the timeline
+      strip below is the period selector (click a band, or "All" above); months
+      outside the selected period are dimmed. Roman's history starts 2019-09 —
+      his area starts there, not at zero.</p>
+  </div>
+
+  <div class="panel" id="heatmap-panel">
+    <h3>Routine heatmap</h3>
+    <p class="q">When in the day and week does each person listen? (Or in the morning,
+      Roman at night.)</p>
+    <div class="row" style="gap:24px">
+      <svg id="heatmap-Or"></svg>
+      <svg id="heatmap-Roman"></svg>
+    </div>
+    <p class="note" id="heatmap-scale-note"></p>
+    <p class="note">Mapping: column = hour of day (local), row = weekday (Sun–Sat),
+      cell darkness = % of that person's plays in the selected period (single-hue
+      ramp per person, one shared scale so shapes are comparable despite different
+      volumes). Interactions: filtered by the period selector; hover a cell for the
+      exact % and raw play count; hovering any cell highlights that weekday row in
+      <em>both</em> heatmaps.</p>
+  </div>
+
+  <div class="panel" id="daylength-panel">
+    <h3>Day-length distribution</h3>
+    <p class="q">On days someone actually listens, how heavy is a typical day — and
+      who has the much heavier ones?</p>
+    <svg id="daylength"></svg>
+    <p class="note">Mapping: x = length of an active listening day (fixed buckets),
+      bar height = % of that person's active days in the selected period; color =
+      person. Raw day counts are printed on the heavy buckets (3–5h, 5h+), where
+      magnitude itself is the finding. Interactions: filtered by the period selector;
+      hover a bar for the exact day count.</p>
+  </div>
+
+  <h2>Dashboard 2 — Depth of connection</h2>
+  <p class="dash-sub">A "Wrapped-plus" view: one plain question, one headline number
+    per person, filtered by the same period selector.</p>
+
+  <div class="row">
+    <div class="panel card" id="card-top">
+      <h3>How much did one artist take over?</h3>
+      <p class="q">The #1 artist's share of that person's listening hours.</p>
+      <div id="card-top-body"></div>
+      <p class="sentence" id="card-top-sentence"></p>
+      <p class="note">Big number = top artist's % of hours; bar = that share of 100%.
+        Hover the bar for hours. Filtered by period.</p>
+    </div>
+    <div class="panel card" id="card-skip">
+      <h3>When you hit play, did you stay?</h3>
+      <p class="q">Share of plays under 30 seconds — the only skip measure computed
+        identically for both services (native skip counters are not comparable).</p>
+      <div id="card-skip-body"></div>
+      <p class="sentence" id="card-skip-sentence"></p>
+      <p class="note">Big number = % of plays under 30s; bar = that share of 100%.
+        Hover the bar for play counts. Filtered by period.</p>
+    </div>
+    <div class="panel card" id="card-half">
+      <h3>How many artists make up half your hours?</h3>
+      <p class="q">Count of artists needed to reach 50% of cumulative listening hours
+        — small = a strong center of gravity.</p>
+      <div id="card-half-body"></div>
+      <p class="sentence" id="card-half-sentence"></p>
+      <p class="note">Big number = artists covering 50% of hours, shown against the
+        person's total unique artists in the period. Filtered by period.</p>
+    </div>
+  </div>
+
+  <footer>
+    Honest limits: histories overlap 2019–2026 (Or from 2018-09, Roman effectively
+    active from 2021 — the Army window is Or-dominant); skips use the comparable
+    under-30s measure, never native skip counters; genre data is an external,
+    partial add-on and is not charted here; city-level location exists only for Or,
+    so there is no map. Built only from the provided CSV exports.
+  </footer>
+</main>
+<div id="tooltip"></div>
+
+<script>
+/* =========================================================================
+   Shared state, palette, tooltip, and the global period selector.
+   ========================================================================= */
+const COLOR = { Or: "#E69F00", Roman: "#0072B2" };        // fills (Wong pair)
+const INK   = { Or: "#8a5f00", Roman: "#005a8e" };        // darkened text variants
+const RAMP  = {                                            // single-hue heatmap ramps
+  Or:    d3.interpolateRgb("#fdf4e1", "#7a5400"),
+  Roman: d3.interpolateRgb("#e6f2fa", "#00466e"),
+};
+const parseYm = d3.utcParse("%Y-%m");
+const fmtMonth = d3.utcFormat("%b %Y");
+
+let META, MONTHLY, HEATMAP, DAYLENGTH, HEADLINES;   // loaded JSON
+let state = { period: "all" };
+
+const tooltip = d3.select("#tooltip");
+function showTip(event, html) {
+  tooltip.style("display", "block").html(html);
+  const w = tooltip.node().offsetWidth;
+  const x = Math.min(event.pageX + 14, document.documentElement.clientWidth - w - 8);
+  tooltip.style("left", x + "px").style("top", (event.pageY + 14) + "px");
+}
+function hideTip() { tooltip.style("display", "none"); }
+
+Promise.all([
+  d3.json("data/meta.json"),
+  d3.json("data/monthly.json"),
+  d3.json("data/heatmap.json"),
+  d3.json("data/daylength.json"),
+  d3.json("data/headlines.json"),
+]).then(([meta, monthly, heatmap, daylength, headlines]) => {
+  META = meta; MONTHLY = monthly; HEATMAP = heatmap;
+  DAYLENGTH = daylength; HEADLINES = headlines;
+  buildPeriodButtons();
+  buildRiver();          // draws once; period changes only re-style it
+  renderAll();
+});
+
+function buildPeriodButtons() {
+  d3.select("#period-buttons").selectAll("button")
+    .data(Object.keys(META.periods))
+    .join("button")
+    .text(k => META.periods[k].label)
+    .on("click", (_, k) => setPeriod(k));
+}
+
+function setPeriod(k) {
+  if (k === state.period) return;
+  state.period = k;
+  renderAll();
+}
+
+/* One caveat line, shown when the selected window needs an honesty flag. */
+const CAVEATS = {
+  army: "Low-data window for Roman: his history is sparse before 2021, so the Army " +
+        "period is Or-dominant. Compare shapes, not magnitudes.",
+  all:  "Coverage differs: Or from 2018-09, Roman from 2019-09 (sparse before 2021). " +
+        "The head-to-head overlap is 2019–2026.",
+};
+
+/* Re-render everything that depends on the selected period (linked filtering). */
+function renderAll() {
+  d3.select("#period-buttons").selectAll("button")
+    .classed("active", k => k === state.period);
+  d3.select("#period-caveat").text(CAVEATS[state.period] || "");
+  updateRiverPeriod();
+  renderHeatmaps();
+  renderDaylength();
+  renderCards();
+}
+
+/* =========================================================================
+   Chart 1 — Intensity river (hero).
+   Q: how does each person's monthly volume rise and fall across periods,
+      and when do they converge or diverge?
+   Mapping: x = month; height = hours/month; Or above a flat baseline,
+      Roman mirrored below; color = person.
+   Interactions: hover -> guide line + both hours; the timeline strip below
+      the river IS the period selector; out-of-period months are dimmed.
+   Source: data/monthly.json (from monthly_totals.csv).
+   ========================================================================= */
+const RIV = { width: 1000, half: 130, stripH: 24, top: 18, bottom: 44, left: 46, right: 14 };
+let rivX, rivY, rivMonths;    // shared with the period-update and hover code
+
+function buildRiver() {
+  const H = RIV.top + RIV.half * 2 + RIV.bottom + RIV.stripH;
+  const svg = d3.select("#river")
+    .attr("viewBox", `0 0 ${RIV.width} ${H}`);
+  const cy = RIV.top + RIV.half;                       // the flat baseline
+  const innerW = RIV.width - RIV.left - RIV.right;
+
+  // per-owner series, zero-filling interior month gaps only (Roman has 5 in
+  // 2019-2020); each series starts at that person's real first month so we do
+  // not paint history that does not exist.
+  const byOwner = d3.group(MONTHLY, d => d.owner);
+  const series = {};
+  for (const [owner, rows] of byOwner) {
+    const have = new Map(rows.map(r => [r.ym, r]));
+    const [first, last] = d3.extent(rows, r => parseYm(r.ym));
+    series[owner] = d3.utcMonths(first, d3.utcMonth.offset(last, 1)).map(date => {
+      const ym = d3.utcFormat("%Y-%m")(date);
+      return { date, ym, hours: have.get(ym)?.hours ?? 0, plays: have.get(ym)?.plays ?? 0 };
+    });
+  }
+  rivMonths = d3.utcMonths(
+    d3.min(MONTHLY, d => parseYm(d.ym)),
+    d3.utcMonth.offset(d3.max(MONTHLY, d => parseYm(d.ym)), 1));
+
+  rivX = d3.scaleUtc()
+    .domain([rivMonths[0], d3.utcMonth.offset(rivMonths.at(-1), 1)])
+    .range([RIV.left, RIV.width - RIV.right]);
+  rivY = d3.scaleLinear()      // hours -> pixel offset from the baseline
+    .domain([0, Math.ceil(d3.max(MONTHLY, d => d.hours) / 10) * 10])
+    .range([0, RIV.half]);
+
+  // horizontal grid + hour labels, mirrored around the baseline (never truncated)
+  const gridVals = rivY.ticks(4).filter(v => v > 0);
+  const grid = svg.append("g");
+  for (const sign of [-1, 1]) {
+    grid.selectAll(null).data(gridVals).join("line")
+      .attr("x1", RIV.left).attr("x2", RIV.width - RIV.right)
+      .attr("y1", v => cy - sign * rivY(v)).attr("y2", v => cy - sign * rivY(v))
+      .attr("stroke", "#efefec");
+    grid.selectAll(null).data(gridVals).join("text")
+      .attr("x", RIV.left - 6).attr("y", v => cy - sign * rivY(v))
+      .attr("text-anchor", "end").attr("dy", "0.32em")
+      .attr("font-size", 11).attr("fill", "#8a8a92")
+      .text(v => v + "h");
+  }
+
+  // the two mirrored areas
+  const dir = { Or: -1, Roman: 1 };                    // Or up, Roman down
+  for (const owner of META.owners) {
+    const area = d3.area()
+      .x(d => rivX(d.date))
+      .y0(cy)
+      .y1(d => cy + dir[owner] * rivY(d.hours))
+      .curve(d3.curveMonotoneX);
+    svg.append("path")
+      .datum(series[owner])
+      .attr("d", area)
+      .attr("fill", COLOR[owner]).attr("fill-opacity", 0.72)
+      .attr("stroke", COLOR[owner]).attr("stroke-width", 1);
+  }
+
+  // flat baseline on top of the areas, plus direct series labels
+  svg.append("line")
+    .attr("x1", RIV.left).attr("x2", RIV.width - RIV.right)
+    .attr("y1", cy).attr("y2", cy).attr("stroke", "#fff").attr("stroke-width", 1.5);
+  svg.append("text").attr("x", RIV.left + 4).attr("y", RIV.top + 10)
+    .attr("font-size", 12).attr("font-weight", 600).attr("fill", INK.Or).text("Or ↑");
+  svg.append("text").attr("x", RIV.left + 4).attr("y", RIV.top + 2 * RIV.half - 4)
+    .attr("font-size", 12).attr("font-weight", 600).attr("fill", INK.Roman).text("Roman ↓");
+
+  // year axis under the river
+  svg.append("g")
+    .attr("transform", `translate(0,${cy + RIV.half + 4})`)
+    .call(d3.axisBottom(rivX).ticks(d3.utcYear.every(1)).tickSize(4))
+    .call(g => g.select(".domain").remove())
+    .call(g => g.selectAll("text").attr("font-size", 11).attr("fill", "#8a8a92"))
+    .call(g => g.selectAll("line").attr("stroke", "#d4d4d0"));
+
+  // dimming overlays for the unselected part of the timeline (period filter)
+  svg.append("g").attr("id", "river-dim");
+
+  // ---- the timeline strip: clickable period bands = the period selector ----
+  const stripY = cy + RIV.half + 26;
+  const strip = svg.append("g").attr("id", "river-strip");
+  const bands = ["army", "covid", "university"].map(k => ({ key: k, ...periodDates(k) }));
+  strip.selectAll("rect").data(bands).join("rect")
+    .attr("x", d => rivX(d.start)).attr("y", stripY)
+    .attr("width", d => rivX(d.end) - rivX(d.start)).attr("height", RIV.stripH)
+    .attr("rx", 4).attr("cursor", "pointer")
+    .on("click", (_, d) => setPeriod(d.key === state.period ? "all" : d.key))
+    .append("title").text(d => "Filter every panel to " + META.periods[d.key].label);
+  strip.selectAll("text").data(bands).join("text")
+    .attr("x", d => (rivX(d.start) + rivX(d.end)) / 2).attr("y", stripY + RIV.stripH / 2)
+    .attr("text-anchor", "middle").attr("dy", "0.32em")
+    .attr("font-size", 11.5).attr("pointer-events", "none")
+    .text(d => META.periods[d.key].label);
+
+  // ---- hover: nearest month -> guide line + both people's hours ----
+  const guide = svg.append("g").style("display", "none").attr("pointer-events", "none");
+  guide.append("line")
+    .attr("y1", RIV.top).attr("y2", cy + RIV.half)
+    .attr("stroke", "#1d1d1f").attr("stroke-dasharray", "3,3");
+  const dotOr = guide.append("circle").attr("r", 3.5).attr("fill", COLOR.Or)
+    .attr("stroke", "#fff").attr("stroke-width", 1.5);
+  const dotRo = guide.append("circle").attr("r", 3.5).attr("fill", COLOR.Roman)
+    .attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+  const lookup = {};   // ym -> {Or: hours, Roman: hours}
+  for (const owner of META.owners)
+    for (const d of series[owner]) (lookup[d.ym] ??= {})[owner] = d.hours;
+
+  svg.append("rect")     // transparent hover-capture layer over the plot area
+    .attr("x", RIV.left).attr("y", RIV.top)
+    .attr("width", innerW).attr("height", 2 * RIV.half)
+    .attr("fill", "none").attr("pointer-events", "all")
+    .on("mousemove", (event) => {
+      const [mx] = d3.pointer(event);
+      const date = d3.utcMonth.floor(rivX.invert(mx));
+      const ym = d3.utcFormat("%Y-%m")(date);
+      const at = lookup[ym];
+      if (!at) { guide.style("display", "none"); hideTip(); return; }
+      const x = rivX(d3.utcMonth.offset(date, 0));
+      guide.style("display", null);
+      guide.select("line").attr("x1", x).attr("x2", x);
+      dotOr.attr("cx", x).attr("cy", cy - rivY(at.Or ?? 0))
+           .style("display", at.Or === undefined ? "none" : null);
+      dotRo.attr("cx", x).attr("cy", cy + rivY(at.Roman ?? 0))
+           .style("display", at.Roman === undefined ? "none" : null);
+      showTip(event, `<b>${fmtMonth(date)}</b><br>` +
+        `Or: ${at.Or !== undefined ? at.Or.toFixed(1) + " h" : "no data"}<br>` +
+        `Roman: ${at.Roman !== undefined ? at.Roman.toFixed(1) + " h" : "no data"}`);
+    })
+    .on("mouseleave", () => { guide.style("display", "none"); hideTip(); });
+}
+
+/* Start/end Dates of a period, clamped to the months that actually have data. */
+function periodDates(key) {
+  const p = META.periods[key];
+  const start = p.start ? parseYm(p.start) : rivMonths[0];
+  const end = p.end ? d3.utcMonth.offset(parseYm(p.end), 1)
+                    : d3.utcMonth.offset(rivMonths.at(-1), 1);
+  return { start, end };
+}
+
+/* Restyle the river for the selected period: highlight the active strip band
+   and dim the months outside the window (a filter you can still see through). */
+function updateRiverPeriod() {
+  const svg = d3.select("#river");
+  svg.select("#river-strip").selectAll("rect")
+    .attr("fill", d => d.key === state.period ? "#1d1d1f" : "#eceae4");
+  svg.select("#river-strip").selectAll("text")
+    .attr("fill", d => d.key === state.period ? "#fff" : "#55555c")
+    .attr("font-weight", d => d.key === state.period ? 600 : 400);
+
+  const dim = svg.select("#river-dim");
+  if (state.period === "all") { dim.selectAll("rect").remove(); return; }
+  const { start, end } = periodDates(state.period);
+  const cy = RIV.top + RIV.half;
+  const zones = [
+    { x0: rivX.range()[0], x1: rivX(start) },
+    { x0: rivX(end), x1: rivX.range()[1] },
+  ].filter(z => z.x1 - z.x0 > 0.5);
+  dim.selectAll("rect").data(zones).join(
+      enter => enter.append("rect").attr("fill", "#fafaf8").attr("fill-opacity", 0)
+        .attr("pointer-events", "none"))
+    .attr("x", z => z.x0).attr("width", z => z.x1 - z.x0)
+    .attr("y", RIV.top - 2).attr("height", 2 * RIV.half + 4)
+    .transition().duration(400).attr("fill-opacity", 0.78);
+}
+
+/* =========================================================================
+   Chart 2 — Routine heatmaps (one per person, linked).
+   Q: when in the day and week does each person listen?
+   Mapping: column = hour (0-23), row = weekday (Sun-Sat), darkness = % of
+      that person's plays in the selected period; single-hue ramp per person,
+      ONE shared max so the two shapes are comparable.
+   Interactions: period filter; cell tooltip (% + raw plays); hovering a cell
+      highlights that weekday row in BOTH heatmaps (linked highlight).
+   Source: data/heatmap.json (from fact_plays.csv, prep-only).
+   ========================================================================= */
+const HM = { cell: 17, cellH: 21, left: 34, top: 22, bottom: 6 };
+
+function renderHeatmaps() {
+  const rows = HEATMAP.filter(d => d.period === state.period);
+  const maxPct = d3.max(rows, d => d.pct);
+  d3.select("#heatmap-scale-note").text(
+    `Shared color scale for this period: white = 0%, darkest = ${maxPct.toFixed(1)}% ` +
+    `of a person's plays in one weekday-hour cell.`);
+
+  for (const owner of META.owners) {
+    const byKey = new Map(rows.filter(d => d.owner === owner)
+      .map(d => [d.weekday + "|" + d.hour, d]));
+    const cells = [];
+    for (const wd of META.weekdays)
+      for (let h = 0; h < 24; h++) {
+        const hit = byKey.get(wd + "|" + h);
+        cells.push({ owner, weekday: wd, hour: h,
+                     plays: hit ? hit.plays : 0, pct: hit ? hit.pct : 0 });
+      }
+
+    const W = HM.left + 24 * HM.cell + 4;
+    const H = HM.top + 7 * HM.cellH + HM.bottom + 18;
+    const svg = d3.select("#heatmap-" + owner).attr("viewBox", `0 0 ${W} ${H}`)
+      .attr("width", W);
+    const scale = v => RAMP[owner](maxPct ? v / maxPct : 0);
+
+    // one-time static furniture (labels, title); cells get joined every render
+    if (svg.select(".cells").empty()) {
+      svg.append("text").attr("x", HM.left).attr("y", 12)
+        .attr("font-size", 13).attr("font-weight", 600).attr("fill", INK[owner])
+        .text(owner);
+      svg.append("g").attr("class", "wdlabels").selectAll("text")
+        .data(META.weekdays).join("text")
+        .attr("x", HM.left - 5).attr("y", (_, i) => HM.top + i * HM.cellH + HM.cellH / 2)
+        .attr("text-anchor", "end").attr("dy", "0.32em")
+        .attr("font-size", 10.5).attr("fill", "#8a8a92")
+        .text(d => d.slice(0, 3));
+      svg.append("g").selectAll("text").data([0, 6, 12, 18, 23]).join("text")
+        .attr("x", h => HM.left + h * HM.cell + HM.cell / 2)
+        .attr("y", HM.top + 7 * HM.cellH + 14)
+        .attr("text-anchor", "middle").attr("font-size", 10.5).attr("fill", "#8a8a92")
+        .text(h => h + ":00");
+      svg.append("g").attr("class", "cells");
+    }
+
+    svg.select(".cells").selectAll("rect")
+      .data(cells, d => d.weekday + "|" + d.hour)
+      .join(enter => enter.append("rect")
+          .attr("x", d => HM.left + d.hour * HM.cell)
+          .attr("y", d => HM.top + META.weekdays.indexOf(d.weekday) * HM.cellH)
+          .attr("width", HM.cell - 1.5).attr("height", HM.cellH - 1.5)
+          .attr("rx", 2).attr("fill", "#fff")
+          .on("mousemove", function (event, d) {
+            highlightWeekday(d.weekday);
+            showTip(event, `<b>${d.owner}</b> · ${d.weekday} ${d.hour}:00–${d.hour}:59<br>` +
+              `${d.pct.toFixed(2)}% of plays in this period (${d.plays.toLocaleString()} plays)`);
+          })
+          .on("mouseleave", () => { highlightWeekday(null); hideTip(); }))
+      .each(function (d) { this.__pct = d.pct; })
+      .transition().duration(500)
+      .attr("fill", d => scale(d.pct));
+  }
+}
+
+/* Linked highlight: fade every row EXCEPT the hovered weekday, in both heatmaps. */
+function highlightWeekday(weekday) {
+  d3.selectAll("#heatmap-panel .cells rect")
+    .attr("opacity", d => weekday === null || d.weekday === weekday ? 1 : 0.3);
+  d3.selectAll("#heatmap-panel .wdlabels text")
+    .attr("font-weight", d => d === weekday ? 700 : 400)
+    .attr("fill", d => d === weekday ? "#1d1d1f" : "#8a8a92");
+}
+
+/* =========================================================================
+   Chart 3 — Day-length distribution.
+   Q: on active days, how heavy is a typical day, and who has the much
+      heavier ones?
+   Mapping: x = active-day length bucket, grouped bars = the two people,
+      y = % of that person's active days (shape comparison); raw day counts
+      printed on the heavy buckets, where magnitude is the finding.
+   Interactions: period filter (animated); bar tooltip with exact day count.
+   Source: data/daylength.json (from daily_totals.csv).
+   ========================================================================= */
+const DL = { width: 1000, height: 300, left: 46, right: 12, top: 14, bottom: 30 };
+const HEAVY = new Set(["3-5h", "5h+"]);
+
+function renderDaylength() {
+  const rows = DAYLENGTH.filter(d => d.period === state.period);
+  const buckets = [...new Set(DAYLENGTH.map(d => d.bucket))];
+  const svg = d3.select("#daylength").attr("viewBox", `0 0 ${DL.width} ${DL.height}`);
+
+  const x0 = d3.scaleBand().domain(buckets)
+    .range([DL.left, DL.width - DL.right]).paddingInner(0.25).paddingOuter(0.1);
+  const x1 = d3.scaleBand().domain(META.owners).range([0, x0.bandwidth()])
+    .padding(0.08);
+  // fixed y domain across ALL periods, so switching periods compares honestly
+  const y = d3.scaleLinear()
+    .domain([0, Math.ceil(d3.max(DAYLENGTH, d => d.pct) / 10) * 10])
+    .range([DL.height - DL.bottom, DL.top]);
+
+  if (svg.select(".axes").empty()) {
+    const ax = svg.append("g").attr("class", "axes");
+    ax.append("g").attr("transform", `translate(${DL.left},0)`)
+      .call(d3.axisLeft(y).ticks(5).tickFormat(v => v + "%").tickSize(-(DL.width - DL.left - DL.right)))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("line").attr("stroke", "#efefec"))
+      .call(g => g.selectAll("text").attr("font-size", 11).attr("fill", "#8a8a92"));
+    ax.append("g").attr("transform", `translate(0,${DL.height - DL.bottom})`)
+      .call(d3.axisBottom(x0).tickSize(0))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("text").attr("font-size", 12).attr("fill", "#55555c").attr("dy", "1em"));
+    ax.append("text").attr("x", DL.left).attr("y", DL.top - 3)
+      .attr("font-size", 11).attr("fill", "#8a8a92")
+      .text("% of that person's active days");
+    svg.append("g").attr("class", "bars");
+    svg.append("g").attr("class", "counts");
+  }
+
+  const t = d3.transition().duration(500);
+  svg.select(".bars").selectAll("rect")
+    .data(rows, d => d.owner + "|" + d.bucket)
+    .join(enter => enter.append("rect")
+        .attr("x", d => x0(d.bucket) + x1(d.owner))
+        .attr("width", x1.bandwidth())
+        .attr("y", y(0)).attr("height", 0)
+        .attr("rx", 3)
+        .attr("fill", d => COLOR[d.owner])
+        .on("mousemove", (event, d) => showTip(event,
+          `<b>${d.owner}</b> · ${d.bucket}<br>` +
+          `${d.days.toLocaleString()} days (${d.pct.toFixed(1)}% of active days)`))
+        .on("mouseleave", hideTip))
+    .transition(t)
+    .attr("y", d => y(d.pct)).attr("height", d => y(0) - y(d.pct));
+
+  // raw counts on the heavy buckets only (selective direct labels)
+  svg.select(".counts").selectAll("text")
+    .data(rows.filter(d => HEAVY.has(d.bucket)), d => d.owner + "|" + d.bucket)
+    .join(enter => enter.append("text")
+        .attr("x", d => x0(d.bucket) + x1(d.owner) + x1.bandwidth() / 2)
+        .attr("text-anchor", "middle").attr("font-size", 11)
+        .attr("fill", "#55555c").attr("y", y(0)))
+    .text(d => d.days.toLocaleString())
+    .transition(t)
+    .attr("y", d => y(d.pct) - 5);
+}
+
+/* =========================================================================
+   Dashboard 2 — three headline cards. Each: one big number per person,
+   a small share bar (out of 100%), a detail line, one plain sentence.
+   All re-render (with animated numbers) when the period changes.
+   Source: data/headlines.json (plays_daily.csv per period;
+           artist_totals.csv for the complete all-time artist stats).
+   ========================================================================= */
+function personBlock(sel, owner, data) {
+  const b = sel.append("div").attr("class", "person");
+  b.append("div").attr("class", "who " + owner.toLowerCase()).text(owner);
+  b.append("div").attr("class", "big").attr("id", null);
+  b.append("div").attr("class", "bar").append("div")
+    .style("background", COLOR[owner]).style("width", "0%");
+  b.append("div").attr("class", "detail");
+  return b;
+}
+
+/* Animate a big number from its previous value; fmt renders the tweened value. */
+function tweenNumber(sel, value, fmt) {
+  const prev = sel.node().__val ?? 0;
+  sel.node().__val = value;
+  sel.transition().duration(600).tween("text", function () {
+    const i = d3.interpolateNumber(prev, value);
+    return t => { this.textContent = fmt(i(t)); };
+  });
+}
+
+function renderCards() {
+  const H = HEADLINES[state.period];
+
+  const cards = [
+    { id: "#card-top",
+      big: d => d.top_share_pct, fmt: v => v.toFixed(1) + "%",
+      barPct: d => d.top_share_pct,
+      detail: d => `${d.top_artist} — ${d.top_hours.toLocaleString()} h of ` +
+                   `${d.hours.toLocaleString()} h`,
+      barTip: (o, d) => `<b>${o}</b>: ${d.top_artist} = ${d.top_share_pct}% of ` +
+                        `${d.hours.toLocaleString()} listening hours`,
+      sentence: () => {
+        const a = H.Or, b = H.Roman;
+        return `One artist takes ${b.top_share_pct}% of Roman's hours ` +
+               `(${b.top_artist}) vs ${a.top_share_pct}% for Or (${a.top_artist}).`;
+      } },
+    { id: "#card-skip",
+      big: d => d.under30_pct, fmt: v => v.toFixed(1) + "%",
+      barPct: d => d.under30_pct,
+      detail: d => `${d.short_plays.toLocaleString()} of ` +
+                   `${d.plays.toLocaleString()} plays ended under 30s`,
+      barTip: (o, d) => `<b>${o}</b>: ${d.short_plays.toLocaleString()} short plays ` +
+                        `out of ${d.plays.toLocaleString()}`,
+      sentence: () => `Or samples and skips more; Roman commits to what he plays.` },
+    { id: "#card-half",
+      big: d => d.artists_to_half, fmt: v => Math.round(v).toLocaleString(),
+      barPct: d => d.artists_to_half / d.unique_artists * 100,
+      detail: d => `of ${d.unique_artists.toLocaleString()} artists listened ` +
+                   `in this period`,
+      barTip: (o, d) => `<b>${o}</b>: ${d.artists_to_half} artists = 50% of hours, ` +
+                        `${d.unique_artists.toLocaleString()} artists total`,
+      sentence: () => `A small core carries half of all listening time for both — ` +
+                      `but Roman also keeps a huge long tail.` },
+  ];
+
+  for (const card of cards) {
+    const body = d3.select(card.id + "-body");
+    if (body.select(".person").empty())
+      for (const owner of META.owners) personBlock(body, owner, null);
+
+    body.selectAll(".person").each(function (_, i) {
+      const owner = META.owners[i];
+      const d = H[owner];
+      const blk = d3.select(this);
+      tweenNumber(blk.select(".big"), card.big(d), card.fmt);
+      blk.select(".bar > div").style("width", Math.min(card.barPct(d), 100) + "%");
+      blk.select(".bar")
+        .on("mousemove", event => showTip(event, card.barTip(owner, d)))
+        .on("mouseleave", hideTip);
+      blk.select(".detail").text(card.detail(d));
+    });
+    d3.select(card.id + "-sentence").text(card.sentence());
+  }
+}
+</script>
+</body>
+</html>
