@@ -4,3 +4,5 @@ __pycache__/
 # need to re-run prepare_data.py — the committed data/*.json is enough to
 # run the dashboards
 DATA/*.csv
+# generated share artifact (make_standalone.py)
+two-listeners.html

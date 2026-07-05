@@ -7,12 +7,16 @@ fact_plays.csv only to build period-accurate hour x weekday aggregates (the peri
 boundaries cut mid-year, so the year-granular hour_weekday_year.csv cannot represent
 them exactly).
 
+Everything is trimmed to the DATA_START window (2020-01 onward).
+
 Outputs (all small, all consumed by index.html via d3.json):
-  data/meta.json       — life-period boundaries and labels (single source for the UI)
-  data/monthly.json    — hours per owner per month           -> Intensity river
+  data/meta.json       — data window + life-period boundaries (single source for the UI)
+  data/monthly.json    — hours per owner per month             -> Intensity river
   data/heatmap.json    — plays + pct per owner/period/weekday/hour -> Routine heatmap
   data/daylength.json  — active-day length buckets per owner/period -> Day-length chart
-  data/headlines.json  — per owner/period headline numbers   -> Dashboard 2
+  data/headlines.json  — per owner/period headline stats + takeover shares -> Dashboard 2
+  data/artists.json    — artists per owner x discovery-year x play-count tier
+                         -> Dashboard 2 discovery line + stickiness bars (linked)
 
 At the end it prints the CSV ground-truths from CLAUDE.md so they can be checked
 against what the dashboards display.
@@ -27,14 +31,19 @@ DATA_DIR = Path(__file__).parent / "DATA"
 OUT_DIR = Path(__file__).parent / "data"
 
 # ---------------------------------------------------------------------------
-# Life periods (adjustable constants). Boundaries are inclusive "YYYY-MM" month
-# strings; None means open-ended. These drive the global period selector.
+# Data window and life periods (adjustable constants). Everything before
+# DATA_START is dropped from every output. Period boundaries are inclusive
+# "YYYY-MM" month strings; None means open-ended. Whole-year buckets today —
+# if a mid-year cutoff is ever needed, edit the one boundary string here.
+# These drive the global period selector.
 # ---------------------------------------------------------------------------
+DATA_START = "2020-01"
+
 PERIODS = {
     "all": {"label": "All", "start": None, "end": None},
-    "army": {"label": "Army", "start": None, "end": "2021-06"},
-    "covid": {"label": "COVID", "start": "2021-07", "end": "2023-09"},
-    "university": {"label": "University", "start": "2023-10", "end": None},
+    "covid": {"label": "COVID", "start": "2020-01", "end": "2021-12"},
+    "preuni": {"label": "Pre-uni", "start": "2022-01", "end": "2023-12"},
+    "university": {"label": "University", "start": "2024-01", "end": None},  # key window
 }
 
 # Israeli week: Sunday first. Used to give the heatmap a fixed row order.
@@ -57,9 +66,10 @@ def in_period(ym: pd.Series, key: str) -> pd.Series:
     """Boolean mask: which "YYYY-MM" values fall inside the given period.
 
     String comparison works because the format is zero-padded ISO year-month.
+    The global DATA_START cutoff applies to every period, including "all".
     """
     p = PERIODS[key]
-    mask = pd.Series(True, index=ym.index)
+    mask = ym >= DATA_START
     if p["start"]:
         mask &= ym >= p["start"]
     if p["end"]:
@@ -78,6 +88,7 @@ def read_csv(name: str, **kwargs) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 def build_monthly() -> list[dict]:
     monthly = read_csv("monthly_totals.csv")
+    monthly = monthly[monthly["ym"] >= DATA_START]
     monthly["hours"] = (monthly["minutes"] / 60).round(2)
     return monthly[["owner", "ym", "plays", "hours"]].to_dict("records")
 
@@ -130,21 +141,24 @@ def build_daylength() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# 4. Dashboard 2 headlines — per owner and period:
-#    top-1 artist share of minutes, under_30s rate (short_plays / plays, the
-#    only skip measure comparable across Apple and Spotify), and how many
-#    artists cover 50% of listening minutes. plays_daily.csv has the
-#    owner x date x artist grain needed to filter all three by period.
-#
-#    Exception: for the "all" period the artist-level stats are recomputed from
-#    artist_totals.csv, the designated source for concentration. plays_daily
-#    lacks ~4k plays whose artist or date is missing in the raw export, which
-#    shifts Or's top share from 14.3% to 14.4% and undercounts unique artists.
+# 4. Dashboard 2 headlines — per owner and period: the artist "takeover"
+#    shares (100% stacked bar: #1 / #2-5 / #6-10 / rest of minutes) plus the
+#    headline stats (top artist, under_30s rate, artists-to-half — the last
+#    two are also the printed ground-truth checks).
+#    plays_daily.csv is the source for every period INCLUDING "all": it is the
+#    only artist-level table that can be trimmed to the DATA_START window
+#    (artist_totals.csv is all-time from 2018-09 and cannot). Caveat: plays_daily
+#    lacks ~4k plays whose artist or date is missing in the raw export.
 # ---------------------------------------------------------------------------
 def artist_stats(by_artist: pd.Series) -> dict:
     """Concentration stats from a minutes-per-artist series (sorted desc)."""
     total_min = by_artist.sum()
     cum = by_artist.cumsum() / total_min
+
+    def share(lo: int, hi: int | None) -> float:
+        """% of minutes taken by artist ranks lo..hi (1-based, inclusive)."""
+        return round(by_artist.iloc[lo - 1:hi].sum() / total_min * 100, 1)
+
     return {
         "unique_artists": int(by_artist.size),
         "top_artist": by_artist.index[0],
@@ -152,14 +166,15 @@ def artist_stats(by_artist: pd.Series) -> dict:
         "top_hours": round(by_artist.iloc[0] / 60, 1),
         # first index position where cumulative share reaches 50%
         "artists_to_half": int((cum < 0.5).sum()) + 1,
+        # takeover-bar segments (sum to ~100 modulo rounding)
+        "share_top1": share(1, 1),
+        "share_top2_5": share(2, 5),
+        "share_top6_10": share(6, 10),
+        "share_rest": share(11, None),
     }
 
 
-def build_headlines() -> dict:
-    pdaily = read_csv("plays_daily.csv",
-                      usecols=["owner", "date", "artist", "plays", "short_plays", "minutes"])
-    pdaily["ym"] = pdaily["date"].str[:7]
-
+def build_headlines(pdaily: pd.DataFrame) -> dict:
     out: dict[str, dict] = {}
     for key in PERIODS:
         sub = pdaily[in_period(pdaily["ym"], key)]
@@ -179,57 +194,126 @@ def build_headlines() -> dict:
                 "active_days": int(d["date"].nunique()),
                 **artist_stats(by_artist),
             }
-
-    # All-time artist stats from the complete artist-level table (see note above).
-    at = read_csv("artist_totals.csv")
-    for owner in OWNERS:
-        by_artist = (at[at["owner"] == owner].set_index("artist")["minutes"]
-                     .sort_values(ascending=False))
-        out["all"][owner].update(artist_stats(by_artist))
-        out["all"][owner]["hours"] = round(by_artist.sum() / 60, 1)
     return out
 
 
 # ---------------------------------------------------------------------------
-# Ground-truth checks (all-time numbers from CLAUDE.md, recomputed from the
-# CSVs so a mismatch is loud rather than silently shipped).
+# 5. Dashboard 2 discovery + stickiness (one shared table, so the two charts
+#    can link): artists per owner x first-played year x play-count tier.
+#    - Discovery line: sum the tiers per year -> newly discovered artists/year.
+#    - Stickiness bars: sum the years (all, a period's years, or one clicked
+#      cohort year) -> tier shares of that artist list.
+#    Source: artist_totals.csv — first_played and plays are ALL-TIME values
+#    from the full export, deliberately NOT trimmed to DATA_START: "discovered"
+#    means first play ever, and "stuck" means total plays ever. Pre-2020 rows
+#    ship too, so the unfiltered stickiness bars can show each person's full
+#    artist list; the discovery line simply starts its x-axis at 2020.
+#    Honesty caveats (the UI must surface them): each history begins somewhere
+#    (Or 2018-09, Roman 2019-09), so the earliest years count returning
+#    favorites as "new" (left-censoring); the last year is partial; recently
+#    discovered artists have had less time to accumulate plays.
 # ---------------------------------------------------------------------------
-def print_ground_truths(headlines: dict) -> None:
-    at = read_csv("artist_totals.csv")
-    print("\n=== Ground truths (all-time, expected values from CLAUDE.md) ===")
-    for owner, exp_top, exp_share, exp_unique in [
-        ("Or", "Imagine Dragons", 14.3, 1436),
-        ("Roman", "Sleep Token", 25.4, 4036),
+DISCOVERY_TIERS = [   # play-count tiers; upper bounds inclusive, last open-ended
+    ("1 play", 1, 1),
+    ("2-9", 2, 9),
+    ("10-49", 10, 49),
+    ("50+", 50, None),
+]
+
+
+def build_artists() -> list[dict]:
+    at = read_csv("artist_totals.csv", usecols=["owner", "artist", "plays", "first_played"])
+    at["year"] = at["first_played"].str[:4].astype(int)
+    edges = [t[1] for t in DISCOVERY_TIERS] + [float("inf")]
+    labels = [t[0] for t in DISCOVERY_TIERS]
+    at["tier"] = pd.cut(at["plays"], bins=edges, labels=labels, right=False)
+    counts = (at.groupby(["owner", "year", "tier"], observed=False).size()
+              .rename("artists").reset_index())
+    counts = counts[counts["artists"] > 0]
+    return counts.to_dict("records")
+
+
+# ---------------------------------------------------------------------------
+# Key figures + ground-truth checks, recomputed from the CSVs so a mismatch is
+# loud rather than silently shipped. Expected values are for the DATA_START
+# window and live in CLAUDE.md; the Sleep Token ~25% check should hold
+# regardless of where the cutoff sits (Roman barely predates 2020).
+# ---------------------------------------------------------------------------
+def print_key_figures(headlines: dict) -> None:
+    print(f"\n=== Key figures per period (window starts {DATA_START}) ===")
+    for key, p in PERIODS.items():
+        print(f"[{p['label']}]  {p['start'] or DATA_START} .. {p['end'] or 'end'}")
+        for owner in OWNERS:
+            h = headlines[key][owner]
+            if h is None:
+                print(f"  {owner}: no data")
+                continue
+            print(f"  {owner}: {h['hours']:,} h, under_30s {h['under30_pct']}%, "
+                  f"#1 {h['top_artist']} {h['top_share_pct']}%, "
+                  f"{h['unique_artists']:,} artists, {h['artists_to_half']} to half")
+
+    print("\n=== Ground truths (window totals, expected values from CLAUDE.md) ===")
+    for owner, exp_top, exp_share, exp_unique, exp_u30 in [
+        ("Or", "Imagine Dragons", 14.6, 1241, 38.2),
+        ("Roman", "Sleep Token", 25.6, 3854, 29.4),
     ]:
-        d = at[at["owner"] == owner]
-        top = d.sort_values("minutes", ascending=False).iloc[0]
-        share = round(top["minutes"] / d["minutes"].sum() * 100, 1)
-        print(f"{owner}: #1 artist = {top['artist']} ({share}% of minutes)"
-              f"  [expected {exp_top} {exp_share}%]")
-        print(f"{owner}: unique artists = {d['artist'].nunique()}  [expected {exp_unique}]")
-
-    for owner, exp in [("Or", 41.5), ("Roman", 30.0)]:
         h = headlines["all"][owner]
-        print(f"{owner}: under_30s = {h['under30_pct']}%  [expected {exp}%]")
+        print(f"{owner}: #1 = {h['top_artist']} ({h['top_share_pct']}%)"
+              f"  [expected {exp_top} {exp_share}%]")
+        print(f"{owner}: unique artists = {h['unique_artists']:,}  [expected {exp_unique:,}]")
+        print(f"{owner}: under_30s = {h['under30_pct']}%  [expected {exp_u30}%]")
 
-    print("\n(The same numbers ship to the browser in data/headlines.json['all'].)")
+    st = headlines["all"]["Roman"]
+    ok = st["top_artist"] == "Sleep Token" and 24 <= st["top_share_pct"] <= 27
+    print(f"Robust check: Sleep Token ~25% of Roman's minutes -> "
+          f"{st['top_share_pct']}% [{'OK' if ok else 'FAILED — investigate'}]")
+
+    print("\n(The same numbers ship to the browser in data/headlines.json.)")
+
+
+def print_artist_figures(artists: list[dict]) -> None:
+    df = pd.DataFrame(artists)
+    print("\n=== Newly discovered artists per year (first_played year, 2020+) ===")
+    per_year = (df[df["year"] >= 2020].groupby(["owner", "year"])["artists"].sum()
+                .unstack(fill_value=0))
+    print(per_year.to_string())
+    print("(Earliest years are left-censored - each history starts somewhere; "
+          "the last year is partial.)")
+
+    print("\n=== Stickiness tiers, full artist list "
+          "(% of that person's artists; all-time play counts) ===")
+    tier_order = [t[0] for t in DISCOVERY_TIERS]
+    for owner in OWNERS:
+        d = df[df["owner"] == owner].groupby("tier", sort=False)["artists"].sum()
+        total = d.sum()
+        pcts = ", ".join(f"{t}: {d.get(t, 0) / total * 100:.1f}%" for t in tier_order)
+        print(f"{owner} (n={total:,}): {pcts}")
 
 
 def main() -> None:
     OUT_DIR.mkdir(exist_ok=True)
+    # plays_daily feeds both the monthly skip line and the per-period headlines
+    pdaily = read_csv("plays_daily.csv",
+                      usecols=["owner", "date", "artist", "plays", "short_plays", "minutes"])
+    pdaily["ym"] = pdaily["date"].str[:7]
+    pdaily = pdaily[pdaily["ym"] >= DATA_START]
+
     files = {
-        "meta.json": {"periods": PERIODS, "weekdays": WEEKDAYS, "owners": OWNERS},
+        "meta.json": {"periods": PERIODS, "weekdays": WEEKDAYS, "owners": OWNERS,
+                      "data_start": DATA_START},
         "monthly.json": build_monthly(),
         "heatmap.json": build_heatmap(),
         "daylength.json": build_daylength(),
-        "headlines.json": build_headlines(),
+        "headlines.json": build_headlines(pdaily),
+        "artists.json": build_artists(),
     }
     for name, payload in files.items():
         path = OUT_DIR / name
-        path.write_text(json.dumps(payload, ensure_ascii=False))
+        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
         print(f"wrote {path} ({path.stat().st_size / 1024:.0f} KB)")
 
-    print_ground_truths(files["headlines.json"])
+    print_key_figures(files["headlines.json"])
+    print_artist_figures(files["artists.json"])
 
 
 if __name__ == "__main__":

@@ -76,7 +76,7 @@ too small to be worth a panel.
 
 ### Shared interaction model
 
-- **Global period control** (Army / COVID / University) filters every panel at once
+- **Global period control** (COVID / Pre-uni / University) filters every panel at once
   (linked filtering). Default: both people always shown together, compared by period —
   not a manual toggle between Or and Roman.
 - **Tooltips** everywhere (details on demand).

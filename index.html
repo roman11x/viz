@@ -26,8 +26,19 @@
   }
   main { max-width: 1060px; margin: 0 auto; padding: 28px 20px 60px; }
   h1 { font-size: 26px; margin: 0 0 4px; }
-  h2 { font-size: 19px; margin: 36px 0 4px; }
-  h3 { font-size: 16px; margin: 0 0 2px; }
+  h2 { font-size: 19px; margin: 36px 0 4px; display: flex; align-items: center; gap: 10px; }
+  h3 { font-size: 16px; margin: 0 0 2px; display: flex; align-items: center; gap: 7px; }
+
+  /* ---- music motifs: decoration only, never encoding data ---- */
+  .side-chip { display: inline-flex; align-items: center; gap: 6px; flex: none;
+               font-size: 11px; font-weight: 600; letter-spacing: .14em;
+               text-transform: uppercase; color: var(--ink-2);
+               border: 1px solid var(--line); border-radius: 999px;
+               padding: 3px 10px 3px 8px; background: var(--panel); }
+  .disc { width: 12px; height: 12px; border-radius: 50%; flex: none;
+          border: 3px double var(--ink-3); box-sizing: border-box;
+          background: radial-gradient(circle, var(--ink-3) 1.5px, transparent 1.6px); }
+  .icon { width: 15px; height: 15px; color: var(--ink-3); flex: none; }
   .sub { color: var(--ink-2); margin: 0 0 14px; max-width: 72ch; }
   .dash-sub { color: var(--ink-2); margin: 0 0 12px; }
 
@@ -60,17 +71,12 @@
   svg { display: block; max-width: 100%; height: auto; }
   svg text { font-family: inherit; }
 
-  /* dashboard 2 headline cards */
-  .card .person { margin: 10px 0 2px; }
-  .card .who { font-size: 13px; font-weight: 600; }
-  .who.or { color: var(--or-ink); } .who.roman { color: var(--roman-ink); }
-  .card .big { font-size: 34px; font-weight: 700; line-height: 1.1;
-               font-variant-numeric: tabular-nums; }
-  .card .detail { font-size: 12.5px; color: var(--ink-2); }
-  .card .bar { height: 8px; border-radius: 4px; background: #efefec;
-               margin: 4px 0 2px; overflow: hidden; }
-  .card .bar > div { height: 100%; border-radius: 4px; transition: width .6s ease; }
+  /* dashboard 2 chart panels */
   .sentence { font-size: 13.5px; color: var(--ink-2); margin: 6px 0 0; }
+  .cohort { font-size: 12.5px; color: var(--ink-2); margin: 0 0 6px; }
+  .cohort button { font: inherit; font-size: 12px; margin-left: 8px; padding: 1px 9px;
+                   border: 1px solid var(--line); border-radius: 10px;
+                   background: var(--panel); cursor: pointer; color: var(--ink-2); }
 
   #tooltip {
     position: absolute; pointer-events: none; display: none; z-index: 10;
@@ -98,11 +104,15 @@
   </div>
   <p class="caveat" id="period-caveat"></p>
 
-  <h2>Dashboard 1 — Two rhythms</h2>
+  <h2><span class="side-chip"><span class="disc"></span>Side A</span>
+    Dashboard 1 — Two rhythms</h2>
   <p class="dash-sub">Routine and intensity: when and how heavily each person listens.</p>
 
   <div class="panel" id="river-panel">
-    <h3>Intensity river</h3>
+    <h3><svg class="icon" viewBox="0 0 15 15" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+      <path d="M1.5 6v3M4 4v7M6.5 2v11M9 5v5M11.5 3.5v8M14 6.5v2"/></svg>
+      Intensity river</h3>
     <p class="q">How does each person's monthly listening volume rise and fall across
       life periods — and when do they converge or diverge?</p>
     <svg id="river"></svg>
@@ -110,12 +120,16 @@
       up, Roman drawn down from a flat shared baseline); color = person.
       Interactions: hover shows a guide line with both people's hours; the timeline
       strip below is the period selector (click a band, or "All" above); months
-      outside the selected period are dimmed. Roman's history starts 2019-09 —
-      his area starts there, not at zero.</p>
+      outside the selected period are dimmed. The data window starts 2020-01;
+      each area starts at that person's first active month inside it (Roman:
+      2020-04), not at zero.</p>
   </div>
 
   <div class="panel" id="heatmap-panel">
-    <h3>Routine heatmap</h3>
+    <h3><svg class="icon" viewBox="0 0 15 15" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+      <circle cx="7.5" cy="7.5" r="6"/><path d="M7.5 4.5v3l2 2"/></svg>
+      Routine heatmap</h3>
     <p class="q">When in the day and week does each person listen? (Or in the morning,
       Roman at night.)</p>
     <div class="row" style="gap:24px">
@@ -125,63 +139,100 @@
     <p class="note" id="heatmap-scale-note"></p>
     <p class="note">Mapping: column = hour of day (local), row = weekday (Sun–Sat),
       cell darkness = % of that person's plays in the selected period (single-hue
-      ramp per person, one shared scale so shapes are comparable despite different
-      volumes). Interactions: filtered by the period selector; hover a cell for the
-      exact % and raw play count; hovering any cell highlights that weekday row in
-      <em>both</em> heatmaps.</p>
+      ramp per person on a square-root scale — see the legend under each grid —
+      with one shared max so shapes are comparable despite different volumes;
+      grey = no plays at all). Interactions: filtered by the period selector;
+      hover a cell for the exact % and raw play count; hovering any cell
+      highlights that weekday row in <em>both</em> heatmaps.</p>
   </div>
 
   <div class="panel" id="daylength-panel">
-    <h3>Day-length distribution</h3>
+    <h3><svg class="icon" viewBox="0 0 15 15" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+      <path d="M2.5 12.5v-3M6 12.5v-6M9.5 12.5v-4.5M13 12.5v-9"/></svg>
+      Day-length distribution</h3>
     <p class="q">On days someone actually listens, how heavy is a typical day — and
       who has the much heavier ones?</p>
     <svg id="daylength"></svg>
     <p class="note">Mapping: x = length of an active listening day (fixed buckets),
       bar height = % of that person's active days in the selected period; color =
-      person. Raw day counts are printed on the heavy buckets (3–5h, 5h+), where
-      magnitude itself is the finding. Interactions: filtered by the period selector;
-      hover a bar for the exact day count.</p>
+      person. One annotation calls out the raw 5h+ day counts, where magnitude
+      itself is the finding. Interactions: filtered by the period selector; hover
+      a bar for the exact day count.</p>
   </div>
 
-  <h2>Dashboard 2 — Depth of connection</h2>
-  <p class="dash-sub">A "Wrapped-plus" view: one plain question, one headline number
-    per person, filtered by the same period selector.</p>
+  <h2><span class="side-chip"><span class="disc"></span>Side B</span>
+    Dashboard 2 — Depth of connection</h2>
+  <p class="dash-sub">A "Wrapped-plus" view: one plain question per chart. The two
+    linked charts below are two halves of one story — discovering artists, and
+    those artists sticking. All filtered by the same period selector.</p>
 
   <div class="row">
-    <div class="panel card" id="card-top">
-      <h3>How much did one artist take over?</h3>
-      <p class="q">The #1 artist's share of that person's listening hours.</p>
-      <div id="card-top-body"></div>
-      <p class="sentence" id="card-top-sentence"></p>
-      <p class="note">Big number = top artist's % of hours; bar = that share of 100%.
-        Hover the bar for hours. Filtered by period.</p>
+    <div class="panel" id="discovery-panel">
+      <h3><svg class="icon" viewBox="0 0 15 15" fill="none" stroke="currentColor"
+        stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M5.8 11.5V4.2l7-1.4v7.3"/>
+        <circle cx="4" cy="11.5" r="1.9" fill="currentColor" stroke="none"/>
+        <circle cx="11" cy="10.1" r="1.9" fill="currentColor" stroke="none"/></svg>
+        Do you keep discovering, or stay in a known world?</h3>
+      <p class="q">How many artists did each person hear for the first time,
+        year by year?</p>
+      <svg id="discovery"></svg>
+      <p class="sentence" id="discovery-sentence"></p>
+      <p class="note">Mapping: x = year, y = artists first played that year
+        (line per person, color = person). Years inside the selected period are
+        emphasized, the rest dimmed. Honesty: each history starts somewhere
+        (Or 2018-09, Roman 2019-09), so the earliest years count returning
+        favorites as "new"; the last year is partial. Interactions: filtered by
+        the period selector; <b>click a year</b> to filter the stickiness chart
+        to that year's cohort (click again to clear); hover for both counts.</p>
     </div>
-    <div class="panel card" id="card-skip">
-      <h3>When you hit play, did you stay?</h3>
-      <p class="q">Share of plays under 30 seconds — the only skip measure computed
-        identically for both services (native skip counters are not comparable).</p>
-      <div id="card-skip-body"></div>
-      <p class="sentence" id="card-skip-sentence"></p>
-      <p class="note">Big number = % of plays under 30s; bar = that share of 100%.
-        Hover the bar for play counts. Filtered by period.</p>
+    <div class="panel" id="stickiness-panel">
+      <h3><svg class="icon" viewBox="0 0 15 15" aria-hidden="true">
+        <path fill="currentColor" d="M7.5 12.8C3.2 9.6 2.1 6.4 3.6 4.8c1.2-1.3 3.1-.9 3.9.6.8-1.5 2.7-1.9 3.9-.6 1.5 1.6.4 4.8-3.9 8Z"/></svg>
+        Of all the artists you tried, how many stuck?</h3>
+      <p class="q">Each person's artist list, split by how many plays an artist
+        ever got: one-night stands vs. lasting relationships.</p>
+      <p class="cohort" id="stickiness-cohort"></p>
+      <svg id="stickiness"></svg>
+      <p class="sentence" id="stickiness-sentence"></p>
+      <p class="note">Mapping: one 100%-wide bar per person; segment length =
+        share of that person's artists by all-time play count (1 play / 2–9 /
+        10–49 / 50+); darker = more plays = stuck, in lightness steps of that
+        person's single hue. Play counts come from the full export, so recent
+        discoveries have had less time to stick. Interactions: follows the
+        period selector (artists discovered in those years; "All" = the full
+        list, incl. pre-2020) and the year clicked in the discovery chart —
+        the label above the bars names the active cohort; hover a segment for
+        exact artist counts.</p>
     </div>
-    <div class="panel card" id="card-half">
-      <h3>How many artists make up half your hours?</h3>
-      <p class="q">Count of artists needed to reach 50% of cumulative listening hours
-        — small = a strong center of gravity.</p>
-      <div id="card-half-body"></div>
-      <p class="sentence" id="card-half-sentence"></p>
-      <p class="note">Big number = artists covering 50% of hours, shown against the
-        person's total unique artists in the period. Filtered by period.</p>
-    </div>
+  </div>
+
+  <div class="panel" id="takeover-panel">
+    <h3><svg class="icon" viewBox="0 0 15 15" fill="none" stroke="currentColor"
+      stroke-width="1.5" aria-hidden="true">
+      <circle cx="7.5" cy="7.5" r="6"/>
+      <circle cx="7.5" cy="7.5" r="1.6" fill="currentColor" stroke="none"/></svg>
+      How much did one artist take over?</h3>
+    <p class="q">How is each person's listening time split between the very top of
+      their artist list and everyone else?</p>
+    <svg id="takeover"></svg>
+    <p class="sentence" id="takeover-sentence"></p>
+    <p class="note">Mapping: one 100%-wide bar per person; segment length = share
+      of that person's hours by artist rank (#1, #2–5, #6–10, everyone else);
+      darker = closer to #1, in lightness steps of that person's single hue. The
+      big number is the #1 artist's share — the headline. Interactions: filtered
+      by the period selector (animated); hover a segment for its exact share and
+      hours (and the artist name, for #1).</p>
   </div>
 
   <footer>
-    Honest limits: histories overlap 2019–2026 (Or from 2018-09, Roman effectively
-    active from 2021 — the Army window is Or-dominant); skips use the comparable
-    under-30s measure, never native skip counters; genre data is an external,
-    partial add-on and is not charted here; city-level location exists only for Or,
-    so there is no map. Built only from the provided CSV exports.
+    Liner notes — honest limits: the analysis window is 2020-01 onward (Or's history from 2018-09
+    is excluded by design; Roman is effectively active from 2021, so the COVID
+    window is Or-heavier early on); skips use the comparable under-30s measure,
+    never native skip counters; genre data is an external, partial add-on and is
+    not charted here; city-level location exists only for Or, so there is no map.
+    Built only from the provided CSV exports.
   </footer>
 </main>
 <div id="tooltip"></div>
@@ -192,15 +243,21 @@
    ========================================================================= */
 const COLOR = { Or: "#E69F00", Roman: "#0072B2" };        // fills (Wong pair)
 const INK   = { Or: "#8a5f00", Roman: "#005a8e" };        // darkened text variants
-const RAMP  = {                                            // single-hue heatmap ramps
-  Or:    d3.interpolateRgb("#fdf4e1", "#7a5400"),
-  Roman: d3.interpolateRgb("#e6f2fa", "#00466e"),
+// Single-hue ramps, one per person. HCL interpolation keeps the mid-range
+// saturated instead of muddying through grey the way plain RGB blending does.
+const RAMP  = {
+  Or:    d3.interpolateHcl("#fbeecf", "#7a5400"),
+  Roman: d3.interpolateHcl("#d9ebf7", "#00466e"),
 };
+const ZERO_FILL = "#f3f3f0";  // truly-zero heatmap cells: neutral grey, so even
+                              // the faintest hue tint reads as "some plays"
 const parseYm = d3.utcParse("%Y-%m");
 const fmtMonth = d3.utcFormat("%b %Y");
 
-let META, MONTHLY, HEATMAP, DAYLENGTH, HEADLINES;   // loaded JSON
-let state = { period: "all" };
+let META, MONTHLY, HEATMAP, DAYLENGTH, HEADLINES, ARTISTS;   // loaded JSON
+// period drives every panel; cohortYear is the discovery-chart year selection
+// that filters the stickiness chart (null = no year selected)
+let state = { period: "all", cohortYear: null };
 
 const tooltip = d3.select("#tooltip");
 function showTip(event, html) {
@@ -217,9 +274,10 @@ Promise.all([
   d3.json("data/heatmap.json"),
   d3.json("data/daylength.json"),
   d3.json("data/headlines.json"),
-]).then(([meta, monthly, heatmap, daylength, headlines]) => {
+  d3.json("data/artists.json"),
+]).then(([meta, monthly, heatmap, daylength, headlines, artists]) => {
   META = meta; MONTHLY = monthly; HEATMAP = heatmap;
-  DAYLENGTH = daylength; HEADLINES = headlines;
+  DAYLENGTH = daylength; HEADLINES = headlines; ARTISTS = artists;
   buildPeriodButtons();
   buildRiver();          // draws once; period changes only re-style it
   renderAll();
@@ -236,26 +294,31 @@ function buildPeriodButtons() {
 function setPeriod(k) {
   if (k === state.period) return;
   state.period = k;
+  state.cohortYear = null;   // a new period means a new cohort context
   renderAll();
 }
 
 /* One caveat line, shown when the selected window needs an honesty flag. */
 const CAVEATS = {
-  army: "Low-data window for Roman: his history is sparse before 2021, so the Army " +
-        "period is Or-dominant. Compare shapes, not magnitudes.",
-  all:  "Coverage differs: Or from 2018-09, Roman from 2019-09 (sparse before 2021). " +
-        "The head-to-head overlap is 2019–2026.",
+  covid: "Sparse-data window for Roman: his Spotify history only ramps up during " +
+         "2021, so the early COVID months are Or-heavier. Compare shapes, not magnitudes.",
+  all:  "Analysis window: 2020-01 onward (Or's 2018–2019 history is excluded by " +
+        "design). Roman is sparse before 2021.",
 };
 
 /* Re-render everything that depends on the selected period (linked filtering). */
 function renderAll() {
   d3.select("#period-buttons").selectAll("button")
-    .classed("active", k => k === state.period);
+    .classed("active", k => k === state.period)
+    // the active filter is the track that is "playing"
+    .text(k => (k === state.period ? "▶ " : "") + META.periods[k].label);
   d3.select("#period-caveat").text(CAVEATS[state.period] || "");
   updateRiverPeriod();
   renderHeatmaps();
   renderDaylength();
-  renderCards();
+  renderDiscovery();
+  renderStickiness();
+  renderTakeover();
 }
 
 /* =========================================================================
@@ -278,9 +341,9 @@ function buildRiver() {
   const cy = RIV.top + RIV.half;                       // the flat baseline
   const innerW = RIV.width - RIV.left - RIV.right;
 
-  // per-owner series, zero-filling interior month gaps only (Roman has 5 in
-  // 2019-2020); each series starts at that person's real first month so we do
-  // not paint history that does not exist.
+  // per-owner series, zero-filling interior month gaps only (Roman has one,
+  // 2020-10); each series starts at that person's first month inside the data
+  // window so we do not paint history that does not exist.
   const byOwner = d3.group(MONTHLY, d => d.owner);
   const series = {};
   for (const [owner, rows] of byOwner) {
@@ -355,7 +418,8 @@ function buildRiver() {
   // ---- the timeline strip: clickable period bands = the period selector ----
   const stripY = cy + RIV.half + 26;
   const strip = svg.append("g").attr("id", "river-strip");
-  const bands = ["army", "covid", "university"].map(k => ({ key: k, ...periodDates(k) }));
+  const bands = Object.keys(META.periods).filter(k => k !== "all")
+    .map(k => ({ key: k, ...periodDates(k) }));
   strip.selectAll("rect").data(bands).join("rect")
     .attr("x", d => rivX(d.start)).attr("y", stripY)
     .attr("width", d => rivX(d.end) - rivX(d.start)).attr("height", RIV.stripH)
@@ -423,7 +487,8 @@ function updateRiverPeriod() {
     .attr("fill", d => d.key === state.period ? "#1d1d1f" : "#eceae4");
   svg.select("#river-strip").selectAll("text")
     .attr("fill", d => d.key === state.period ? "#fff" : "#55555c")
-    .attr("font-weight", d => d.key === state.period ? 600 : 400);
+    .attr("font-weight", d => d.key === state.period ? 600 : 400)
+    .text(d => (d.key === state.period ? "▶ " : "") + META.periods[d.key].label);
 
   const dim = svg.select("#river-dim");
   if (state.period === "all") { dim.selectAll("rect").remove(); return; }
@@ -445,20 +510,24 @@ function updateRiverPeriod() {
    Chart 2 — Routine heatmaps (one per person, linked).
    Q: when in the day and week does each person listen?
    Mapping: column = hour (0-23), row = weekday (Sun-Sat), darkness = % of
-      that person's plays in the selected period; single-hue ramp per person,
-      ONE shared max so the two shapes are comparable.
+      that person's plays in the selected period; single-hue HCL ramp per
+      person on a square-root scale (middle values separate visually instead
+      of blurring together), ONE shared max so the two shapes are comparable.
+      Zero cells are neutral grey so any hue tint means "some plays".
    Interactions: period filter; cell tooltip (% + raw plays); hovering a cell
       highlights that weekday row in BOTH heatmaps (linked highlight).
    Source: data/heatmap.json (from fact_plays.csv, prep-only).
    ========================================================================= */
-const HM = { cell: 17, cellH: 21, left: 34, top: 22, bottom: 6 };
+const HM = { cell: 17, cellH: 21, left: 34, top: 22, bottom: 6, legendH: 26 };
 
 function renderHeatmaps() {
   const rows = HEATMAP.filter(d => d.period === state.period);
   const maxPct = d3.max(rows, d => d.pct);
   d3.select("#heatmap-scale-note").text(
-    `Shared color scale for this period: white = 0%, darkest = ${maxPct.toFixed(1)}% ` +
-    `of a person's plays in one weekday-hour cell.`);
+    `Shared color scale for this period (square-root emphasis, so low and mid ` +
+    `cells stay distinct): grey = no plays, faintest tint = a small but nonzero ` +
+    `share, darkest = ${maxPct.toFixed(1)}% of a person's plays in one ` +
+    `weekday-hour cell.`);
 
   for (const owner of META.owners) {
     const byKey = new Map(rows.filter(d => d.owner === owner)
@@ -472,10 +541,13 @@ function renderHeatmaps() {
       }
 
     const W = HM.left + 24 * HM.cell + 4;
-    const H = HM.top + 7 * HM.cellH + HM.bottom + 18;
+    const H = HM.top + 7 * HM.cellH + HM.bottom + 18 + HM.legendH;
     const svg = d3.select("#heatmap-" + owner).attr("viewBox", `0 0 ${W} ${H}`)
       .attr("width", W);
-    const scale = v => RAMP[owner](maxPct ? v / maxPct : 0);
+    // sqrt scale: pct -> [0,1] ramp position; boosts the low-mid range so
+    // "some listening" and "a lot" no longer collapse into similar tints
+    const norm = d3.scalePow().exponent(0.5).domain([0, maxPct || 1]).range([0, 1]);
+    const scale = v => v > 0 ? RAMP[owner](norm(v)) : ZERO_FILL;
 
     // one-time static furniture (labels, title); cells get joined every render
     if (svg.select(".cells").empty()) {
@@ -495,6 +567,24 @@ function renderHeatmaps() {
         .text(h => h + ":00");
       svg.append("g").attr("class", "cells");
     }
+
+    // color legend: a "no plays" swatch plus the sqrt-scaled ramp up to the
+    // shared max; rebuilt every render because maxPct changes with the period
+    svg.select(".ramp-legend").remove();
+    const leg = svg.append("g").attr("class", "ramp-legend").attr("transform",
+      `translate(${HM.left},${HM.top + 7 * HM.cellH + HM.bottom + 18})`);
+    leg.append("rect").attr("width", 10).attr("height", 10).attr("rx", 2)
+      .attr("fill", ZERO_FILL).attr("stroke", "#e4e4e0");
+    leg.append("text").attr("x", 14).attr("y", 5).attr("dy", "0.32em")
+      .attr("font-size", 10).attr("fill", "#8a8a92").text("0");
+    const LEG = { x0: 30, w: 120, n: 24 };
+    leg.selectAll(".sw").data(d3.range(LEG.n)).join("rect").attr("class", "sw")
+      .attr("x", i => LEG.x0 + i * LEG.w / LEG.n).attr("width", LEG.w / LEG.n + 0.5)
+      .attr("height", 10).attr("y", 0)
+      .attr("fill", i => RAMP[owner](norm(maxPct * (i + 1) / LEG.n)));
+    leg.append("text").attr("x", LEG.x0 + LEG.w + 5).attr("y", 5).attr("dy", "0.32em")
+      .attr("font-size", 10).attr("fill", "#8a8a92")
+      .text(`${maxPct.toFixed(1)}% of plays (√ scale)`);
 
     svg.select(".cells").selectAll("rect")
       .data(cells, d => d.weekday + "|" + d.hour)
@@ -529,13 +619,13 @@ function highlightWeekday(weekday) {
    Q: on active days, how heavy is a typical day, and who has the much
       heavier ones?
    Mapping: x = active-day length bucket, grouped bars = the two people,
-      y = % of that person's active days (shape comparison); raw day counts
-      printed on the heavy buckets, where magnitude is the finding.
+      y = % of that person's active days (shape comparison). Raw day counts
+      live in the tooltip; ONE annotation calls out the 5h+ bucket, where the
+      raw magnitude gap is the finding.
    Interactions: period filter (animated); bar tooltip with exact day count.
    Source: data/daylength.json (from daily_totals.csv).
    ========================================================================= */
 const DL = { width: 1000, height: 300, left: 46, right: 12, top: 14, bottom: 30 };
-const HEAVY = new Set(["3-5h", "5h+"]);
 
 function renderDaylength() {
   const rows = DAYLENGTH.filter(d => d.period === state.period);
@@ -566,7 +656,10 @@ function renderDaylength() {
       .attr("font-size", 11).attr("fill", "#8a8a92")
       .text("% of that person's active days");
     svg.append("g").attr("class", "bars");
-    svg.append("g").attr("class", "counts");
+    const an = svg.append("g").attr("class", "annot");
+    an.append("line").attr("stroke", "#8a8a92").attr("stroke-dasharray", "2,3");
+    an.append("text").attr("text-anchor", "end")
+      .attr("font-size", 12).attr("fill", "#55555c");
   }
 
   const t = d3.transition().duration(500);
@@ -585,98 +678,396 @@ function renderDaylength() {
     .transition(t)
     .attr("y", d => y(d.pct)).attr("height", d => y(0) - y(d.pct));
 
-  // raw counts on the heavy buckets only (selective direct labels)
-  svg.select(".counts").selectAll("text")
-    .data(rows.filter(d => HEAVY.has(d.bucket)), d => d.owner + "|" + d.bucket)
-    .join(enter => enter.append("text")
-        .attr("x", d => x0(d.bucket) + x1(d.owner) + x1.bandwidth() / 2)
-        .attr("text-anchor", "middle").attr("font-size", 11)
-        .attr("fill", "#55555c").attr("y", y(0)))
-    .text(d => d.days.toLocaleString())
-    .transition(t)
-    .attr("y", d => y(d.pct) - 5);
+  // the single annotation: raw 5h+ day counts, where the magnitude gap is
+  // the finding (every other count is in the tooltip, not printed on bars)
+  const days5h = Object.fromEntries(META.owners.map(o =>
+    [o, rows.find(d => d.owner === o && d.bucket === "5h+")?.days ?? 0]));
+  const top5h = d3.max(META.owners, o =>
+    rows.find(d => d.owner === o && d.bucket === "5h+")?.pct ?? 0);
+  const x5h = x0("5h+") + x0.bandwidth() / 2;
+  const an = svg.select(".annot");
+  an.select("text")
+    .attr("x", DL.width - DL.right).attr("y", DL.top + 8)
+    .text(`Roman: ${days5h.Roman.toLocaleString()} days of 5h+ listening` +
+          ` vs Or: ${days5h.Or.toLocaleString()}`);
+  an.select("line").transition(t)
+    .attr("x1", x5h).attr("x2", x5h)
+    .attr("y1", DL.top + 16).attr("y2", y(top5h) - 5);
 }
 
 /* =========================================================================
-   Dashboard 2 — three headline cards. Each: one big number per person,
-   a small share bar (out of 100%), a detail line, one plain sentence.
-   All re-render (with animated numbers) when the period changes.
-   Source: data/headlines.json (plays_daily.csv per period;
-           artist_totals.csv for the complete all-time artist stats).
+   Dashboard 2 — three charts, one question each. Every chart keeps its
+   headline number, drawn as an annotation ON the chart. All respect the
+   global period selector, tooltips everywhere, and the color rule: person =
+   one of the two fixed hues; categories inside one person use lightness
+   steps of that person's hue, never a second palette.
+   Source: data/headlines.json + data/monthly.json (from plays_daily.csv).
    ========================================================================= */
-function personBlock(sel, owner, data) {
-  const b = sel.append("div").attr("class", "person");
-  b.append("div").attr("class", "who " + owner.toLowerCase()).text(owner);
-  b.append("div").attr("class", "big").attr("id", null);
-  b.append("div").attr("class", "bar").append("div")
-    .style("background", COLOR[owner]).style("width", "0%");
-  b.append("div").attr("class", "detail");
-  return b;
-}
 
-/* Animate a big number from its previous value; fmt renders the tweened value. */
-function tweenNumber(sel, value, fmt) {
-  const prev = sel.node().__val ?? 0;
-  sel.node().__val = value;
-  sel.transition().duration(600).tween("text", function () {
-    const i = d3.interpolateNumber(prev, value);
-    return t => { this.textContent = fmt(i(t)); };
-  });
-}
+/* ---- 2.1 Takeover bars.
+   Q: how much of a person's listening time does the very top of their
+      artist list take?
+   Mapping: one 100%-wide horizontal bar per person; segment length = % of
+      that person's hours by artist-rank group (#1 / #2-5 / #6-10 / rest);
+      darker = closer to #1 (lightness steps of the person's single hue).
+   Annotation: the #1 artist's share — the headline number — above each bar.
+   Interactions: period filter (animated widths); segment tooltip with the
+      exact share and hours (and the artist name for #1).                   */
+const TK = { width: 1000, rowH: 34, gap: 42, left: 64, right: 14, top: 34 };
+const TK_GROUPS = [   // t = position on the person's ramp (1 = strongest)
+  { key: "share_top1",    label: "#1",            t: 1.0 },
+  { key: "share_top2_5",  label: "#2–5",          t: 0.62 },
+  { key: "share_top6_10", label: "#6–10",         t: 0.36 },
+  { key: "share_rest",    label: "everyone else", t: 0.14 },
+];
 
-function renderCards() {
+function renderTakeover() {
   const H = HEADLINES[state.period];
+  const height = TK.top + 2 * TK.rowH + TK.gap + 26;
+  const svg = d3.select("#takeover").attr("viewBox", `0 0 ${TK.width} ${height}`);
+  const x = d3.scaleLinear().domain([0, 100]).range([TK.left, TK.width - TK.right]);
+  const rowY = i => TK.top + i * (TK.rowH + TK.gap);
 
-  const cards = [
-    { id: "#card-top",
-      big: d => d.top_share_pct, fmt: v => v.toFixed(1) + "%",
-      barPct: d => d.top_share_pct,
-      detail: d => `${d.top_artist} — ${d.top_hours.toLocaleString()} h of ` +
-                   `${d.hours.toLocaleString()} h`,
-      barTip: (o, d) => `<b>${o}</b>: ${d.top_artist} = ${d.top_share_pct}% of ` +
-                        `${d.hours.toLocaleString()} listening hours`,
-      sentence: () => {
-        const a = H.Or, b = H.Roman;
-        return `One artist takes ${b.top_share_pct}% of Roman's hours ` +
-               `(${b.top_artist}) vs ${a.top_share_pct}% for Or (${a.top_artist}).`;
-      } },
-    { id: "#card-skip",
-      big: d => d.under30_pct, fmt: v => v.toFixed(1) + "%",
-      barPct: d => d.under30_pct,
-      detail: d => `${d.short_plays.toLocaleString()} of ` +
-                   `${d.plays.toLocaleString()} plays ended under 30s`,
-      barTip: (o, d) => `<b>${o}</b>: ${d.short_plays.toLocaleString()} short plays ` +
-                        `out of ${d.plays.toLocaleString()}`,
-      sentence: () => `Or samples and skips more; Roman commits to what he plays.` },
-    { id: "#card-half",
-      big: d => d.artists_to_half, fmt: v => Math.round(v).toLocaleString(),
-      barPct: d => d.artists_to_half / d.unique_artists * 100,
-      detail: d => `of ${d.unique_artists.toLocaleString()} artists listened ` +
-                   `in this period`,
-      barTip: (o, d) => `<b>${o}</b>: ${d.artists_to_half} artists = 50% of hours, ` +
-                        `${d.unique_artists.toLocaleString()} artists total`,
-      sentence: () => `A small core carries half of all listening time for both — ` +
-                      `but Roman also keeps a huge long tail.` },
-  ];
+  // stack the four rank-group shares into segments per person
+  const segs = [];
+  META.owners.forEach((owner, i) => {
+    let acc = 0;
+    for (const g of TK_GROUPS) {
+      segs.push({ owner, y: rowY(i), group: g, x0: acc, x1: acc + H[owner][g.key],
+                  d: H[owner] });
+      acc += H[owner][g.key];
+    }
+  });
 
-  for (const card of cards) {
-    const body = d3.select(card.id + "-body");
-    if (body.select(".person").empty())
-      for (const owner of META.owners) personBlock(body, owner, null);
-
-    body.selectAll(".person").each(function (_, i) {
-      const owner = META.owners[i];
-      const d = H[owner];
-      const blk = d3.select(this);
-      tweenNumber(blk.select(".big"), card.big(d), card.fmt);
-      blk.select(".bar > div").style("width", Math.min(card.barPct(d), 100) + "%");
-      blk.select(".bar")
-        .on("mousemove", event => showTip(event, card.barTip(owner, d)))
-        .on("mouseleave", hideTip);
-      blk.select(".detail").text(card.detail(d));
-    });
-    d3.select(card.id + "-sentence").text(card.sentence());
+  if (svg.select(".bars").empty()) {
+    svg.append("g").attr("class", "bars");
+    svg.append("g").attr("class", "labels");
+    svg.append("g").attr("class", "annots");
+    svg.append("g").attr("class", "axis")
+      .attr("transform", `translate(0,${rowY(1) + TK.rowH + 6})`)
+      .call(d3.axisBottom(x).tickValues([0, 25, 50, 75, 100])
+        .tickFormat(v => v + "%").tickSize(3))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("text").attr("font-size", 10.5).attr("fill", "#8a8a92"))
+      .call(g => g.selectAll("line").attr("stroke", "#d4d4d0"));
+    svg.select(".labels").selectAll("text").data(META.owners).join("text")
+      .attr("x", TK.left - 8).attr("y", (o, i) => rowY(i) + TK.rowH / 2)
+      .attr("text-anchor", "end").attr("dy", "0.32em")
+      .attr("font-size", 13).attr("font-weight", 600)
+      .attr("fill", o => INK[o]).text(o => o);
   }
+
+  const t = d3.transition().duration(500);
+  svg.select(".bars").selectAll("rect")
+    .data(segs, s => s.owner + "|" + s.group.key)
+    .join(enter => enter.append("rect")
+        .attr("y", s => s.y).attr("height", TK.rowH)
+        .attr("x", x(0)).attr("width", 0).attr("rx", 2)
+        .attr("fill", s => RAMP[s.owner](s.group.t))
+        .attr("stroke", "#fff").attr("stroke-width", 1)
+        .on("mousemove", (event, s) => {
+          const share = s.x1 - s.x0;
+          const hrs = Math.round(s.d.hours * share / 100);
+          showTip(event, `<b>${s.owner}</b> · ${s.group.key === "share_top1"
+              ? "#1 artist: " + s.d.top_artist : "artists " + s.group.label}<br>` +
+            `${share.toFixed(1)}% of hours (≈${hrs.toLocaleString()} h)`);
+        })
+        .on("mouseleave", hideTip))
+    .transition(t)
+    .attr("x", s => x(s.x0)).attr("width", s => Math.max(x(s.x1) - x(s.x0), 0));
+
+  // rank-group name inside each segment that is wide enough (tooltip covers the rest)
+  svg.select(".annots").selectAll("text.seg")
+    .data(segs.filter(s => x(s.x1) - x(s.x0) > 52), s => s.owner + "|" + s.group.key)
+    .join("text").attr("class", "seg")
+    .attr("y", s => s.y + TK.rowH / 2).attr("dy", "0.32em")
+    .attr("text-anchor", "middle").attr("font-size", 11.5)
+    .attr("fill", s => s.group.t >= 0.55 ? "#fff" : "#55555c")
+    .attr("pointer-events", "none")
+    .text(s => s.group.label)
+    .transition(t)
+    .attr("x", s => (x(s.x0) + x(s.x1)) / 2);
+
+  // headline annotation: the #1 artist's share, above each bar
+  svg.select(".annots").selectAll("text.headline")
+    .data(META.owners).join("text").attr("class", "headline")
+    .attr("x", x(0)).attr("y", (o, i) => rowY(i) - 8)
+    .each(function (o) {
+      const d = H[o], sel = d3.select(this);
+      sel.text(null);
+      sel.append("tspan").attr("font-size", 20).attr("font-weight", 700)
+        .attr("fill", INK[o]).text(d.share_top1.toFixed(1) + "%");
+      sel.append("tspan").attr("font-size", 12.5).attr("dx", 6).attr("fill", "#55555c")
+        .text(`of ${o}'s hours = ${d.top_artist} alone`);
+    });
+
+  d3.select("#takeover-sentence").text(
+    `One artist takes ${H.Roman.top_share_pct}% of Roman's hours ` +
+    `(${H.Roman.top_artist}) vs ${H.Or.top_share_pct}% for Or (${H.Or.top_artist}).`);
+}
+
+/* ---- 2.2 Discovery line (linked to the stickiness bars).
+   Q: do you keep discovering new artists, or stay in a known world?
+   Mapping: x = year, y = artists first played that year (first_played from
+      artist_totals.csv — first play EVER, not first play in the window);
+      one line per person, color = person. Years inside the selected period
+      are emphasized, out-of-period years dimmed.
+   Honesty (annotated on the chart): each history starts somewhere (Or
+      2018-09, Roman 2019-09), so the earliest years count returning
+      favorites as "new" (left-censoring); the last year is partial.
+   Interactions: period filter; CLICKING a year filters the stickiness bars
+      to that discovery cohort (click again to clear); hover = both counts.
+   Source: data/artists.json (from artist_totals.csv).                      */
+const DV = { width: 500, height: 250, left: 46, right: 16, top: 24, bottom: 30 };
+let dvYears, dvCounts;   // x-axis years; owner -> Map(year -> new artists)
+
+function setCohortYear(y) {
+  state.cohortYear = state.cohortYear === y ? null : y;
+  renderDiscovery();     // update the selection marker
+  renderStickiness();    // re-cut the bars to the cohort
+}
+
+/* Calendar years covered by a period key; null = unrestricted. */
+function periodYears(key) {
+  const p = META.periods[key];
+  if (!p.start && !p.end) return null;
+  const y0 = p.start ? +p.start.slice(0, 4) : dvYears[0];
+  const y1 = p.end ? +p.end.slice(0, 4) : dvYears.at(-1);
+  return d3.range(y0, y1 + 1);
+}
+
+function renderDiscovery() {
+  const svg = d3.select("#discovery").attr("viewBox", `0 0 ${DV.width} ${DV.height}`);
+
+  if (!dvCounts) {   // aggregate once: tiers summed -> new artists per year
+    dvCounts = {};
+    for (const owner of META.owners)
+      dvCounts[owner] = d3.rollup(
+        ARTISTS.filter(d => d.owner === owner && d.year >= 2020),
+        v => d3.sum(v, d => d.artists), d => d.year);
+    dvYears = d3.range(2020, d3.max(ARTISTS, d => d.year) + 1);
+  }
+  const x = d3.scalePoint().domain(dvYears)
+    .range([DV.left, DV.width - DV.right]).padding(0.4);
+  const y = d3.scaleLinear()
+    .domain([0, Math.ceil(d3.max(META.owners,
+      o => d3.max(dvCounts[o].values())) / 100) * 100])
+    .range([DV.height - DV.bottom, DV.top]);
+  const pts = owner => dvYears.map(yr =>
+    ({ owner, year: yr, n: dvCounts[owner].get(yr) ?? 0 }));
+  const line = d3.line().x(d => x(d.year)).y(d => y(d.n));
+  const years = periodYears(state.period);
+  const inPeriod = yr => !years || years.includes(yr);
+
+  if (svg.select(".axes").empty()) {
+    const ax = svg.append("g").attr("class", "axes");
+    ax.append("g").attr("transform", `translate(${DV.left},0)`)
+      .call(d3.axisLeft(y).ticks(5).tickSize(-(DV.width - DV.left - DV.right)))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("line").attr("stroke", "#efefec"))
+      .call(g => g.selectAll("text").attr("font-size", 10.5).attr("fill", "#8a8a92"));
+    ax.append("g").attr("class", "xticks")
+      .attr("transform", `translate(0,${DV.height - DV.bottom})`)
+      .call(d3.axisBottom(x).tickSize(4))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("text").attr("font-size", 10.5).attr("fill", "#8a8a92"))
+      .call(g => g.selectAll("line").attr("stroke", "#d4d4d0"));
+    ax.append("text").attr("x", DV.left).attr("y", DV.top - 10)
+      .attr("font-size", 10.5).attr("fill", "#8a8a92")
+      .text("artists first played that year");
+    // the honesty caveat, kept on the chart itself
+    ax.append("text").attr("x", DV.width - DV.right).attr("y", DV.top - 10)
+      .attr("text-anchor", "end").attr("font-size", 10).attr("fill", "#8a8a92")
+      .text(`${dvYears[0]} includes returning favorites · ${dvYears.at(-1)} partial`);
+
+    // dimmed full lines under everything; emphasized period segment on top
+    for (const owner of META.owners)
+      svg.append("path").attr("class", "base").datum(pts(owner))
+        .attr("fill", "none").attr("stroke", COLOR[owner])
+        .attr("stroke-width", 1.2).attr("stroke-opacity", 0.3).attr("d", line);
+    svg.append("g").attr("class", "focus");
+    svg.append("line").attr("class", "cohort-marker")
+      .attr("stroke", "#1d1d1f").attr("stroke-dasharray", "3,3")
+      .attr("y1", DV.top).attr("y2", DV.height - DV.bottom)
+      .style("display", "none");
+    svg.append("g").attr("class", "dots");
+
+    // one full-height invisible band per year: big click/hover target
+    const step = x.step();
+    svg.append("g").selectAll("rect").data(dvYears).join("rect")
+      .attr("x", yr => x(yr) - step / 2).attr("width", step)
+      .attr("y", DV.top).attr("height", DV.height - DV.top - DV.bottom)
+      .attr("fill", "transparent").attr("cursor", "pointer")
+      .on("click", (_, yr) => setCohortYear(yr))
+      .on("mousemove", (event, yr) => {
+        let html = `<b>${yr}</b><br>` + META.owners.map(o =>
+          `${o}: ${(dvCounts[o].get(yr) ?? 0).toLocaleString()} new artists`
+        ).join("<br>");
+        if (yr === dvYears[0]) html += "<br><i>window start — partly returning favorites</i>";
+        if (yr === dvYears.at(-1)) html += "<br><i>partial year</i>";
+        html += "<br>Click to see how this cohort stuck →";
+        showTip(event, html);
+      })
+      .on("mouseleave", hideTip);
+  }
+
+  // emphasized segments + dots restyle on every period/cohort change
+  svg.select(".focus").selectAll("path")
+    .data(META.owners, o => o)
+    .join("path")
+    .attr("fill", "none").attr("stroke", o => COLOR[o]).attr("stroke-width", 2.4)
+    .attr("d", o => line(pts(o).filter(d => inPeriod(d.year))));
+
+  svg.select(".dots").selectAll("circle")
+    .data(META.owners.flatMap(o => pts(o)), d => d.owner + "|" + d.year)
+    .join(enter => enter.append("circle")
+        .attr("cx", d => x(d.year)).attr("cy", d => y(d.n))
+        .attr("fill", d => COLOR[d.owner])
+        .attr("stroke", "#fff").attr("stroke-width", 1.2)
+        .attr("pointer-events", "none"))
+    .attr("r", d => d.year === state.cohortYear ? 5.5 : 3.5)
+    .attr("opacity", d => inPeriod(d.year) ? 1 : 0.35);
+
+  svg.select(".cohort-marker")
+    .style("display", state.cohortYear == null ? "none" : null)
+    .attr("x1", state.cohortYear == null ? 0 : x(state.cohortYear))
+    .attr("x2", state.cohortYear == null ? 0 : x(state.cohortYear));
+  svg.select(".xticks").selectAll("text")
+    .attr("font-weight", yr => yr === state.cohortYear ? 700 : 400)
+    .attr("fill", yr => yr === state.cohortYear ? "#1d1d1f" : "#8a8a92");
+
+  const ro = pts("Roman"), or = pts("Or");
+  const peak = ro.reduce((a, b) => (b.n > a.n ? b : a));
+  d3.select("#discovery-sentence").text(
+    `Roman meets hundreds of new artists a year (peak ${peak.n.toLocaleString()} ` +
+    `in ${peak.year}); Or stays in a known world of ` +
+    `${d3.min(or, d => d.n)}–${d3.max(or, d => d.n)} a year.`);
+}
+
+/* ---- 2.3 Stickiness bars (linked to the discovery line).
+   Q: of all the artists you tried, how many stuck?
+   Mapping: one 100%-wide bar per person; segment length = share of that
+      person's artists by ALL-TIME play count tier (1 play / 2-9 / 10-49 /
+      50+); darker = more plays = stuck, in lightness steps of that person's
+      single hue (no second palette).
+   Annotation: the 50+ share above each bar — the headline ("how many stuck").
+   Interactions: the cohort shown = the year clicked in the discovery chart,
+      else the selected period's discovery years, else the full list ("All",
+      incl. pre-2020 discoveries); the label above the bars names the active
+      cohort, with a reset control; segment tooltip with artist counts.
+   Honesty: play counts are all-time, so recent cohorts have had less time
+      to accumulate plays ("stick").
+   Source: data/artists.json (from artist_totals.csv).                      */
+const ST = { width: 500, rowH: 30, gap: 44, left: 64, right: 14, top: 34 };
+const ST_TIERS = [   // t = position on the person's ramp (1 = strongest)
+  { key: "1 play", label: "1 play", t: 0.14 },
+  { key: "2-9",    label: "2–9",    t: 0.36 },
+  { key: "10-49",  label: "10–49",  t: 0.62 },
+  { key: "50+",    label: "50+",    t: 1.0 },
+];
+
+function renderStickiness() {
+  const height = ST.top + 2 * ST.rowH + ST.gap + 26;
+  const svg = d3.select("#stickiness").attr("viewBox", `0 0 ${ST.width} ${height}`);
+  const x = d3.scaleLinear().domain([0, 100]).range([ST.left, ST.width - ST.right]);
+  const rowY = i => ST.top + i * (ST.rowH + ST.gap);
+
+  // which discovery cohort: a clicked year > the period's years > everything
+  const years = state.cohortYear != null ? [state.cohortYear]
+              : periodYears(state.period);
+  const label =
+    state.cohortYear != null ? `artists discovered in ${state.cohortYear}` :
+    years ? `artists discovered ${years[0]}–${years.at(-1)} ` +
+            `(${META.periods[state.period].label})` :
+    "all artists in each person's history (incl. pre-2020 discoveries)";
+  const lab = d3.select("#stickiness-cohort").text("Cohort: " + label);
+  if (state.cohortYear != null)
+    lab.append("button").text("× reset")
+      .on("click", () => setCohortYear(state.cohortYear));
+
+  // tier counts -> stacked shares of each person's cohort list
+  const segs = [];
+  META.owners.forEach((owner, i) => {
+    const rows = ARTISTS.filter(d =>
+      d.owner === owner && (!years || years.includes(d.year)));
+    const byTier = d3.rollup(rows, v => d3.sum(v, d => d.artists), d => d.tier);
+    const total = d3.sum(byTier.values());
+    let acc = 0;
+    for (const tier of ST_TIERS) {
+      const n = byTier.get(tier.key) ?? 0;
+      const pct = total ? n / total * 100 : 0;
+      segs.push({ owner, y: rowY(i), tier, n, pct, total, x0: acc, x1: acc + pct });
+      acc += pct;
+    }
+  });
+
+  if (svg.select(".bars").empty()) {
+    svg.append("g").attr("class", "bars");
+    svg.append("g").attr("class", "annots");
+    svg.append("g").attr("class", "axis")
+      .attr("transform", `translate(0,${rowY(1) + ST.rowH + 6})`)
+      .call(d3.axisBottom(x).tickValues([0, 25, 50, 75, 100])
+        .tickFormat(v => v + "%").tickSize(3))
+      .call(g => g.select(".domain").remove())
+      .call(g => g.selectAll("text").attr("font-size", 10.5).attr("fill", "#8a8a92"))
+      .call(g => g.selectAll("line").attr("stroke", "#d4d4d0"));
+    svg.append("g").selectAll("text").data(META.owners).join("text")
+      .attr("x", ST.left - 8).attr("y", (o, i) => rowY(i) + ST.rowH / 2)
+      .attr("text-anchor", "end").attr("dy", "0.32em")
+      .attr("font-size", 13).attr("font-weight", 600)
+      .attr("fill", o => INK[o]).text(o => o);
+  }
+
+  const t = d3.transition().duration(500);
+  svg.select(".bars").selectAll("rect")
+    .data(segs, s => s.owner + "|" + s.tier.key)
+    .join(enter => enter.append("rect")
+        .attr("y", s => s.y).attr("height", ST.rowH)
+        .attr("x", x(0)).attr("width", 0).attr("rx", 2)
+        .attr("fill", s => RAMP[s.owner](s.tier.t))
+        .attr("stroke", "#fff").attr("stroke-width", 1)
+        .on("mouseleave", hideTip))
+    .on("mousemove", function (event) {   // rebound so the tip sees fresh data
+      const s = d3.select(this).datum();
+      showTip(event, `<b>${s.owner}</b> · ${s.tier.label} play${s.tier.key === "1 play" ? "" : "s"}<br>` +
+        `${s.n.toLocaleString()} of ${s.total.toLocaleString()} artists ` +
+        `(${s.pct.toFixed(1)}%)`);
+    })
+    .transition(t)
+    .attr("x", s => x(s.x0)).attr("width", s => Math.max(x(s.x1) - x(s.x0), 0));
+
+  // tier name inside each segment that is wide enough (tooltip covers the rest)
+  svg.select(".annots").selectAll("text.seg")
+    .data(segs.filter(s => x(s.x1) - x(s.x0) > 44), s => s.owner + "|" + s.tier.key)
+    .join("text").attr("class", "seg")
+    .attr("y", s => s.y + ST.rowH / 2).attr("dy", "0.32em")
+    .attr("text-anchor", "middle").attr("font-size", 11)
+    .attr("fill", s => s.tier.t >= 0.55 ? "#fff" : "#55555c")
+    .attr("pointer-events", "none")
+    .text(s => s.tier.label)
+    .transition(t)
+    .attr("x", s => (x(s.x0) + x(s.x1)) / 2);
+
+  // headline annotation: the "stuck" (50+) share, above each bar
+  svg.select(".annots").selectAll("text.headline")
+    .data(META.owners).join("text").attr("class", "headline")
+    .attr("x", x(0)).attr("y", (o, i) => rowY(i) - 7)
+    .each(function (o) {
+      const s = segs.find(g => g.owner === o && g.tier.key === "50+");
+      const sel = d3.select(this);
+      sel.text(null);
+      sel.append("tspan").attr("font-size", 18).attr("font-weight", 700)
+        .attr("fill", INK[o]).text(s.pct.toFixed(1) + "%");
+      sel.append("tspan").attr("font-size", 12).attr("dx", 6).attr("fill", "#55555c")
+        .text(`stuck (50+ plays) of ${s.total.toLocaleString()} artists`);
+    });
+
+  const get = (o, k) => segs.find(g => g.owner === o && g.tier.key === k);
+  d3.select("#stickiness-sentence").text(
+    `${get("Roman", "1 play").pct.toFixed(0)}% of Roman's artists got exactly ` +
+    `one play (Or: ${get("Or", "1 play").pct.toFixed(0)}%); ` +
+    `${get("Or", "50+").pct.toFixed(1)}% of Or's reached 50+ plays ` +
+    `(Roman: ${get("Roman", "50+").pct.toFixed(1)}%).`);
 }
 </script>
 </body>
