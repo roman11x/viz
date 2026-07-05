@@ -1,2 +1,6 @@
 .venv/
 __pycache__/
+# raw exports (~110 MB) stay out of git; copy DATA/*.csv manually if you
+# need to re-run prepare_data.py — the committed data/*.json is enough to
+# run the dashboards
+DATA/*.csv
