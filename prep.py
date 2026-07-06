@@ -136,13 +136,17 @@ def shared_overlap(df):
             on_shared = g[g["artist"].isin(shared_set)]["minutes_played"].sum()
             pct[cut][owner] = round(on_shared / total * 100, 1)
 
-    per_owner = (df[df["artist"].isin(shared_set)]
-                 .groupby(["artist", "owner"])["minutes_played"].sum().unstack(fill_value=0))
-    per_owner["total"] = per_owner.sum(axis=1)
-    top_shared = [{"artist": a, "or_minutes": round(r["Or"], 1),
-                   "roman_minutes": round(r["Roman"], 1)}
-                  for a, r in per_owner.sort_values("total", ascending=False)
-                                       .head(SHARED_LIST_N).iterrows()]
+    # top shared artists per cut (list beside the overlap strip follows the period selector)
+    top_shared = {}
+    for c, d in cuts(df):
+        per_owner = (d[d["artist"].isin(shared_set)]
+                     .groupby(["artist", "owner"])["minutes_played"].sum().unstack(fill_value=0)
+                     .reindex(columns=OWNERS, fill_value=0))
+        per_owner["total"] = per_owner.sum(axis=1)
+        top_shared[c] = [{"artist": a, "or_minutes": round(r["Or"], 1),
+                          "roman_minutes": round(r["Roman"], 1)}
+                         for a, r in per_owner.sort_values("total", ascending=False)
+                                              .head(SHARED_LIST_N).iterrows()]
     return {"count": len(shared_set), "pct_minutes": pct, "top_shared": top_shared}, shared_set
 
 
@@ -259,7 +263,7 @@ def main():
     for cut in ["all", *PERIODS]:
         p = shared["pct_minutes"][cut]
         print(f"  {cut:10} minutes-weighted shared share: Or {p['Or']}%  Roman {p['Roman']}%")
-    print("  top shared:", ", ".join(a["artist"] for a in shared["top_shared"][:8]))
+    print("  top shared:", ", ".join(a["artist"] for a in shared["top_shared"]["all"][:8]))
 
     print("\n-- change metrics (avg monthly hours / under_30s%)")
     for o in OWNERS:

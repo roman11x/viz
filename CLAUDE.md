@@ -7,9 +7,10 @@ A static D3.js website for a University of Haifa Data Visualization course. It c
 complete personal listening histories: **אור (Or)** — Apple Music — and **רומן (Roman)** — Spotify.
 Central question: is similarity between two listeners only about taste, or also about routine and intensity?
 
-Two dashboards:
+One scrolling page (no tabs), two stacked dashboards joined by a data-checked narrative bridge:
 1. **Listening DNA** — musical identity: genres, artists, concentration, overlap.
 2. **Before Uni vs Uni: Music as Routine** — how routine and intensity changed when university began.
+Six views, six DISTINCT chart shapes: paired bars / lollipop dot-plot / 100% strip / mirrored area / heatmap / dumbbell.
 
 ## Stack and hosting
 - pandas for data prep; D3.js for every chart (required). No build step. Static files on GitHub Pages.
@@ -41,8 +42,9 @@ Two dashboards:
   רומן = bright orange/amber (~`#FF9F1C`). Same colors in every chart and the legend.
 - In a single-person chart with categories (that person's genres/artists), use only LIGHTNESS steps of that
   person's single hue — never a second categorical palette.
-- Global state object every chart reads from and writes to:
-  `{ dashboard, period, metricMode, selectedGenre, selectedArtist, selectedWindow }`.
+- State is kept PER DASHBOARD so the stacked sections stay independent, each with its own control bar,
+  reset, and filter chips:
+  `{ d1: {period, metricMode, selectedGenre, selectedArtist}, d2: {period, metricMode, selectedWindow} }`.
 
 ## Data files (English names)
 - `fact_plays_with_genre.csv` — event-level (~180,003 rows). Prep only; never shipped to the browser.
