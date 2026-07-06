@@ -1,8 +1,5 @@
 .venv/
 __pycache__/
-# raw exports (~110 MB) stay out of git; copy DATA/*.csv manually if you
-# need to re-run prepare_data.py — the committed data/*.json is enough to
-# run the dashboards
+# raw exports (~110 MB) stay out of git; copy DATA/*.csv back manually if you
+# need to re-run prep.py — the committed data.js is enough to run the site
 DATA/*.csv
-# generated share artifact (make_standalone.py)
-two-listeners.html
