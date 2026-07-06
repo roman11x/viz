@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Two Listeners — אור vs רומן</title>
-<!-- Type roles: Space Grotesk = display (titles), system sans = body, IBM Plex Mono = numbers/data -->
+<!-- Type roles: Space Grotesk = display (titles), system sans = body, IBM Plex Mono = numbers -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
 /* ---------------------------------------------------------------- tokens */
 :root{
   --bg:#0D0D12; --panel:#181820; --panel2:#1E1E28; --border:#2A2A36;
-  --ink:#E8E8F0; --ink2:#9A9AAD; --muted:#3A3A46;
+  --ink:#E8E8F0; --ink2:#9A9AAD; --muted:#3A3A46; --floor:#242634;
   --or:#4EA1FF; --roman:#FF9F1C;
   --display:"Space Grotesk",sans-serif;
   --sans:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
@@ -24,32 +24,45 @@ body{background:var(--bg);color:var(--ink);font:14px/1.55 var(--sans);padding:0 
 .mono,.num{font-family:var(--mono)}
 
 /* ---------------------------------------------------------------- hero */
-.hero{padding:52px 0 30px;border-bottom:1px solid var(--border)}
+.hero{padding:48px 0 26px;border-bottom:1px solid var(--border)}
 .hero h1{font:700 clamp(30px,4.5vw,46px)/1.1 var(--display);letter-spacing:.5px}
-.hero .question{font:500 clamp(17px,2.2vw,22px)/1.45 var(--display);color:var(--ink);
-  max-width:820px;margin:14px 0 6px}
+.hero .question{font:500 clamp(17px,2.2vw,22px)/1.45 var(--display);max-width:820px;margin:14px 0 10px}
 .hero .question em{font-style:normal;color:var(--or)}
 .hero .question em.r{color:var(--roman)}
-.hero .subnote{color:var(--ink2);max-width:760px;font-size:13.5px}
-.legend{display:flex;gap:18px;margin-top:16px;flex-wrap:wrap}
+.legend{display:flex;gap:18px;margin:10px 0 12px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;gap:7px;font-weight:600}
 .chip i{width:12px;height:12px;border-radius:3px;background:var(--c)}
 .chip small{color:var(--ink2);font-weight:400}
+details.about{max-width:760px;color:var(--ink2);font-size:12.5px}
+details.about summary{cursor:pointer;color:var(--ink2);font-weight:600;padding:4px 0}
+details.about summary:hover{color:var(--ink)}
+details.about summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+details.about ul{margin:6px 0 4px 18px}
+details.about li{margin:2px 0}
 
 /* ---------------------------------------------------------------- sections */
 section.dash{padding:34px 0 8px}
 section.dash>h2{font:700 24px/1.2 var(--display);letter-spacing:.4px}
 .thesis{color:var(--ink2);font-size:14.5px;margin:6px 0 14px;max-width:860px}
 
-/* control bar — one per dashboard so the two stacked sections stay independent */
-.ctlbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;background:var(--panel);
-  border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;
-  position:sticky;top:0;z-index:5}
+/* KPI strip */
+.kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.kcard{flex:1 1 300px;background:var(--panel);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.kcard .who{font:700 16px var(--display);min-width:60px}
+.kcard .who small{display:block;color:var(--ink2);font:400 11px var(--sans)}
+.kcard .stat{min-width:72px}
+.kcard .stat b{display:block;font:500 15px var(--mono);color:var(--ink);white-space:nowrap}
+.kcard .stat span{font-size:11px;color:var(--ink2)}
+
+/* control bar — one per dashboard */
+.ctlbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--panel);
+  border:1px solid var(--border);border-radius:10px;padding:9px 14px;margin-bottom:16px}
 .ctl{display:flex;align-items:center;gap:8px}
 .ctl>label{color:var(--ink2);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px}
 .seg{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden}
 .seg button{background:transparent;border:none;color:var(--ink2);font:12.5px var(--sans);
-  padding:6px 12px;cursor:pointer;border-right:1px solid var(--border)}
+  padding:6px 14px;cursor:pointer;border-right:1px solid var(--border)}
 .seg button:last-child{border-right:none}
 .seg button.on{background:var(--panel2);color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}
 .reset{background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--ink2);
@@ -58,31 +71,23 @@ section.dash>h2{font:700 24px/1.2 var(--display);letter-spacing:.4px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .fchip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);
   border-radius:20px;color:var(--ink);font:12px var(--mono);padding:3px 10px;cursor:pointer}
-.fchip b{font-weight:500}
 .fchip .x{color:var(--ink2);font-weight:700}
 .fchip:hover .x{color:var(--ink)}
-button:focus-visible,.fchip:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
-/* ---------------------------------------------------------------- panels & views */
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;
-  padding:16px 18px;margin-bottom:18px}
+/* ---------------------------------------------------------------- panel grid */
+.grid{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px}
+.grid .span2{grid-column:1/-1}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;
+  display:flex;flex-direction:column}
 .panel h3{font:700 16px/1.3 var(--display);letter-spacing:.2px}
 .hint{color:var(--ink2);font-size:12px;margin:3px 0 12px}
-.caveat{color:var(--ink2);font-size:11.5px;margin-top:10px;opacity:.85}
-.takeaway{border-top:1px solid var(--border);margin-top:12px;padding-top:9px;font-size:13px;color:var(--ink)}
+.takeaway{border-top:1px solid var(--border);margin-top:auto;padding-top:9px;font-size:13px;color:var(--ink)}
 .takeaway::before{content:"▸ ";color:var(--ink2)}
 .duo{display:flex;gap:26px;flex-wrap:wrap}
-.duo>div{flex:1 1 440px;min-width:340px}
-.duo h4{font-size:13px;margin-bottom:6px}
-.duo h4 .kpi{color:var(--ink2);font-weight:400;font-size:12px;margin-left:8px;font-family:var(--mono)}
-
-/* KPI strip */
-.kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px}
-.kcard{flex:1 1 260px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
-.kcard .who{font:700 15px var(--display)}
-.kcard .who small{color:var(--ink2);font-weight:400;margin-left:6px;font-family:var(--sans)}
-.kcard .krow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink2);margin-top:3px}
-.kcard .krow b{font-family:var(--mono);color:var(--ink);font-weight:500;white-space:nowrap}
+.duo>div{flex:1 1 300px;min-width:280px}
+h4.owner-h{font-size:13px;margin-bottom:6px}
+h4.owner-h .kpi{color:var(--ink2);font-weight:400;font-size:12px;margin-left:8px;font-family:var(--mono)}
 
 /* svg shared */
 svg{display:block;max-width:100%}
@@ -101,64 +106,55 @@ text.num,text.val{font-family:var(--mono)}
 #tooltip .num{font-family:var(--mono)}
 #tooltip .t{font-weight:600;margin-bottom:2px}
 
-/* artist detail (chart 2 click) */
+/* artist detail (panel 2 click) */
 #artist-detail{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
-  padding:12px 14px;margin-top:14px;display:none}
+  padding:10px 12px;margin-top:12px;display:none;font-size:12.5px}
 #artist-detail.show{display:block}
-#artist-detail .cols{display:flex;gap:32px;flex-wrap:wrap;margin-top:6px}
-#artist-detail table{border-collapse:collapse;font-size:12.5px}
-#artist-detail td{padding:1px 14px 1px 0;color:var(--ink2)}
+#artist-detail .cols{display:flex;gap:26px;flex-wrap:wrap;margin-top:4px}
+#artist-detail table{border-collapse:collapse}
+#artist-detail td{padding:1px 12px 1px 0;color:var(--ink2)}
 #artist-detail td.num{color:var(--ink);font-family:var(--mono)}
 
-/* shared-artist table (chart 3) */
+/* shared-artist table (panel 3) */
 .overlap-flex{display:flex;gap:30px;flex-wrap:wrap}
-.overlap-flex>.strips{flex:1 1 520px;min-width:360px}
-.overlap-flex>.stable{flex:1 1 330px;min-width:300px}
+.overlap-flex>.strips{flex:1 1 480px;min-width:340px}
+.overlap-flex>.stable{flex:1 1 320px;min-width:290px}
 .stable table{border-collapse:collapse;width:100%;font-size:12.5px}
 .stable th{font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;
   text-align:right;padding:2px 6px;font-weight:500}
 .stable th:first-child{text-align:left}
-.stable td{padding:2px 6px;border-radius:4px;color:var(--ink2);font-family:var(--mono);text-align:right;white-space:nowrap}
+.stable td{padding:2px 6px;color:var(--ink2);font-family:var(--mono);text-align:right;white-space:nowrap}
 .stable td:first-child{font-family:var(--sans);text-align:left;overflow:hidden;text-overflow:ellipsis;max-width:170px}
 .stable tr.clickable:hover td,.stable tr.sel td{background:var(--panel2);color:var(--ink)}
 
-/* bridge between the two dashboards */
+/* bridge sentence (dashboard 2) */
 .bridge{background:var(--panel2);border-left:3px solid var(--ink2);border-radius:0 8px 8px 0;
-  padding:16px 20px;margin:26px 0;font:500 15.5px/1.6 var(--display);max-width:980px}
+  padding:14px 18px;margin:0 0 16px;font:500 15px/1.6 var(--display);max-width:980px}
 .bridge .num{font-family:var(--mono);font-weight:400}
 
-/* heatmaps */
-.hm-flex{display:flex;gap:26px;flex-wrap:wrap}
-.hm-grid{display:grid;grid-template-columns:auto auto;gap:10px 24px;justify-content:start}
-#window-panel{flex:1 1 300px;min-width:280px;background:var(--panel2);border:1px solid var(--border);
-  border-radius:8px;padding:12px 14px;align-self:flex-start}
+/* heatmap drilldown */
+#window-panel{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+  padding:11px 13px;margin-top:14px}
 #window-panel .hint{margin:0}
-#window-panel h4{font-size:13.5px;margin-bottom:2px}
-#window-panel .verdict{font-size:12.5px;margin:6px 0 10px;color:var(--ink)}
+#window-panel h4{font-size:13px;margin-bottom:2px}
+#window-panel .verdict{font-size:12.5px;margin:5px 0 8px;color:var(--ink)}
 #window-panel .wcols{display:flex;gap:22px;flex-wrap:wrap}
 #window-panel .wcol{flex:1;min-width:130px}
 #window-panel .wcol h5{font-size:12px;margin-bottom:3px}
 #window-panel ul{list-style:none;font-size:11.5px;color:var(--ink2);padding:0}
 #window-panel li b{color:var(--ink);font-weight:500;font-family:var(--mono)}
-#window-panel .sect{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink2);margin:8px 0 2px}
+#window-panel .sect{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink2);margin:7px 0 2px}
 
-/* footer notes */
-.notes{border-top:1px solid var(--border);margin-top:30px;padding-top:14px;color:var(--ink2);font-size:12px}
-.notes ul{margin:6px 0 0 18px}
-.notes li{margin:2px 0}
+.notes-inline{color:var(--ink2);font-size:11.5px;margin-top:8px}
 
-/* owner-wide highlight while hovering the change chart — scoped to dashboard 2 */
-#d2.hl-Or .ow-Roman,#d2.hl-Roman .ow-Or{opacity:.22}
-
-/* gentle scroll reveal; disabled for prefers-reduced-motion */
+/* gentle scroll reveal; skipped under prefers-reduced-motion */
 @media (prefers-reduced-motion: no-preference){
   .reveal{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
   .reveal.vis{opacity:1;transform:none}
 }
-@media (max-width:760px){
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
   .duo>div{min-width:100%}
-  .ctlbar{position:static}
-  .hm-grid{grid-template-columns:auto}
 }
 </style>
 </head>
@@ -168,122 +164,110 @@ text.num,text.val{font-family:var(--mono)}
 <!-- ================================================================ hero -->
 <header class="hero">
   <h1>Two Listeners</h1>
-  <p class="question">Does similarity between two listeners have to live in musical taste —
-    or can it live in listening patterns, routine, and intensity?
-    <em>אור listens on Apple Music.</em> <em class="r">רומן listens on Spotify.</em></p>
-  <p class="subnote">Complete personal listening histories, cut to <span class="mono">2021-01+</span>
-    (the raw exports overlap 2019–2026, but רומן's data is thin before 2021, so the window starts where
-    a fair comparison starts). University begins for both at <span class="mono">2024-01</span>.</p>
+  <p class="question">Do two friends need the same songs to share music — or is it enough to share the
+    rhythm? <em>אור lives on Apple Music.</em> <em class="r">רומן lives on Spotify.</em>
+    Every play from both histories, 2021 to today.</p>
   <div class="legend">
     <span class="chip"><i style="--c:var(--or)"></i>אור <small>Apple Music</small></span>
     <span class="chip"><i style="--c:var(--roman)"></i>רומן <small>Spotify</small></span>
   </div>
+  <details class="about">
+    <summary>About the data</summary>
+    <ul>
+      <li>The window starts <span class="mono">2021-01</span>. The raw exports overlap 2019–2026, but רומן's data is thin before 2021, so the comparison starts where it's fair. University begins for both at <span class="mono">2024-01</span>.</li>
+      <li>Genre tags are an external add-on (web research), collapsed into broad families — partial and provisional. What couldn't be named confidently stays in an honest “Other”.</li>
+      <li>“Shared” artists require real listening on both sides (at least one full 30-second play each), not just a name appearing twice.</li>
+      <li>Skips aren't compared — Apple and Spotify count them differently.</li>
+      <li>City-level location exists only for אור, so there is no map.</li>
+    </ul>
+  </details>
 </header>
 
 <!-- ================================================================ dashboard 1 -->
 <section class="dash" id="d1">
   <h2>Listening DNA</h2>
-  <p class="thesis">What defines each listener's musical identity — genres, artists, overlap — and how concentrated is it?</p>
-
-  <div class="ctlbar">
-    <span class="ctl"><label>Period:</label><span class="seg" id="d1-period"></span></span>
-    <span class="ctl"><label>Show:</label><span class="seg" id="d1-metric"></span></span>
-    <button class="reset" id="d1-reset">Reset dashboard</button>
-    <span class="chips" id="d1-chips"></span>
-  </div>
+  <p class="thesis">Two friends, two musical worlds — how different is our taste, and how much do we actually share?</p>
 
   <div class="kpis" id="d1-kpis"></div>
 
-  <div class="panel">
-    <h3>What genres make up each person's listening?</h3>
-    <p class="hint">Click a genre to filter the artist chart below · click it again to clear. Genre is an external add-on — partial, long tail bucketed as “Other”.</p>
-    <div class="duo">
-      <div id="genres-Or"></div>
-      <div id="genres-Roman"></div>
-    </div>
-    <p class="takeaway" id="t-genres"></p>
+  <div class="ctlbar">
+    <span class="ctl"><label>Period:</label><span class="seg" id="d1-period"></span></span>
+    <button class="reset" id="d1-reset">Reset</button>
+    <span class="chips" id="d1-chips"></span>
   </div>
 
-  <div class="panel">
-    <h3>How locked-in is each person on a few artists?</h3>
-    <p class="hint">Hover an artist to spot it across charts · click for full details. A ring in the other person's color = also in their history.</p>
-    <div class="duo">
+  <div class="grid">
+    <div class="panel" id="p-families">
+      <h3>What two musical worlds do we live in?</h3>
+      <p class="hint">Click a genre to see its artists on the right · click again to clear. Genre families come from external tags — the “Other” slice is what couldn't be named.</p>
+      <div class="duo">
+        <div id="families-Or"></div>
+        <div id="families-Roman"></div>
+      </div>
+      <p class="takeaway" id="t-families"></p>
+    </div>
+
+    <div class="panel" id="p-artists">
+      <h3>Who are our obsessions?</h3>
+      <p class="hint">Hover an artist to spot them everywhere · click for the full story. A ring in the other color = they play them too.</p>
       <div id="artists-Or"></div>
-      <div id="artists-Roman"></div>
+      <div id="artists-Roman" style="margin-top:14px"></div>
+      <div id="artist-detail"></div>
+      <p class="takeaway" id="t-artists"></p>
     </div>
-    <div id="artist-detail"></div>
-    <p class="takeaway" id="t-artists"></p>
-  </div>
 
-  <div class="panel">
-    <h3>How much does our taste actually overlap?</h3>
-    <p class="hint">Each strip is one person's listening time, split into shared vs unique artists. Click a shared artist to spot it in the chart above.</p>
-    <div class="overlap-flex">
-      <div class="strips" id="overlap-strips"></div>
-      <div class="stable" id="shared-table"></div>
+    <div class="panel span2" id="p-overlap">
+      <h3>How much music do we actually share?</h3>
+      <p class="hint">Each strip is one person's listening time, split into artists both play vs artists only they play. Click a shared artist to spot them above. (The one place we use percentages — רומן simply plays more hours.)</p>
+      <div class="overlap-flex">
+        <div class="strips" id="overlap-strips"></div>
+        <div class="stable" id="shared-table"></div>
+      </div>
+      <p class="takeaway" id="t-overlap"></p>
     </div>
-    <p class="takeaway" id="t-overlap"></p>
-    <p class="caveat">“Shared” = the artist name appears in both 2021+ histories, even from a single play —
-      exactly why the strip weighs minutes, not artist counts.</p>
   </div>
 </section>
-
-<!-- ================================================================ bridge -->
-<div class="bridge" id="bridge"></div>
 
 <!-- ================================================================ dashboard 2 -->
 <section class="dash" id="d2">
   <h2>Before Uni vs Uni: Music as Routine</h2>
-  <p class="thesis">How the role of music changed when university began (2024-01) — and who changed more.</p>
-
-  <div class="ctlbar">
-    <span class="ctl"><label>Period:</label><span class="seg" id="d2-period"></span></span>
-    <span class="ctl"><label>Show:</label><span class="seg" id="d2-metric"></span></span>
-    <button class="reset" id="d2-reset">Reset dashboard</button>
-    <span class="chips" id="d2-chips"></span>
-  </div>
+  <p class="thesis">Then university happened — did music become a bigger, more routine part of our days?</p>
 
   <div class="kpis" id="d2-kpis"></div>
 
-  <div class="panel">
-    <h3>How did listening volume change over time, especially around 2024-01?</h3>
-    <p class="hint">אור above the baseline, רומן below — a listening waveform. Vertical grain marks each real month. Hover for exact values.</p>
-    <div id="monthly-chart"></div>
-    <p class="takeaway" id="t-monthly"></p>
+  <div class="ctlbar">
+    <span class="ctl"><label>Period:</label><span class="seg" id="d2-period"></span></span>
+    <button class="reset" id="d2-reset">Reset</button>
+    <span class="chips" id="d2-chips"></span>
   </div>
 
-  <div class="panel">
-    <h3>When in the day does each person listen — and did it shift after university?</h3>
-    <p class="hint">Click a cell to open that time window · hover a weekday to track its column across all four maps.</p>
-    <div class="hm-flex">
-      <div class="hm-grid" id="heatmaps"></div>
-      <div id="window-panel"></div>
+  <div class="bridge" id="bridge"></div>
+
+  <div class="grid">
+    <div class="panel span2" id="p-monthly">
+      <h3>How has our listening ebbed and flowed since 2021?</h3>
+      <p class="hint">The whole story, always in view — אור above the line, רומן below, every month a beat in the waveform. Hover for exact numbers. (This panel ignores the period filter on purpose.)</p>
+      <div id="monthly-chart"></div>
+      <p class="takeaway" id="t-monthly"></p>
     </div>
-    <p class="takeaway" id="t-routine"></p>
-    <p class="caveat">Window drilldown genres are external / provisional.</p>
-  </div>
 
-  <div class="panel">
-    <h3>Who changed more from pre-uni to university, and in what?</h3>
-    <p class="hint">Hollow dot = pre-uni, filled dot = university. Hover a person to highlight them across this dashboard. Switch Period to “Difference” for the deltas alone.</p>
-    <div class="duo" id="change-charts"></div>
-    <p class="takeaway" id="t-change"></p>
-    <p class="caveat">Averages and rates only — the periods differ in length (36 vs 29 months). Short-play % uses the
-      comparable under-30-seconds measure, never the services' native skip counters.</p>
+    <div class="panel" id="p-routine">
+      <h3>When in the day do we listen?</h3>
+      <p class="hint">Click a cell to see that hour's top artists · hover a weekday to follow its column. Use the period filter above to flip before/after.</p>
+      <div class="duo" id="heatmaps"></div>
+      <div id="window-panel"></div>
+      <p class="takeaway" id="t-routine"></p>
+    </div>
+
+    <div class="panel" id="p-days">
+      <h3>What do our listening days look like?</h3>
+      <p class="hint">Each bar counts days by how much music fit into them, for the selected period. Hover a bar for the exact count.</p>
+      <div id="hist-Or"></div>
+      <div id="hist-Roman" style="margin-top:12px"></div>
+      <p class="takeaway" id="t-days"></p>
+    </div>
   </div>
 </section>
-
-<!-- ================================================================ footer -->
-<footer class="notes">
-  <b>Reading notes &amp; honesty</b>
-  <ul>
-    <li>Data window starts <span class="mono">2021-01</span>; the raw histories overlap 2019–2026 but רומן's earlier data is thin and uneven, so earlier rows are dropped for a fair baseline.</li>
-    <li>Genre is an external, partial add-on (web research); the long tail is bucketed as “Other” and always shown.</li>
-    <li>רומן has higher total volume, so “Absolute hours” vs “Normalized share” is a first-class toggle — normalized share keeps taste and routine comparisons fair.</li>
-    <li>Skip behavior uses the comparable under-30s measure — Apple and Spotify count native “skips” differently.</li>
-    <li>City-level location exists only for אור, so there is no map.</li>
-  </ul>
-</footer>
 </div>
 <div id="tooltip"></div>
 
@@ -294,29 +278,28 @@ text.num,text.val{font-family:var(--mono)}
 const D = EMBEDDED_DATA;
 
 /* ---------------------------------------------------------------- constants
-   The period split mirrors prep.py: pre_uni = 2021-01..2023-12, university = 2024-01+. */
+   Period split mirrors prep.py: pre_uni = 2021-01..2023-12, university = 2024-01+. */
 const WINDOW_START = D.meta.window_start;
 const UNI_START    = D.meta.uni_start;
-const PERIODS      = D.meta.periods;                 // ["pre_uni","university"]
-const OWNERS       = ["Or","Roman"];
+const PERIODS      = D.meta.periods;
+const OWNERS       = ["Or", "Roman"];
 const HEB   = {Or:"אור", Roman:"רומן"};
 const SRC   = {Or:"Apple Music", Roman:"Spotify"};
 const COLOR = {Or:"#4EA1FF", Roman:"#FF9F1C"};
 const OTHER_OF = {Or:"Roman", Roman:"Or"};
 const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const WD3 = {Sunday:"Sun",Monday:"Mon",Tuesday:"Tue",Wednesday:"Wed",Thursday:"Thu",Friday:"Fri",Saturday:"Sat"};
-const PLABEL = {pre_uni:"Pre-uni", university:"University", difference:"Difference"};
-const LRM = "\u200E";  // left-to-right mark: keeps signed numbers readable after Hebrew names
+const PLABEL = {pre_uni:"Pre-uni", university:"University"};
 
-/* number formats */
-const fm0 = d3.format(","), fm1 = d3.format(",.1f"), sg1 = d3.format("+,.1f");
+const fm0 = d3.format(","), fm1 = d3.format(",.1f");
 const fmin = m => m >= 6000 ? fm0(Math.round(m / 60)) + " h" : fm0(Math.round(m)) + " min";
+const fhour = h => `${h}:00`;
 
 /* ---------------------------------------------------------------- state
    Kept PER DASHBOARD so the two stacked sections never interfere. */
 const DEFAULTS = {
-  d1: {period:"pre_uni", metricMode:"absolute", selectedGenre:null, selectedArtist:null},
-  d2: {period:"pre_uni", metricMode:"absolute", selectedWindow:null}
+  d1: {period:"pre_uni", selectedFamily:null, selectedArtist:null},
+  d2: {period:"pre_uni", selectedWindow:null}
 };
 const state = {d1: {...DEFAULTS.d1}, d2: {...DEFAULTS.d2}};
 function setD1(patch){ Object.assign(state.d1, patch); renderD1(); }
@@ -335,45 +318,36 @@ function showTip(ev, html){
 const moveTip = ev => tip.style("display") === "block" && showTip(ev, tip.html());
 const hideTip = () => tip.style("display","none");
 
-/* ---------------------------------------------------------------- small helpers */
+/* ---------------------------------------------------------------- helpers */
 function ownerShade(owner, i, n){          // lightness steps of ONE hue; rank 0 = brightest
   const c = d3.hsl(COLOR[owner]);
   const l0 = Math.min(.74, c.l + .10), l1 = .32;
   return d3.hsl(c.h, c.s, n <= 1 ? l0 : l0 - (l0 - l1) * i / Math.max(1, n - 1)).toString();
 }
-const heatRamp = owner => d3.interpolateLab("#13131B", COLOR[owner]);
 const trunc = (s, n) => s.length > n ? s.slice(0, n - 1) + "…" : s;
 
-/* segmented toggle builder (used by both control bars) */
 function segControl(el, options, labels, current, onPick){
   d3.select(el).selectAll("button").data(options).join("button")
     .text(o => labels[o]).classed("on", o => o === current)
     .on("click", (ev, o) => onPick(o));
 }
-
-/* removable filter chips in a dashboard's breadcrumb */
 function renderChips(el, chips){
   d3.select(el).selectAll("button").data(chips, c => c.label).join("button")
-    .attr("class", "fchip").html(c => `<b>${c.label}</b><span class="x">×</span>`)
-    .attr("title", "Remove this filter")
+    .attr("class","fchip").html(c => `<b>${c.label}</b><span class="x">×</span>`)
+    .attr("title","Remove this filter")
     .on("click", (ev, c) => c.clear());
 }
 
 /* ================================================================ DASHBOARD 1 */
 const cut1 = () => state.d1.period;
-const abs1 = () => state.d1.metricMode === "absolute";
 
 function renderD1(){
   segControl("#d1-period", PERIODS, PLABEL, state.d1.period, p => setD1({period: p}));
-  segControl("#d1-metric", ["absolute","normalized"],
-    {absolute:"Absolute hours", normalized:"Normalized share"}, state.d1.metricMode,
-    m => setD1({metricMode: m}));
   const chips = [];
-  if (state.d1.selectedGenre)  chips.push({label:`Genre: ${state.d1.selectedGenre}`,  clear: () => setD1({selectedGenre:null})});
+  if (state.d1.selectedFamily) chips.push({label:`Genre: ${state.d1.selectedFamily}`, clear: () => setD1({selectedFamily:null})});
   if (state.d1.selectedArtist) chips.push({label:`Artist: ${state.d1.selectedArtist}`, clear: () => setD1({selectedArtist:null})});
   renderChips("#d1-chips", chips);
-
-  renderD1Kpis(); renderGenres(); renderArtists(); renderOverlap();
+  renderD1Kpis(); renderFamilies(); renderArtists(); renderOverlap();
 }
 d3.select("#d1-reset").on("click", () => setD1({...DEFAULTS.d1}));
 
@@ -384,120 +358,112 @@ function renderD1Kpis(){
     const card = el.append("div").attr("class","kcard");
     card.append("div").attr("class","who")
       .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]} · ${PLABEL[cut1()]}</small>`);
-    const add = (kk, v) => card.append("div").attr("class","krow").html(`<span>${kk}</span><b>${v}</b>`);
-    add("total hours", fm1(k.hours) + " h");
-    add("plays", fm0(k.plays));
-    add("unique artists", fm0(k.unique_artists));
-    add(`top artist · ${trunc(k.top_artist, 16)}`, k.top_artist_share + "% of minutes");
+    const stat = (v, l) => card.append("div").attr("class","stat").html(`<b>${v}</b><span>${l}</span>`);
+    stat(fm0(Math.round(k.hours)) + " h", "hours of music");
+    stat(fm0(k.plays), "plays");
+    stat(fm0(k.unique_artists), "different artists");
+    stat(trunc(k.top_artist, 15), `top artist · ${k.top_artist_share}%`);
   }
 }
 
-/* -------- Chart 1 (hero): genre composition — PAIRED HORIZONTAL BARS ------ */
-function artistGenre(name){
+/* -------- Panel 1 (hero): genre families — PAIRED HORIZONTAL BARS ---------- */
+function artistFamily(name){
   for (const o of OWNERS){
     const r = D.top_artists[cut1()][o].find(a => a.artist === name);
-    if (r) return r.genre;
+    if (r) return r.family;
   }
-  return state.d1.selectedGenre;
+  return state.d1.selectedFamily;
 }
 
-function renderGenres(){
+function renderFamilies(){
   const c = cut1();
-  const echoGenre = state.d1.selectedArtist ? artistGenre(state.d1.selectedArtist) : null;
-  // shared x-domain across both owners so lengths compare fairly
-  const xMax = d3.max(OWNERS, o => d3.max(D.genres[c][o], g => abs1() ? g.minutes : g.pct));
+  const echo = state.d1.selectedArtist ? artistFamily(state.d1.selectedArtist) : null;
+  const xMax = d3.max(OWNERS, o => d3.max(D.families[c][o], g => g.pct));
   for (const o of OWNERS){
-    const host = d3.select(`#genres-${o}`).html("");
-    host.append("h4").html(`${HEB[o]} <span class="kpi">${fm1(D.kpis[c][o].hours)} h in ${PLABEL[c]}</span>`);
-    const rows = D.genres[c][o].filter(g => g.pct >= 0.1);   // drop sub-0.1% noise; "Other" is always large
-    const rowH = 21, barH = 13, mL = 128, w = 520;
-    const x = d3.scaleLinear([0, xMax], [0, w - mL - 62]);
+    const host = d3.select(`#families-${o}`).html("");
+    host.append("h4").attr("class","owner-h")
+      .html(`${HEB[o]} <span class="kpi">${fm0(Math.round(D.kpis[c][o].hours))} h</span>`);
+    const rows = D.families[c][o].filter(g => g.pct >= 0.1);
+    const rowH = 30, barH = 18, mL = 112, w = 330;
+    const x = d3.scaleLinear([0, xMax], [0, w - mL - 56]);
     const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${rows.length * rowH + 4}`).attr("width", w);
     const g = svg.selectAll("g").data(rows).join("g")
-      .attr("transform", (d, i) => `translate(0,${i * rowH + 2})`).attr("class","clickable")
-      .attr("tabindex", -1);
+      .attr("transform", (d, i) => `translate(0,${i * rowH + 2})`).attr("class","clickable");
     g.append("rect").attr("width", w).attr("height", rowH - 1).attr("fill","transparent");
-    g.append("text").attr("class", d => "bar-label" + (d.genre === state.d1.selectedGenre ? " sel" : ""))
-      .attr("x", mL - 9).attr("y", barH).attr("text-anchor","end").text(d => trunc(d.genre, 17));
+    g.append("text").attr("class", d => "bar-label" + (d.family === state.d1.selectedFamily ? " sel" : ""))
+      .attr("x", mL - 9).attr("y", barH - 3).attr("text-anchor","end").text(d => d.family);
     g.append("rect")
-      .attr("x", mL + 2).attr("y", 1.5).attr("height", barH).attr("rx", 3)
-      .attr("width", d => Math.max(1.5, x(abs1() ? d.minutes : d.pct)))
-      .attr("fill", (d, i) => state.d1.selectedGenre && d.genre !== state.d1.selectedGenre
+      .attr("x", mL + 2).attr("y", 2).attr("height", barH).attr("rx", 3)
+      .attr("width", d => Math.max(1.5, x(d.pct)))
+      .attr("fill", (d, i) => state.d1.selectedFamily && d.family !== state.d1.selectedFamily
         ? "var(--muted)" : ownerShade(o, i, rows.length))
-      .attr("stroke", d => d.genre === state.d1.selectedGenre ? "#FFF"
-        : d.genre === echoGenre ? "#C9C9D6" : "none")
-      .attr("stroke-dasharray", d => d.genre === echoGenre && d.genre !== state.d1.selectedGenre ? "3 2" : null);
+      .attr("stroke", d => d.family === state.d1.selectedFamily ? "#FFF"
+        : d.family === echo ? "#C9C9D6" : "none")
+      .attr("stroke-dasharray", d => d.family === echo && d.family !== state.d1.selectedFamily ? "3 2" : null);
     g.append("text").attr("class","val")
-      .attr("x", d => mL + 8 + Math.max(1.5, x(abs1() ? d.minutes : d.pct))).attr("y", barH)
-      .text(d => abs1() ? fmin(d.minutes) : fm1(d.pct) + "%");
-    g.on("click", (ev, d) => setD1({selectedGenre: state.d1.selectedGenre === d.genre ? null : d.genre}))
+      .attr("x", d => mL + 8 + Math.max(1.5, x(d.pct))).attr("y", barH - 3)
+      .text(d => fm1(d.pct) + "%");
+    g.on("click", (ev, d) => setD1({selectedFamily: state.d1.selectedFamily === d.family ? null : d.family}))
      .on("mouseover", function(ev, d){
         g.attr("opacity", r => r === d ? 1 : .38);
-        showTip(ev, `<div class="t">${d.genre}</div>${fmin(d.minutes)} · <span class="num">${d.pct}%</span> of ${HEB[o]}'s minutes<br>Top artist: ${d.top_artist}`);
+        showTip(ev, `<div class="t">${d.family}</div>${fmin(d.minutes)} · <span class="num">${d.pct}%</span> of ${HEB[o]}'s music<br>Most played: ${d.top_artist}`);
       })
      .on("mousemove", moveTip)
      .on("mouseout", () => { g.attr("opacity", 1); hideTip(); });
   }
-  // takeaway from the two biggest non-Other genres per owner (Other is a bucket, not a genre)
-  const tops = o => D.genres[cut1()][o].filter(g => g.genre !== "Other").slice(0, 2).map(g => g.genre).join(" / ");
-  const otherPct = o => D.genres[cut1()][o].find(g => g.genre === "Other")?.pct ?? 0;
-  d3.select("#t-genres").html(
-    `Two separate worlds: ${HEB.Or} lives in ${tops("Or")}; ${HEB.Roman} in ${tops("Roman")} — the lists barely touch.
-     The external tag's long tail (“Other”) is <span class="num">${otherPct("Or")}%</span> / <span class="num">${otherPct("Roman")}%</span>.`);
+  const top2 = o => D.families[c][o].filter(g => g.family !== "Other").slice(0, 2).map(g => g.family).join(" and ");
+  const oth = o => D.families[c][o].find(g => g.family === "Other")?.pct ?? 0;
+  d3.select("#t-families").html(
+    `${HEB.Or}'s world is ${top2("Or")}; ${HEB.Roman}'s is ${top2("Roman")}, wall to wall.
+     The <span class="num">${oth("Or")}%</span> / <span class="num">${oth("Roman")}%</span> “Other” is music the external tags couldn't name.`);
 }
 
-/* -------- Chart 2: top-artist dominance — DOT-PLOT / LOLLIPOP -------------- */
-/* One dot per artist on a shared % axis; deliberately NOT bars (chart 1 owns that shape). */
+/* -------- Panel 2: obsessions — DOT-PLOT / LOLLIPOP ------------------------ */
 function renderArtists(){
-  const c = cut1(), genre = state.d1.selectedGenre;
+  const c = cut1(), family = state.d1.selectedFamily;
+  const xMax = d3.max(OWNERS, ow => {
+    const l = family ? (D.family_artists[c][ow][family] || []) : D.top_artists[c][ow].slice(0, 10);
+    return d3.max(l, r => r.minutes) || 0;
+  });
   for (const o of OWNERS){
     const host = d3.select(`#artists-${o}`).html("");
-    const list = genre ? (D.genre_artists[c][o][genre] || []).slice(0, 8)
-                       : D.top_artists[c][o].slice(0, 10);
-    const kpi = genre
-      ? `top ${genre} artists · ${fm1(d3.sum(list, r => r.share))}% of minutes`
-      : `top-10 cover ${D.kpis[c][o].top10_share}% of listening`;
-    host.append("h4").html(`${HEB[o]} <span class="kpi">${kpi}</span>`);
+    const list = family ? (D.family_artists[c][o][family] || []).slice(0, 8)
+                        : D.top_artists[c][o].slice(0, 10);
+    const kpi = family ? `their ${family} corner` : `top 10 = ${D.kpis[c][o].top10_share}% of everything`;
+    host.append("h4").attr("class","owner-h").html(`${HEB[o]} <span class="kpi">${kpi}</span>`);
     if (!list.length){
-      host.append("p").attr("class","caveat").text(`No ${genre} artists in ${HEB[o]}'s ${PLABEL[c]} listening.`);
+      host.append("p").attr("class","hint").text(`${HEB[o]} has no ${family} in this period.`);
       continue;
     }
-    const xMax = d3.max(OWNERS, ow => {
-      const l = genre ? (D.genre_artists[c][ow][genre] || []) : D.top_artists[c][ow].slice(0, 10);
-      return d3.max(l, r => abs1() ? r.minutes : r.share) || 0;
-    });
-    const rowH = 24, mL = 128, w = 520;
-    const x = d3.scaleLinear([0, xMax], [mL + 4, w - 66]);
+    const rowH = 23, mL = 118, w = 440;
+    const x = d3.scaleLinear([0, xMax], [mL + 4, w - 70]);
     const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${list.length * rowH + 6}`).attr("width", w);
     const g = svg.selectAll("g").data(list).join("g")
       .attr("class","clickable").attr("data-artist", d => d.artist)
       .attr("transform", (d, i) => `translate(0,${i * rowH + rowH / 2})`);
-    g.append("rect").attr("x", 0).attr("y", -rowH / 2).attr("width", w).attr("height", rowH).attr("fill","transparent");
+    const dim = d => state.d1.selectedArtist && d.artist !== state.d1.selectedArtist;
+    g.append("rect").attr("y", -rowH / 2).attr("width", w).attr("height", rowH).attr("fill","transparent");
     g.append("text").attr("class", d => "bar-label" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
-      .attr("x", mL - 9).attr("y", 4).attr("text-anchor","end").text(d => trunc(d.artist, 17));
-    const v = d => abs1() ? d.minutes : d.share;
-    const dimmed = d => state.d1.selectedArtist && d.artist !== state.d1.selectedArtist;
-    g.append("line")                                    // lollipop stem
-      .attr("x1", x(0)).attr("x2", d => x(v(d))).attr("y1", 0).attr("y2", 0)
-      .attr("stroke", d => dimmed(d) ? "var(--muted)" : COLOR[o]).attr("stroke-width", 2)
-      .attr("opacity", .55);
-    g.filter(d => d.shared).append("circle")            // ring = present in the OTHER history
-      .attr("cx", d => x(v(d))).attr("r", 8.5)
+      .attr("x", mL - 9).attr("y", 4).attr("text-anchor","end").text(d => trunc(d.artist, 16));
+    g.append("line")                                   // lollipop stem
+      .attr("x1", x(0)).attr("x2", d => x(d.minutes)).attr("y1", 0).attr("y2", 0)
+      .attr("stroke", d => dim(d) ? "var(--muted)" : COLOR[o]).attr("stroke-width", 2).attr("opacity", .55);
+    g.filter(d => d.shared).append("circle")           // ring = the other one plays them too
+      .attr("cx", d => x(d.minutes)).attr("r", 8)
       .attr("fill","none").attr("stroke", d => COLOR[OTHER_OF[o]]).attr("stroke-width", 1.3);
-    g.append("circle")                                  // the dot itself
-      .attr("cx", d => x(v(d))).attr("r", 5)
-      .attr("fill", d => dimmed(d) ? "var(--muted)" : COLOR[o])
+    g.append("circle")
+      .attr("cx", d => x(d.minutes)).attr("r", 4.8)
+      .attr("fill", d => dim(d) ? "var(--muted)" : COLOR[o])
       .attr("stroke", d => d.artist === state.d1.selectedArtist ? "#FFF" : "var(--panel)")
       .attr("stroke-width", d => d.artist === state.d1.selectedArtist ? 1.6 : 1);
     g.append("text").attr("class","val")
-      .attr("x", d => x(v(d)) + 12).attr("y", 4)
-      .text(d => abs1() ? fmin(d.minutes) : fm1(d.share) + "%");
+      .attr("x", d => x(d.minutes) + 11).attr("y", 4).text(d => fmin(d.minutes));
     g.on("click", (ev, d) => setD1({selectedArtist: state.d1.selectedArtist === d.artist ? null : d.artist}))
      .on("mouseover", function(ev, d){
         highlightArtist(d.artist);
-        showTip(ev, `<div class="t">${d.artist}</div>${fmin(d.minutes)} · <span class="num">${d.share}%</span> of ${HEB[o]}'s minutes`
+        showTip(ev, `<div class="t">${d.artist}</div>${fmin(d.minutes)} · <span class="num">${d.share}%</span> of ${HEB[o]}'s music`
           + (d.plays ? `<br>${fm0(d.plays)} plays` : "")
-          + (d.shared ? `<br>Also in ${HEB[OTHER_OF[o]]}'s history` : ""));
+          + (d.shared ? `<br>${HEB[OTHER_OF[o]]} plays them too` : ""));
       })
      .on("mousemove", moveTip)
      .on("mouseout", () => { highlightArtist(null); hideTip(); });
@@ -506,9 +472,9 @@ function renderArtists(){
   const k = D.kpis[cut1()];
   const lead = k.Roman.top_artist_share >= k.Or.top_artist_share ? "Roman" : "Or";
   d3.select("#t-artists").html(
-    `${HEB[lead]} is the more locked-in listener: one artist alone is <span class="num">${k[lead].top_artist_share}%</span>
-     of ${HEB[lead]}'s minutes, vs <span class="num">${k[OTHER_OF[lead]].top_artist_share}%</span> for ${HEB[OTHER_OF[lead]]}.
-     Concentration is behavior, not just taste — and the outlier is the finding, not noise.`);
+    `${trunc(k[lead].top_artist, 20)} alone is <span class="num">${k[lead].top_artist_share}%</span> of everything
+     ${HEB[lead]} plays — ${HEB[OTHER_OF[lead]]}'s biggest, ${trunc(k[OTHER_OF[lead]].top_artist, 20)}, takes
+     <span class="num">${k[OTHER_OF[lead]].top_artist_share}%</span>.`);
 }
 
 /* hover cross-highlight: dim every artist mark in dashboard 1 except the hovered name */
@@ -522,9 +488,9 @@ function findArtist(owner, name){
   const c = cut1();
   const full = D.top_artists[c][owner].find(a => a.artist === name);
   if (full) return full;
-  for (const g in D.genre_artists[c][owner]){
-    const r = D.genre_artists[c][owner][g].find(a => a.artist === name);
-    if (r) return {...r, genre: g};
+  for (const f in D.family_artists[c][owner]){
+    const r = D.family_artists[c][owner][f].find(a => a.artist === name);
+    if (r) return {...r, family: f};
   }
   const s = D.shared.top_shared[c].find(a => a.artist === name);
   if (s){
@@ -539,14 +505,13 @@ function renderArtistDetail(){
   if (!state.d1.selectedArtist){ el.classed("show", false); return; }
   const name = state.d1.selectedArtist;
   const recs = OWNERS.map(o => [o, findArtist(o, name)]).filter(([, r]) => r);
-  const genre = artistGenre(name);
-  let html = `<b>${name}</b> <span style="color:var(--ink2)">· ${genre || "genre unknown"} ·
-    ${recs.length === 2 ? "in both histories" : recs.length ? `only in ${HEB[recs[0][0]]}'s history` : "not in this period"}</span>
+  const family = artistFamily(name);
+  let html = `<b>${name}</b> <span style="color:var(--ink2)">· ${family || "family unknown"} ·
+    ${recs.length === 2 ? "in both worlds" : recs.length ? `only ${HEB[recs[0][0]]}'s` : "not in this period"}</span>
     <div class="cols">`;
   for (const [o, r] of recs){
     html += `<table><tr><td colspan="2" style="color:${COLOR[o]};font-weight:700">${HEB[o]}</td></tr>
-      <tr><td>minutes</td><td class="num">${fmin(r.minutes)}</td></tr>
-      ${r.share != null ? `<tr><td>share</td><td class="num">${r.share}%</td></tr>` : ""}
+      <tr><td>listened</td><td class="num">${fmin(r.minutes)}</td></tr>
       ${r.plays != null ? `<tr><td>plays</td><td class="num">${fm0(r.plays)}</td></tr>` : ""}
       ${r.first_played ? `<tr><td>first / last</td><td class="num">${r.first_played} → ${r.last_played}</td></tr>` : ""}
       </table>`;
@@ -554,58 +519,50 @@ function renderArtistDetail(){
   el.html(html + "</div>").classed("show", true);
 }
 
-/* -------- Chart 3: shared vs unique — MINUTES-WEIGHTED 100% STRIP ---------- */
-/* Whole-to-part strips, NOT ranked bars and NOT a Venn: each strip is one person's
-   total minutes; in absolute mode strip LENGTH also encodes total volume. */
+/* -------- Panel 3: what we share — MINUTES-WEIGHTED 100% STRIP ------------- */
 function renderOverlap(){
   const c = cut1();
   const host = d3.select("#overlap-strips").html("");
-  const w = 560, rowH = 64, barH = 26, mT = 8;
+  const w = 560, rowH = 62, barH = 26, mT = 6;
   const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${OWNERS.length * rowH + mT}`).style("width","100%");
-  const maxMin = d3.max(OWNERS, o => D.kpis[c][o].hours * 60);
   OWNERS.forEach((o, i) => {
     const totalMin = D.kpis[c][o].hours * 60;
     const sharedPct = D.shared.pct_minutes[c][o];
-    const stripW = abs1() ? (w - 4) * totalMin / maxMin : w - 4;   // absolute: length = volume
-    const sharedW = stripW * sharedPct / 100;
+    const stripW = w - 4, sharedW = stripW * sharedPct / 100;
     const y = mT + i * rowH;
     const g = svg.append("g");
     g.append("text").attr("x", 0).attr("y", y + 12).style("font-weight", 700)
       .attr("fill", COLOR[o]).text(HEB[o]);
-    g.append("text").attr("class","val").attr("x", 40).attr("y", y + 12)
-      .text(abs1() ? `${fm1(totalMin / 60)} h total` : "100% of own minutes");
-    // shared segment (owner hue) then unique segment (muted) — 2px gap between them
+    g.append("text").attr("class","val").attr("x", 42).attr("y", y + 12)
+      .text("all of my listening, minute by minute");
     g.append("rect").attr("x", 2).attr("y", y + 18).attr("width", Math.max(1.5, sharedW - 1))
       .attr("height", barH).attr("rx", 3).attr("fill", COLOR[o])
-      .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — shared</div>
-        <span class="num">${sharedPct}%</span> of minutes · ${fmin(totalMin * sharedPct / 100)}<br>
-        on the ${D.shared.count} artists both histories contain`))
+      .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — music we share</div>
+        <span class="num">${sharedPct}%</span> of ${HEB[o]}'s minutes · ${fmin(totalMin * sharedPct / 100)}<br>
+        on the ${D.shared.count} artists both really play`))
       .on("mouseout", hideTip);
     g.append("rect").attr("x", 2 + sharedW + 1).attr("y", y + 18)
       .attr("width", Math.max(1.5, stripW - sharedW - 1)).attr("height", barH).attr("rx", 3)
-      .attr("fill", "var(--muted)")
-      .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — unique</div>
-        <span class="num">${fm1(100 - sharedPct)}%</span> of minutes · ${fmin(totalMin * (100 - sharedPct) / 100)}<br>
-        on artists ${HEB[OTHER_OF[o]]} never played`))
+      .attr("fill","var(--muted)")
+      .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — mine alone</div>
+        <span class="num">${fm1(100 - sharedPct)}%</span> of ${HEB[o]}'s minutes · ${fmin(totalMin * (100 - sharedPct) / 100)}<br>
+        on artists ${HEB[OTHER_OF[o]]} never really plays`))
       .on("mouseout", hideTip);
-    // direct labels: "shared X%" inside its own segment when it fits, else just after the split
-    const labelFits = sharedW > 96;
+    const fits = sharedW > 96;
     g.append("text").attr("class","val").style("font-weight", 600)
-      .style("fill", labelFits ? "#0D0D12" : "var(--ink)")
-      .attr("x", labelFits ? 2 + sharedW - 8 : 2 + sharedW + 7)
-      .attr("text-anchor", labelFits ? "end" : "start")
-      .attr("y", y + 35)
+      .style("fill", fits ? "#0D0D12" : "var(--ink)")
+      .attr("x", fits ? 2 + sharedW - 8 : 2 + sharedW + 7)
+      .attr("text-anchor", fits ? "end" : "start").attr("y", y + 35)
       .text(`shared ${fm1(sharedPct)}%`);
     if (stripW - sharedW > 90)
       g.append("text").attr("class","val").attr("x", 2 + stripW - 6).attr("y", y + 35)
-        .attr("text-anchor","end").text("unique");
+        .attr("text-anchor","end").text("mine alone");
   });
 
-  // shared-artist table: names + per-owner minutes (mono numbers, no extra chart shape)
   const rows = D.shared.top_shared[c].filter(s => s.or_minutes > 0 || s.roman_minutes > 0);
   const tbl = d3.select("#shared-table").html("");
   const t = tbl.append("table");
-  t.append("tr").html(`<th>top shared artists — ${PLABEL[c]}</th>
+  t.append("tr").html(`<th>the music we share — ${PLABEL[c]}</th>
     <th style="color:${COLOR.Or}">אור</th><th style="color:${COLOR.Roman}">רומן</th>`);
   const tr = t.selectAll("tr.row").data(rows).join("tr")
     .attr("class", d => "row clickable" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
@@ -614,101 +571,82 @@ function renderOverlap(){
     .on("mousemove", (ev, d) => showTip(ev, `<div class="t">${d.artist}</div>
       אור: <span class="num">${fmin(d.or_minutes)}</span><br>רומן: <span class="num">${fmin(d.roman_minutes)}</span>`))
     .on("mouseout", hideTip);
+  // "—" = shared overall, but this side didn't touch them in THIS period
+  const cell = m => m >= 1 ? fmin(m) : m > 0 ? "<1 min" : "—";
   tr.append("td").text(d => d.artist);
-  tr.append("td").text(d => fmin(d.or_minutes));
-  tr.append("td").text(d => fmin(d.roman_minutes));
+  tr.append("td").text(d => cell(d.or_minutes));
+  tr.append("td").text(d => cell(d.roman_minutes));
 
   const p = D.shared.pct_minutes[c];
   d3.select("#t-overlap").html(
-    `The overlap is one-directional: <span class="num">${p.Or}%</span> of ${HEB.Or}'s minutes are on shared artists,
-     but only <span class="num">${p.Roman}%</span> of ${HEB.Roman}'s — רומן's wide exploration brushes past
-     אור's world, while רומן's metal core never enters it.`);
-}
-
-/* ================================================================ BRIDGE */
-function renderBridge(){
-  const ch = D.change, p = D.shared.pct_minutes.all;
-  const seg = o => {
-    const a = ch[o].pre_uni.avg_monthly_hours, b = ch[o].university.avg_monthly_hours;
-    return `${HEB[o]}'s listening ${b > a ? "rose" : "eased"} from <span class="num">${a}</span> to <span class="num">${b}</span> h/month`;
-  };
-  d3.select("#bridge").html(
-    `Taste says they are strangers — only <span class="num">${p.Roman}%</span> of רומן's listening time touches
-     אור's world. Routine tells another story. Then university happened: ${seg("Roman")}, while ${seg("Or")}.
-     The second dashboard follows that shift.`);
+    `It only flows one way: <span class="num">${p.Or}%</span> of ${HEB.Or}'s listening is artists ${HEB.Roman}
+     also plays — but just <span class="num">${p.Roman}%</span> of ${HEB.Roman}'s comes back the other way.`);
 }
 
 /* ================================================================ DASHBOARD 2 */
-const abs2 = () => state.d2.metricMode === "absolute";
 const parseYM = d3.timeParse("%Y-%m");
 
 function renderD2(){
-  segControl("#d2-period", [...PERIODS, "difference"], PLABEL, state.d2.period, p => setD2({period: p}));
-  segControl("#d2-metric", ["absolute","normalized"],
-    {absolute:"Absolute", normalized:"Normalized share"}, state.d2.metricMode,
-    m => setD2({metricMode: m}));
+  segControl("#d2-period", PERIODS, PLABEL, state.d2.period, p => setD2({period: p}));
   const chips = [];
   if (state.d2.selectedWindow){
     const {weekday, hour} = state.d2.selectedWindow;
-    chips.push({label:`Window: ${WD3[weekday]} ${hour}:00`, clear: () => setD2({selectedWindow:null})});
+    chips.push({label:`Window: ${WD3[weekday]} ${fhour(hour)}`, clear: () => setD2({selectedWindow:null})});
   }
   renderChips("#d2-chips", chips);
-
-  renderD2Kpis(); renderMonthly(); renderHeatmaps(); renderWindowPanel(); renderChange();
+  renderD2Kpis(); renderBridge(); renderMonthly(); renderHeatmaps(); renderWindowPanel(); renderHistograms();
 }
 d3.select("#d2-reset").on("click", () => setD2({...DEFAULTS.d2}));
 
 function renderD2Kpis(){
-  const el = d3.select("#d2-kpis").html("");
+  const el = d3.select("#d2-kpis").html(""), p = state.d2.period;
   for (const o of OWNERS){
-    const card = el.append("div").attr("class", `kcard ow-${o}`);
+    const k = D.kpis[p][o];
+    const card = el.append("div").attr("class","kcard");
     card.append("div").attr("class","who")
-      .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]}</small>`);
-    const add = (k, v) => card.append("div").attr("class","krow").html(`<span>${k}</span><b>${v}</b>`);
-    if (state.d2.period === "difference"){
-      const ch = D.change[o], k = D.kpis;
-      add("Δ avg monthly hours", sg1(ch.university.avg_monthly_hours - ch.pre_uni.avg_monthly_hours) + " h/mo");
-      add("Δ short plays (<30s)", sg1(ch.university.under_30s_pct - ch.pre_uni.under_30s_pct) + " pp");
-      add("Δ top-artist share", sg1(k.university[o].top_artist_share - k.pre_uni[o].top_artist_share) + " pp");
-    } else {
-      const k = D.kpis[state.d2.period][o], ch = D.change[o][state.d2.period];
-      add(`hours in ${PLABEL[state.d2.period]}`, fm1(k.hours) + " h");
-      add("avg monthly hours", fm1(ch.avg_monthly_hours) + " h/mo");
-      add("short plays (<30s)", k.under_30s_pct + "%");
-      add(`top artist · ${trunc(k.top_artist, 14)}`, k.top_artist_share + "%");
-    }
+      .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]} · ${PLABEL[p]}</small>`);
+    const stat = (v, l) => card.append("div").attr("class","stat").html(`<b>${v}</b><span>${l}</span>`);
+    stat(fm1(D.change[o][p].avg_monthly_hours) + " h", "per month");
+    stat(`${fm0(k.active_days)} <span style="font-size:11px;color:var(--ink2)">of ${fm0(D.meta.period_days[p])}</span>`, "days with music");
+    stat(fhour(k.peak_hour), "peak hour");
   }
 }
 
-/* -------- Chart 4 (hero): monthly intensity — MIRRORED AREA "waveform" ---- */
-/* The signature: mirrored area + one vertical grain line per real month, so the
-   chart reads like an audio waveform while every mark still encodes data. */
+function renderBridge(){
+  const ch = D.change, k = D.kpis;
+  const seg = o => {
+    const a = ch[o].pre_uni.avg_monthly_hours, b = ch[o].university.avg_monthly_hours;
+    return `${HEB[o]}'s months ${b > a ? "swelled" : "eased"} from <span class="num">${a}</span> to <span class="num">${b}</span> hours of music`;
+  };
+  const ph = o => [k.pre_uni[o].peak_hour, k.university[o].peak_hour];
+  const [ra, rb] = ph("Roman");
+  const drift = ra === rb ? "" :
+    ` — and רומן's day shifted ${rb > ra ? "later" : "earlier"}, peak hour <span class="num">${fhour(ra)} → ${fhour(rb)}</span>`;
+  d3.select("#bridge").html(`Then university happened. ${seg("Roman")}, while ${seg("Or")}${drift}.`);
+}
+
+/* -------- Panel 4 (hero): whole-span mirrored area "waveform" -------------- */
+/* The page's one signature: mirrored area + one vertical grain line per real
+   month, so it reads like a waveform while every mark encodes actual hours.
+   This panel deliberately ignores the period filter — it is the overview. */
 function renderMonthly(){
   const el = d3.select("#monthly-chart").html("");
-  const w = 1120, h = 330, mL = 52, mR = 14, mT = 20, mB = 26;
+  const w = 1120, h = 320, mL = 52, mR = 14, mT = 20, mB = 26;
   const svg = el.append("svg").attr("viewBox", `0 0 ${w} ${h}`).style("width","100%");
   const months = D.monthly.Or.map(d => d.ym);
-  const total = {}, byYM = {};
-  for (const o of OWNERS){
-    total[o] = d3.sum(D.monthly[o], d => d.hours);
-    byYM[o] = new Map(D.monthly[o].map(d => [d.ym, d]));
-  }
-  const val = (o, ym) => {
-    const d = byYM[o].get(ym); if (!d) return 0;
-    return abs2() ? d.hours : d.hours / total[o] * 100;   // normalized = % of that owner's window total
-  };
+  const byYM = {};
+  for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map(d => [d.ym, d]));
+  const val = (o, ym) => byYM[o].get(ym)?.hours ?? 0;
   const x = d3.scaleTime([parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)], [mL, w - mR]);
   const yMax = d3.max(OWNERS, o => d3.max(months, ym => val(o, ym))) * 1.05;
-  const y = d3.scaleLinear([-yMax, yMax], [h - mB, mT]);   // Or up, Roman down, 0 in the middle
+  const y = d3.scaleLinear([-yMax, yMax], [h - mB, mT]);
 
-  // neutral period bands; the selected period is gently lit
   const uniX = x(parseYM(UNI_START.slice(0, 7)));
   for (const [p, x0, x1] of [["pre_uni", mL, uniX], ["university", uniX, w - mR]]){
     svg.append("rect").attr("x", x0).attr("y", mT).attr("width", x1 - x0).attr("height", h - mT - mB)
-      .attr("fill", state.d2.period === p ? "rgba(255,255,255,.045)" : "transparent");
+      .attr("fill", p === "university" ? "rgba(255,255,255,.035)" : "transparent");
     svg.append("text").attr("x", x0 + 8).attr("y", mT + 13).attr("class","val")
-      .style("text-transform","uppercase").style("letter-spacing","1px")
-      .text(PLABEL[p]).attr("opacity", state.d2.period === p ? 1 : .55);
+      .style("text-transform","uppercase").style("letter-spacing","1px").text(PLABEL[p]);
   }
   svg.append("line").attr("x1", uniX).attr("x2", uniX).attr("y1", mT).attr("y2", h - mB)
     .attr("stroke","#8888A0").attr("stroke-dasharray","4 3");
@@ -716,12 +654,12 @@ function renderMonthly(){
 
   for (const o of OWNERS){
     const sign = o === "Or" ? 1 : -1;
-    svg.append("path").datum(months).attr("class", `ow-${o}`)   // the mirrored area itself
+    svg.append("path").datum(months)
       .attr("d", d3.area().x(ym => x(parseYM(ym))).y0(y(0))
         .y1(ym => y(sign * val(o, ym))).curve(d3.curveMonotoneX))
       .attr("fill", COLOR[o]).attr("fill-opacity", .42)
       .attr("stroke", COLOR[o]).attr("stroke-width", 1.5);
-    svg.append("g").attr("class", `ow-${o}`).selectAll("line")  // waveform grain: one tick per real month
+    svg.append("g").selectAll("line")                  // waveform grain: one tick per month
       .data(months.filter(ym => val(o, ym) > 0)).join("line")
       .attr("x1", ym => x(parseYM(ym))).attr("x2", ym => x(parseYM(ym)))
       .attr("y1", y(0)).attr("y2", ym => y(sign * val(o, ym)))
@@ -730,7 +668,7 @@ function renderMonthly(){
   svg.append("line").attr("x1", mL).attr("x2", w - mR).attr("y1", y(0)).attr("y2", y(0))
     .attr("stroke","var(--border)");
   svg.append("g").attr("class","axis").attr("transform", `translate(${mL},0)`)
-    .call(d3.axisLeft(y).ticks(7).tickFormat(t => fm0(Math.abs(t)) + (abs2() ? " h" : "%")));
+    .call(d3.axisLeft(y).ticks(7).tickFormat(t => fm0(Math.abs(t)) + " h"));
   svg.append("g").attr("class","axis").attr("transform", `translate(0,${h - mB})`)
     .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
   svg.append("text").attr("x", mL + 8).attr("y", y(yMax * .8)).attr("fill", COLOR.Or)
@@ -738,7 +676,6 @@ function renderMonthly(){
   svg.append("text").attr("x", mL + 8).attr("y", y(-yMax * .8)).attr("fill", COLOR.Roman)
     .style("font-weight", 700).text("רומן");
 
-  // crosshair + month tooltip
   const cross = svg.append("line").attr("y1", mT).attr("y2", h - mB)
     .attr("stroke","#C9C9D6").attr("stroke-width", .7).style("display","none");
   svg.append("rect").attr("x", mL).attr("y", mT).attr("width", w - mL - mR).attr("height", h - mT - mB)
@@ -757,26 +694,28 @@ function renderMonthly(){
 
   const ch = D.change;
   d3.select("#t-monthly").html(
-    `${HEB.Roman}'s volume ${ch.Roman.university.avg_monthly_hours > ch.Roman.pre_uni.avg_monthly_hours ? "roughly doubled" : "changed"}
-     after 2024-01 (<span class="num">${ch.Roman.pre_uni.avg_monthly_hours} → ${ch.Roman.university.avg_monthly_hours} h/mo</span>),
-     while ${HEB.Or}'s ${ch.Or.university.avg_monthly_hours < ch.Or.pre_uni.avg_monthly_hours ? "eased" : "grew"}
-     (<span class="num">${ch.Or.pre_uni.avg_monthly_hours} → ${ch.Or.university.avg_monthly_hours} h/mo</span>).`);
+    `University turned ${HEB.Roman}'s volume ${ch.Roman.university.avg_monthly_hours > ch.Roman.pre_uni.avg_monthly_hours ? "up" : "down"}
+     (<span class="num">${ch.Roman.pre_uni.avg_monthly_hours} → ${ch.Roman.university.avg_monthly_hours} h/month</span>)
+     and ${HEB.Or}'s ${ch.Or.university.avg_monthly_hours < ch.Or.pre_uni.avg_monthly_hours ? "down" : "up"}
+     (<span class="num">${ch.Or.pre_uni.avg_monthly_hours} → ${ch.Or.university.avg_monthly_hours}</span>).`);
 }
 
-/* -------- Chart 5: routine — HOUR × WEEKDAY HEATMAP (2×2, readable cells) -- */
+/* -------- Panel 5: routine — HOUR × WEEKDAY HEATMAP (selected period) ------ */
 function renderHeatmaps(){
   const grid = d3.select("#heatmaps").html("");
-  const metric = d => abs2() ? d.plays : d.pct;
-  // one shared scale across all four maps so colors compare fairly
-  const max = d3.max(PERIODS, p => d3.max(OWNERS, o => d3.max(D.heatmap[p][o], metric)));
-  const cw = 24, chh = 15, mLh = 34, mTh = 34;
+  const p = state.d2.period;
+  // fixed max across BOTH owners and BOTH periods, so flipping the filter compares honestly
+  const max = d3.max(PERIODS, pp => d3.max(OWNERS, o => d3.max(D.heatmap[pp][o], d => d.plays)));
+  const cw = 26, chh = 15.5, mLh = 40, mTh = 32;
+  const W = mLh + 7 * cw + 4, H = mTh + 24 * chh + 4;
 
-  for (const o of OWNERS) for (const p of PERIODS){
-    const showHours = p === "pre_uni";                       // hour labels on the left column only
-    const W = mLh + 7 * cw + 4, H = mTh + 24 * chh + 4;
-    const cell = grid.append("div").attr("class", `ow-${o}`)
-      .style("opacity", state.d2.period !== "difference" && state.d2.period !== p ? .35 : 1);
-    const svg = cell.append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", W);
+  for (const o of OWNERS){
+    const lookup = new Map(D.heatmap[p][o].map(d => [`${d.weekday}|${d.hour}`, d.plays]));
+    // full 7x24 grid so empty cells are drawn (visible floor + grid, not a hole)
+    const cells = WEEKDAYS.flatMap(wd => d3.range(24).map(hr =>
+      ({weekday: wd, hour: hr, plays: lookup.get(`${wd}|${hr}`) || 0})));
+    const box = grid.append("div");
+    const svg = box.append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", W);
     svg.append("text").attr("x", mLh).attr("y", 12).style("font","600 12px var(--display)")
       .attr("fill", COLOR[o]).text(`${HEB[o]} · ${PLABEL[p]}`);
     svg.selectAll(".wdl").data(WEEKDAYS).join("text").attr("class","val wdl")
@@ -784,19 +723,19 @@ function renderHeatmaps(){
       .attr("x", d => mLh + WEEKDAYS.indexOf(d) * cw + cw / 2).attr("y", mTh - 6)
       .attr("text-anchor","middle").style("font-size","9px").text(d => WD3[d])
       .on("mouseover", (ev, d) => hoverWD(d)).on("mouseout", () => hoverWD(null));
-    if (showHours)
-      svg.selectAll(".hrl").data([0, 6, 12, 18]).join("text").attr("class","val")
-        .attr("x", mLh - 5).attr("y", d => mTh + d * chh + 11).attr("text-anchor","end")
-        .style("font-size","9px").text(d => d + ":00");
-    const ramp = heatRamp(o);
-    svg.selectAll(".hm-cell").data(D.heatmap[p][o]).join("rect")
+    svg.selectAll(".hrl").data([0, 6, 12, 18]).join("text").attr("class","val")
+      .attr("x", mLh - 5).attr("y", d => mTh + d * chh + 11).attr("text-anchor","end")
+      .style("font-size","9px").text(fhour);
+    const ramp = d3.interpolateLab("#242634", COLOR[o]);   // visible floor, not the page bg
+    svg.selectAll(".hm-cell").data(cells).join("rect")
       .attr("class","hm-cell clickable").attr("data-wd", d => d.weekday)
       .attr("x", d => mLh + WEEKDAYS.indexOf(d.weekday) * cw).attr("y", d => mTh + d.hour * chh)
-      .attr("width", cw - 2).attr("height", chh - 2).attr("rx", 2)
-      .attr("fill", d => ramp(metric(d) / max))
+      .attr("width", cw - 1).attr("height", chh - 1).attr("rx", 2)
+      .attr("fill", d => d.plays > 0 ? ramp(d.plays / max) : "none")
       .attr("stroke", d => state.d2.selectedWindow && d.weekday === state.d2.selectedWindow.weekday
-          && d.hour === state.d2.selectedWindow.hour ? "#FFF" : "none")
-      .attr("stroke-width", 1.3)
+          && d.hour === state.d2.selectedWindow.hour ? "#FFF" : "var(--border)")
+      .attr("stroke-width", d => state.d2.selectedWindow && d.weekday === state.d2.selectedWindow.weekday
+          && d.hour === state.d2.selectedWindow.hour ? 1.4 : .5)
       .on("click", (ev, d) => {
         const s = state.d2.selectedWindow;
         setD2({selectedWindow: s && s.weekday === d.weekday && s.hour === d.hour
@@ -805,26 +744,25 @@ function renderHeatmaps(){
       .on("mouseover", function(ev, d){
         hoverWD(d.weekday);
         showTip(ev, `<div class="t">${HEB[o]} · ${PLABEL[p]}</div>${WD3[d.weekday]}
-          <span class="num">${d.hour}:00–${d.hour + 1}:00</span><br>
-          <span class="num">${fm0(d.plays)}</span> plays · <span class="num">${d.pct}%</span> of this routine`);
+          <span class="num">${d.hour}:00–${d.hour + 1}:00</span><br><span class="num">${fm0(d.plays)}</span> plays`);
       })
       .on("mousemove", moveTip)
       .on("mouseout", () => { hoverWD(null); hideTip(); });
   }
 
-  // takeaway: each owner's single busiest window per period, straight from the cells
-  const peak = (p, o) => {
-    const best = D.heatmap[p][o].reduce((a, b) => b.plays > a.plays ? b : a);
-    return `${WD3[best.weekday]} ${best.hour}:00`;
-  };
+  // phrase the comparison in the right direction: pre-uni looks forward, university looks back
+  const other = p === "pre_uni" ? "university" : "pre_uni";
   const line = o => {
-    const a = peak("pre_uni", o), b = peak("university", o);
-    return `${HEB[o]}'s busiest hour ${a === b ? `stayed at <span class="num">${a}</span>` : `moved from <span class="num">${a}</span> to <span class="num">${b}</span>`}`;
+    const a = D.kpis[other][o].peak_hour, b = D.kpis[p][o].peak_hour;
+    if (a === b) return `${HEB[o]} peaks at <span class="num">${fhour(b)}</span> in both eras`;
+    return p === "pre_uni"
+      ? `${HEB[o]} peaks at <span class="num">${fhour(b)}</span> (becomes <span class="num">${fhour(a)}</span> at university)`
+      : `${HEB[o]} peaks at <span class="num">${fhour(b)}</span> (was <span class="num">${fhour(a)}</span> pre-uni)`;
   };
   d3.select("#t-routine").html(`${line("Or")}; ${line("Roman")}.`);
 }
-function hoverWD(wd){   // weekday column highlight across all four maps
-  d3.selectAll(".hm-cell").attr("opacity", d => !wd || d.weekday === wd ? 1 : .3);
+function hoverWD(wd){
+  d3.selectAll(".hm-cell").attr("opacity", d => !wd || d.weekday === wd ? 1 : .35);
   d3.selectAll(".wdl").style("font-weight", function(){ return this.dataset.wd === wd ? 700 : 400; })
     .style("fill", function(){ return this.dataset.wd === wd ? "var(--ink)" : null; });
 }
@@ -832,143 +770,93 @@ function hoverWD(wd){   // weekday column highlight across all four maps
 function renderWindowPanel(){
   const el = d3.select("#window-panel");
   if (!state.d2.selectedWindow){
-    el.html(`<p class="hint">Click any heatmap cell to open that time window: who listens more in it,
-      and what actually plays there (top artists &amp; genres).</p>`);
+    el.html(`<p class="hint">Click any cell to open that hour: who listens more in it, and what actually plays there.</p>`);
     return;
   }
-  const {weekday, hour} = state.d2.selectedWindow;
-  const rw = (p, o) => D.routine_window[`${p}|${o}|${weekday}|${hour}`]
-    || {plays: 0, minutes: 0, top_artists: [], top_genres: []};
-  let html = `<h4>${weekday} · <span class="num">${hour}:00–${hour + 1}:00</span></h4>`;
-
-  if (state.d2.period === "difference"){
-    html += `<div class="verdict">Pre-uni → University, plays in this window:</div><ul>`;
-    for (const o of OWNERS){
-      const a = rw("pre_uni", o).plays, b = rw("university", o).plays;
-      html += `<li><b style="color:${COLOR[o]};font-family:var(--sans)">${HEB[o]}</b>${LRM}:
-        <b>${fm0(a)} → ${fm0(b)}</b> <b>(${sg1(b - a).replace(".0","")})</b></li>`;
-    }
-    html += `</ul><p class="hint" style="margin-top:8px">Pick Pre-uni or University to see this window's top artists and genres.</p>`;
-    el.html(html);
-    return;
-  }
-  const p = state.d2.period;
-  const A = rw(p, "Or"), B = rw(p, "Roman");
+  const {weekday, hour} = state.d2.selectedWindow, p = state.d2.period;
+  const rw = o => D.routine_window[`${p}|${o}|${weekday}|${hour}`]
+    || {plays: 0, minutes: 0, top_artists: [], top_families: []};
+  const A = rw("Or"), B = rw("Roman");
   const lead = A.plays === B.plays ? null : A.plays > B.plays ? "Or" : "Roman";
   const ratio = lead && Math.min(A.plays, B.plays) > 0
-    ? ` — <span class="num">${fm1(Math.max(A.plays, B.plays) / Math.min(A.plays, B.plays))}×</span> the other's plays` : "";
-  html += `<div class="verdict">${lead
-    ? `In this ${PLABEL[p]} window, <b style="color:${COLOR[lead]}">${HEB[lead]}</b> listens more${ratio}.`
-    : "Both listen equally here."}</div><div class="wcols">`;
+    ? ` — <span class="num">${fm1(Math.max(A.plays, B.plays) / Math.min(A.plays, B.plays))}×</span> more` : "";
+  let html = `<h4>${weekday} · <span class="num">${hour}:00–${hour + 1}:00</span> · ${PLABEL[p]}</h4>
+    <div class="verdict">${lead
+      ? `This hour belongs to <b style="color:${COLOR[lead]}">${HEB[lead]}</b>&lrm;${ratio}.`
+      : "This hour is a tie."}</div><div class="wcols">`;
   for (const o of OWNERS){
-    const r = rw(p, o);
+    const r = rw(o);
     html += `<div class="wcol"><h5 style="color:${COLOR[o]}">${HEB[o]}</h5>
       <ul><li><b>${fm0(r.plays)}</b> plays · <b>${fmin(r.minutes)}</b></li></ul>
-      <div class="sect">top artists</div><ul>${r.top_artists.map(([a, m]) =>
+      <div class="sect">what plays here</div><ul>${r.top_artists.map(([a, m]) =>
         `<li>${trunc(a, 18)} <b>${fmin(m)}</b></li>`).join("") || "<li>—</li>"}</ul>
-      <div class="sect">top genres <span style="text-transform:none">(external)</span></div><ul>${r.top_genres.map(([g, m]) =>
-        `<li>${g} <b>${fmin(m)}</b></li>`).join("") || "<li>—</li>"}</ul></div>`;
+      <div class="sect">families <span style="text-transform:none">(external tags)</span></div><ul>${r.top_families.map(([f, m]) =>
+        `<li>${f} <b>${fmin(m)}</b></li>`).join("") || "<li>—</li>"}</ul></div>`;
   }
   el.html(html + "</div>");
 }
 
-/* -------- Chart 6: change — DUMBBELL (two connected dots per owner) -------- */
-/* Deliberately different from the lollipop: TWO dots per person joined by a
-   connector, not anchored at zero. Difference mode = centered-zero deltas. */
-function renderChange(){
-  const el = d3.select("#change-charts").html("");
-  const metrics = [
-    {key:"avg_monthly_hours", label:"Average monthly hours", unit:" h/mo"},
-    {key:"under_30s_pct", label:"Short plays (<30s) — % of plays", unit:" pp"}];
-  for (const m of metrics){
-    const box = el.append("div");
-    box.append("h4").text(m.label + (state.d2.period === "difference" ? " — change" : ""));
-    if (state.d2.period === "difference") drawDivergence(box, m); else drawDumbbell(box, m);
+/* -------- Panel 6: listening days — DAILY-MINUTES HISTOGRAM ---------------- */
+/* A distribution, deliberately unlike anything above: vertical count-of-days
+   bars over 30-minute bins of daily listening, one small histogram per person. */
+const BIN_MIN = 30, BIN_COUNT = 20;                    // 20 bins of 30 min; last = 9.5h+
+const binIndex = v => Math.min(Math.floor(v / BIN_MIN), BIN_COUNT - 1);
+
+function renderHistograms(){
+  const p = state.d2.period;
+  const counts = {};
+  for (const o of OWNERS){
+    counts[o] = new Array(BIN_COUNT).fill(0);
+    for (const v of D.daily[p][o]) counts[o][binIndex(v)]++;
   }
-  const dH = o => D.change[o].university.avg_monthly_hours - D.change[o].pre_uni.avg_monthly_hours;
-  const dS = o => D.change[o].university.under_30s_pct - D.change[o].pre_uni.under_30s_pct;
-  const who = Math.abs(dH("Roman")) >= Math.abs(dH("Or")) ? "Roman" : "Or";
-  d3.select("#t-change").html(
-    `${HEB[who]} changed more on both metrics: <span class="num">${sg1(dH(who))} h/mo</span> and
-     <span class="num">${sg1(dS(who))} pp</span> short plays (vs <span class="num">${sg1(dH(OTHER_OF[who]))}</span>
-     and <span class="num">${sg1(dS(OTHER_OF[who]))}</span> for ${HEB[OTHER_OF[who]]}) —
-     at university, music became ${HEB[who]}'s routine, not background.`);
-}
-
-function drawDumbbell(box, m){
-  const w = 470, rowH = 52, mL = 64, mR = 76, mT = 30;
-  const h = mT + OWNERS.length * rowH + 24;
-  const svg = box.append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("width", w);
-  const vals = OWNERS.flatMap(o => PERIODS.map(p => D.change[o][p][m.key]));
-  const x = d3.scaleLinear([0, d3.max(vals) * 1.15], [mL, w - mR]);
-  svg.append("g").attr("class","axis").attr("transform", `translate(0,${h - 20})`)
-    .call(d3.axisBottom(x).ticks(5));
-  // legend for the dot convention, once per panel
-  svg.append("text").attr("x", mL).attr("y", 14).attr("class","val")
-    .text("○ pre-uni → ● university");
-  OWNERS.forEach((o, i) => {
-    const [a, b] = PERIODS.map(p => D.change[o][p][m.key]);
-    const y = mT + i * rowH + rowH / 2;
-    const g = svg.append("g").attr("class", `ow-${o} clickable`)
-      .on("mouseover", ev => {
-        document.getElementById("d2").classList.add(`hl-${o}`);
-        showTip(ev, `<div class="t">${HEB[o]} — ${m.label}</div>
-          Pre-uni: <span class="num">${a}</span><br>University: <span class="num">${b}</span><br>
-          Δ <span class="num">${sg1(b - a)}${m.unit}</span>`);
+  const yMax = d3.max(OWNERS, o => d3.max(counts[o]));   // shared y so the shapes compare
+  for (const o of OWNERS){
+    const host = d3.select(`#hist-${o}`).html("");
+    const k = D.kpis[p][o];
+    host.append("h4").attr("class","owner-h")
+      .html(`${HEB[o]} <span class="kpi">a typical day: ${fm0(Math.round(k.median_daily_min))} min</span>`);
+    const w = 440, h = 150, mL = 34, mB = 22, mT = 6;
+    const x = d3.scaleBand(d3.range(BIN_COUNT), [mL, w - 6]).paddingInner(.15);
+    const y = d3.scaleLinear([0, yMax], [h - mB, mT]);
+    const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("width", w);
+    svg.append("g").attr("class","axis").attr("transform", `translate(${mL},0)`)
+      .call(d3.axisLeft(y).ticks(3));
+    // x ticks every 2 hours + the overflow label
+    const tickBins = d3.range(0, BIN_COUNT, 4);
+    svg.selectAll(".xt").data(tickBins).join("text").attr("class","val")
+      .attr("x", b => x(b)).attr("y", h - 8).text(b => (b * BIN_MIN / 60) + "h");
+    svg.append("text").attr("class","val").attr("x", x(BIN_COUNT - 1) + x.bandwidth()).attr("y", h - 8)
+      .attr("text-anchor","end").text("9.5h+");
+    svg.selectAll(".hbar").data(d3.range(BIN_COUNT)).join("rect")
+      .attr("x", b => x(b)).attr("y", b => y(counts[o][b]))
+      .attr("width", x.bandwidth()).attr("height", b => y(0) - y(counts[o][b]))
+      .attr("rx", 2).attr("fill", COLOR[o]).attr("fill-opacity", .85)
+      .on("mouseover", function(ev, b){
+        d3.select(this).attr("fill-opacity", 1);
+        const lo = b * BIN_MIN, hi = lo + BIN_MIN;
+        showTip(ev, `<div class="t">${HEB[o]} · ${PLABEL[p]}</div>
+          ${b === BIN_COUNT - 1 ? `<span class="num">${lo}+ min</span> of music in a day` :
+          `<span class="num">${lo}–${hi} min</span> of music in a day`}<br>
+          <span class="num">${fm0(counts[o][b])}</span> days`);
       })
       .on("mousemove", moveTip)
-      .on("mouseout", () => { document.getElementById("d2").classList.remove(`hl-${o}`); hideTip(); });
-    g.append("rect").attr("x", 0).attr("y", y - rowH / 2).attr("width", w).attr("height", rowH).attr("fill","transparent");
-    g.append("text").attr("x", mL - 12).attr("y", y + 4).attr("text-anchor","end")
-      .style("font-weight", 700).attr("fill", COLOR[o]).text(HEB[o]);
-    g.append("line").attr("x1", x(a)).attr("x2", x(b)).attr("y1", y).attr("y2", y)  // connector
-      .attr("stroke", COLOR[o]).attr("stroke-width", 2.5).attr("opacity", .7);
-    g.append("circle").attr("cx", x(a)).attr("cy", y).attr("r", 6)                  // pre-uni: hollow
-      .attr("fill","var(--panel)").attr("stroke", COLOR[o]).attr("stroke-width", 2);
-    g.append("circle").attr("cx", x(b)).attr("cy", y).attr("r", 6.5)                // university: filled
-      .attr("fill", COLOR[o]).attr("stroke","var(--panel)").attr("stroke-width", 1.5);
-    // value labels: pre under its dot, uni beyond its dot on the outside
-    g.append("text").attr("class","val").attr("x", x(a)).attr("y", y + 22)
-      .attr("text-anchor","middle").text(a);
-    g.append("text").attr("class","val").style("fill","var(--ink)")
-      .attr("x", x(b) + (b >= a ? 12 : -12)).attr("y", y + 4)
-      .attr("text-anchor", b >= a ? "start" : "end").text(b);
-  });
-}
-
-function drawDivergence(box, m){
-  const w = 470, h = 140, mT = 30;
-  const svg = box.append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("width", w);
-  const deltas = OWNERS.map(o => [o, D.change[o].university[m.key] - D.change[o].pre_uni[m.key]]);
-  const ext = d3.max(deltas, d => Math.abs(d[1])) * 1.25 || 1;
-  const x = d3.scaleLinear([-ext, ext], [80, w - 80]);
-  svg.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", mT - 8).attr("y2", h - 28)
-    .attr("stroke","var(--ink2)");
-  svg.append("text").attr("x", x(0)).attr("y", h - 10).attr("text-anchor","middle").attr("class","val").text("0 — no change");
-  svg.append("text").attr("x", w - 80).attr("y", 14).attr("text-anchor","end").attr("class","val").text("increase at university →");
-  svg.append("text").attr("x", 80).attr("y", 14).attr("class","val").text("← decrease");
-  deltas.forEach(([o, d], i) => {
-    const yy = mT + i * 36;
-    const g = svg.append("g").attr("class", `ow-${o} clickable`)
-      .on("mouseover", ev => {
-        document.getElementById("d2").classList.add(`hl-${o}`);
-        showTip(ev, `<div class="t">${HEB[o]}</div>Pre-uni <span class="num">${D.change[o].pre_uni[m.key]}</span> →
-          University <span class="num">${D.change[o].university[m.key]}</span><br>Δ <span class="num">${sg1(d)}${m.unit}</span>`);
-      })
-      .on("mousemove", moveTip)
-      .on("mouseout", () => { document.getElementById("d2").classList.remove(`hl-${o}`); hideTip(); });
-    g.append("rect").attr("x", Math.min(x(0), x(d))).attr("y", yy)
-      .attr("width", Math.abs(x(d) - x(0))).attr("height", 16).attr("rx", 3).attr("fill", COLOR[o]);
-    g.append("text").attr("x", d >= 0 ? x(d) + 8 : x(d) - 8).attr("y", yy + 12)
-      .attr("text-anchor", d >= 0 ? "start" : "end").attr("class","val")
-      .style("fill","var(--ink)").text(`${HEB[o]}${LRM} ${sg1(d)}${m.unit}`);
-  });
+      .on("mouseout", function(){ d3.select(this).attr("fill-opacity", .85); hideTip(); });
+  }
+  // heavy days = active days with over 4 hours of music
+  const heavy = o => Math.round(D.daily[p][o].filter(v => v > 240).length / D.daily[p][o].length * 100);
+  const kO = D.kpis[p].Or, kR = D.kpis[p].Roman;
+  const binger = heavy("Roman") >= heavy("Or") ? "Roman" : "Or";
+  d3.select("#t-days").html(
+    `A typical listening day is <span class="num">${fm0(Math.round(kO.median_daily_min))} min</span> for ${HEB.Or}
+     and <span class="num">${fm0(Math.round(kR.median_daily_min))} min</span> for ${HEB.Roman} —
+     and ${HEB[binger]} binges: <span class="num">${heavy(binger)}%</span> of ${HEB[binger]}'s days pass four hours
+     (vs <span class="num">${heavy(OTHER_OF[binger])}%</span>).`);
 }
 
 /* ================================================================ init */
-renderD1(); renderBridge(); renderD2();
+renderD1(); renderD2();
 
-/* gentle scroll-reveal; the observer is skipped entirely under reduced motion */
+/* gentle scroll-reveal; skipped entirely under prefers-reduced-motion */
 if (matchMedia("(prefers-reduced-motion: no-preference)").matches){
   const io = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting){ e.target.classList.add("vis"); io.unobserve(e.target); }
