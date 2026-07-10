@@ -253,7 +253,7 @@ text.num,text.val{font-family:var(--mono)}
   <div class="grid">
     <div class="panel span2" id="p-monthly">
       <h3>How has our listening ebbed and flowed since 2021?</h3>
-      <p class="hint">The whole story, always in view — אור above the line, רומן below, every month a beat in the waveform. Hover for exact numbers. (This panel ignores the period filter on purpose.)</p>
+      <p class="hint">The whole story stays in view — אור above the line, רומן below, every month a beat in the waveform. The selected period is highlighted for context.</p>
       <div id="monthly-chart"></div>
       <p class="takeaway" id="t-monthly"></p>
     </div>
@@ -655,8 +655,7 @@ function renderBridge(){
 
 /* -------- Panel 4 (hero): whole-span mirrored area "waveform" -------------- */
 /* The page's one signature: mirrored area + one vertical grain line per real
-   month, so it reads like a waveform while every mark encodes actual hours.
-   This panel deliberately ignores the period filter — it is the overview. */
+   month, so it reads like a waveform while every mark encodes actual hours. */
 function renderMonthly(){
   const el = d3.select("#monthly-chart").html("");
   const w = 1120, h = 320, mL = 52, mR = 14, mT = 20, mB = 26;
@@ -670,7 +669,9 @@ function renderMonthly(){
   const y = d3.scaleLinear([-yMax, yMax], [h - mB, mT]);
 
   const uniX = x(parseYM(UNI_START.slice(0, 7)));
-  for (const [p, x0, x1] of [["pre_uni", mL, uniX], ["university", uniX, w - mR]]){
+  const active = cut();
+  const bands = [["pre_uni", mL, uniX], ["university", uniX, w - mR]];
+  for (const [p, x0, x1] of bands){
     svg.append("rect").attr("x", x0).attr("y", mT).attr("width", x1 - x0).attr("height", h - mT - mB)
       .attr("fill", p === "university" ? "rgba(255,255,255,.035)" : "transparent");
     svg.append("text").attr("x", x0 + 8).attr("y", mT + 13).attr("class","val")
@@ -692,6 +693,15 @@ function renderMonthly(){
       .attr("x1", ym => x(parseYM(ym))).attr("x2", ym => x(parseYM(ym)))
       .attr("y1", y(0)).attr("y2", ym => y(sign * val(o, ym)))
       .attr("stroke", COLOR[o]).attr("stroke-width", 1.4).attr("opacity", .5);
+  }
+  if (active !== "all"){
+    for (const [p, x0, x1] of bands.filter(([p]) => p !== active)){
+      svg.append("rect").attr("x", x0).attr("y", mT).attr("width", x1 - x0).attr("height", h - mT - mB)
+        .attr("fill", "rgba(13,13,18,.58)").attr("pointer-events", "none");
+    }
+    const [, x0, x1] = bands.find(([p]) => p === active);
+    svg.append("rect").attr("x", x0).attr("y", mT).attr("width", x1 - x0).attr("height", h - mT - mB)
+      .attr("fill", "none").attr("stroke", "#C9C9D6").attr("stroke-width", 1).attr("pointer-events", "none");
   }
   svg.append("line").attr("x1", mL).attr("x2", w - mR).attr("y1", y(0)).attr("y2", y(0))
     .attr("stroke","var(--border)");
