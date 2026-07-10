@@ -56,6 +56,10 @@ section.dash>h2{font:700 24px/1.2 var(--display);letter-spacing:.4px}
 .kcard .stat span{font-size:11px;color:var(--ink2)}
 
 /* control bar — one per dashboard */
+.periodbar{position:sticky;top:0;z-index:6;background:rgba(24,24,32,.96);backdrop-filter:blur(10px);
+  border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:9px 14px;margin-bottom:18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.period-note{color:var(--ink2);font-size:12px}
 .ctlbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--panel);
   border:1px solid var(--border);border-radius:10px;padding:9px 14px;margin-bottom:16px}
 .ctl{display:flex;align-items:center;gap:8px}
@@ -183,6 +187,11 @@ text.num,text.val{font-family:var(--mono)}
   </details>
 </header>
 
+<div class="periodbar" aria-label="Global period filter">
+  <span class="ctl"><label>Period:</label><span class="seg" id="global-period"></span></span>
+  <span class="period-note" id="period-note"></span>
+</div>
+
 <!-- ================================================================ dashboard 1 -->
 <section class="dash" id="d1">
   <h2>Listening DNA</h2>
@@ -191,7 +200,6 @@ text.num,text.val{font-family:var(--mono)}
   <div class="kpis" id="d1-kpis"></div>
 
   <div class="ctlbar">
-    <span class="ctl"><label>Period:</label><span class="seg" id="d1-period"></span></span>
     <button class="reset" id="d1-reset">Reset</button>
     <span class="chips" id="d1-chips"></span>
   </div>
@@ -236,7 +244,6 @@ text.num,text.val{font-family:var(--mono)}
   <div class="kpis" id="d2-kpis"></div>
 
   <div class="ctlbar">
-    <span class="ctl"><label>Period:</label><span class="seg" id="d2-period"></span></span>
     <button class="reset" id="d2-reset">Reset</button>
     <span class="chips" id="d2-chips"></span>
   </div>
@@ -253,7 +260,7 @@ text.num,text.val{font-family:var(--mono)}
 
     <div class="panel" id="p-routine">
       <h3>When in the day do we listen?</h3>
-      <p class="hint">Click a cell to see that hour's top artists · hover a weekday to follow its column. Use the period filter above to flip before/after.</p>
+      <p class="hint">Click a cell to see that hour's top artists · hover a weekday to follow its column. Use the sticky period filter to flip the whole page.</p>
       <div class="duo" id="heatmaps"></div>
       <div id="window-panel"></div>
       <p class="takeaway" id="t-routine"></p>
@@ -282,6 +289,7 @@ const D = EMBEDDED_DATA;
 const WINDOW_START = D.meta.window_start;
 const UNI_START    = D.meta.uni_start;
 const PERIODS      = D.meta.periods;
+const PERIOD_OPTIONS = ["all", ...PERIODS];
 const OWNERS       = ["Or", "Roman"];
 const HEB   = {Or:"אור", Roman:"רומן"};
 const SRC   = {Or:"Apple Music", Roman:"Spotify"};
@@ -289,19 +297,20 @@ const COLOR = {Or:"#4EA1FF", Roman:"#FF9F1C"};
 const OTHER_OF = {Or:"Roman", Roman:"Or"};
 const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const WD3 = {Sunday:"Sun",Monday:"Mon",Tuesday:"Tue",Wednesday:"Wed",Thursday:"Thu",Friday:"Fri",Saturday:"Sat"};
-const PLABEL = {pre_uni:"Pre-uni", university:"University"};
+const PLABEL = {all:"All", pre_uni:"Pre-uni", university:"University"};
 
 const fm0 = d3.format(","), fm1 = d3.format(",.1f");
 const fmin = m => m >= 6000 ? fm0(Math.round(m / 60)) + " h" : fm0(Math.round(m)) + " min";
 const fhour = h => `${h}:00`;
 
-/* ---------------------------------------------------------------- state
-   Kept PER DASHBOARD so the two stacked sections never interfere. */
+/* ---------------------------------------------------------------- state */
 const DEFAULTS = {
-  d1: {period:"pre_uni", selectedFamily:null, selectedArtist:null},
-  d2: {period:"pre_uni", selectedWindow:null}
+  period:"all",
+  d1: {selectedFamily:null, selectedArtist:null},
+  d2: {selectedWindow:null}
 };
-const state = {d1: {...DEFAULTS.d1}, d2: {...DEFAULTS.d2}};
+const state = {period: DEFAULTS.period, d1: {...DEFAULTS.d1}, d2: {...DEFAULTS.d2}};
+function setPeriod(period){ state.period = period; renderAll(); }
 function setD1(patch){ Object.assign(state.d1, patch); renderD1(); }
 function setD2(patch){ Object.assign(state.d2, patch); renderD2(); }
 
@@ -338,11 +347,17 @@ function renderChips(el, chips){
     .on("click", (ev, c) => c.clear());
 }
 
-/* ================================================================ DASHBOARD 1 */
-const cut1 = () => state.d1.period;
+const cut = () => state.period;
+function renderAll(){ renderPeriodBar(); renderD1(); renderD2(); }
+function renderPeriodBar(){
+  segControl("#global-period", PERIOD_OPTIONS, PLABEL, state.period, setPeriod);
+  d3.select("#period-note").text(state.period === "all"
+    ? "Showing every play from 2021 onward."
+    : `Showing ${PLABEL[state.period].toLowerCase()} across both dashboards.`);
+}
 
+/* ================================================================ DASHBOARD 1 */
 function renderD1(){
-  segControl("#d1-period", PERIODS, PLABEL, state.d1.period, p => setD1({period: p}));
   const chips = [];
   if (state.d1.selectedFamily) chips.push({label:`Genre: ${state.d1.selectedFamily}`, clear: () => setD1({selectedFamily:null})});
   if (state.d1.selectedArtist) chips.push({label:`Artist: ${state.d1.selectedArtist}`, clear: () => setD1({selectedArtist:null})});
@@ -354,10 +369,10 @@ d3.select("#d1-reset").on("click", () => setD1({...DEFAULTS.d1}));
 function renderD1Kpis(){
   const el = d3.select("#d1-kpis").html("");
   for (const o of OWNERS){
-    const k = D.kpis[cut1()][o];
+    const k = D.kpis[cut()][o];
     const card = el.append("div").attr("class","kcard");
     card.append("div").attr("class","who")
-      .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]} · ${PLABEL[cut1()]}</small>`);
+      .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]} · ${PLABEL[cut()]}</small>`);
     const stat = (v, l) => card.append("div").attr("class","stat").html(`<b>${v}</b><span>${l}</span>`);
     stat(fm0(Math.round(k.hours)) + " h", "hours of music");
     stat(fm0(k.plays), "plays");
@@ -369,14 +384,14 @@ function renderD1Kpis(){
 /* -------- Panel 1 (hero): genre families — PAIRED HORIZONTAL BARS ---------- */
 function artistFamily(name){
   for (const o of OWNERS){
-    const r = D.top_artists[cut1()][o].find(a => a.artist === name);
+    const r = D.top_artists[cut()][o].find(a => a.artist === name);
     if (r) return r.family;
   }
   return state.d1.selectedFamily;
 }
 
 function renderFamilies(){
-  const c = cut1();
+  const c = cut();
   const echo = state.d1.selectedArtist ? artistFamily(state.d1.selectedArtist) : null;
   const xMax = d3.max(OWNERS, o => d3.max(D.families[c][o], g => g.pct));
   for (const o of OWNERS){
@@ -420,7 +435,7 @@ function renderFamilies(){
 
 /* -------- Panel 2: obsessions — DOT-PLOT / LOLLIPOP ------------------------ */
 function renderArtists(){
-  const c = cut1(), family = state.d1.selectedFamily;
+  const c = cut(), family = state.d1.selectedFamily;
   const xMax = d3.max(OWNERS, ow => {
     const l = family ? (D.family_artists[c][ow][family] || []) : D.top_artists[c][ow].slice(0, 10);
     return d3.max(l, r => r.minutes) || 0;
@@ -469,7 +484,7 @@ function renderArtists(){
      .on("mouseout", () => { highlightArtist(null); hideTip(); });
   }
   renderArtistDetail();
-  const k = D.kpis[cut1()];
+  const k = D.kpis[cut()];
   const lead = k.Roman.top_artist_share >= k.Or.top_artist_share ? "Roman" : "Or";
   d3.select("#t-artists").html(
     `${trunc(k[lead].top_artist, 20)} alone is <span class="num">${k[lead].top_artist_share}%</span> of everything
@@ -485,7 +500,7 @@ function highlightArtist(name){
 }
 
 function findArtist(owner, name){
-  const c = cut1();
+  const c = cut();
   const full = D.top_artists[c][owner].find(a => a.artist === name);
   if (full) return full;
   for (const f in D.family_artists[c][owner]){
@@ -521,7 +536,7 @@ function renderArtistDetail(){
 
 /* -------- Panel 3: what we share — MINUTES-WEIGHTED 100% STRIP ------------- */
 function renderOverlap(){
-  const c = cut1();
+  const c = cut();
   const host = d3.select("#overlap-strips").html("");
   const w = 560, rowH = 62, barH = 26, mT = 6;
   const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${OWNERS.length * rowH + mT}`).style("width","100%");
@@ -587,7 +602,6 @@ function renderOverlap(){
 const parseYM = d3.timeParse("%Y-%m");
 
 function renderD2(){
-  segControl("#d2-period", PERIODS, PLABEL, state.d2.period, p => setD2({period: p}));
   const chips = [];
   if (state.d2.selectedWindow){
     const {weekday, hour} = state.d2.selectedWindow;
@@ -599,14 +613,15 @@ function renderD2(){
 d3.select("#d2-reset").on("click", () => setD2({...DEFAULTS.d2}));
 
 function renderD2Kpis(){
-  const el = d3.select("#d2-kpis").html(""), p = state.d2.period;
+  const el = d3.select("#d2-kpis").html(""), p = cut();
   for (const o of OWNERS){
     const k = D.kpis[p][o];
+    const monthly = p === "all" ? k.hours / D.monthly[o].length : D.change[o][p].avg_monthly_hours;
     const card = el.append("div").attr("class","kcard");
     card.append("div").attr("class","who")
       .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]} · ${PLABEL[p]}</small>`);
     const stat = (v, l) => card.append("div").attr("class","stat").html(`<b>${v}</b><span>${l}</span>`);
-    stat(fm1(D.change[o][p].avg_monthly_hours) + " h", "per month");
+    stat(fm1(monthly) + " h", "per month");
     stat(`${fm0(k.active_days)} <span style="font-size:11px;color:var(--ink2)">of ${fm0(D.meta.period_days[p])}</span>`, "days with music");
     stat(fhour(k.peak_hour), "peak hour");
   }
@@ -614,6 +629,19 @@ function renderD2Kpis(){
 
 function renderBridge(){
   const ch = D.change, k = D.kpis;
+  const p = cut();
+  if (p !== "all"){
+    const line = o => {
+      const now = ch[o][p].avg_monthly_hours;
+      const peak = k[p][o].peak_hour;
+      const compare = p === "university"
+        ? `, ${now >= ch[o].pre_uni.avg_monthly_hours ? "up" : "down"} from <span class="num">${ch[o].pre_uni.avg_monthly_hours}</span> pre-uni`
+        : "";
+      return `${HEB[o]} averages <span class="num">${now}</span> h/month and peaks at <span class="num">${fhour(peak)}</span>${compare}`;
+    };
+    d3.select("#bridge").html(`${p === "pre_uni" ? "Before university" : "At university"}, ${line("Roman")}; ${line("Or")}.`);
+    return;
+  }
   const seg = o => {
     const a = ch[o].pre_uni.avg_monthly_hours, b = ch[o].university.avg_monthly_hours;
     return `${HEB[o]}'s months ${b > a ? "swelled" : "eased"} from <span class="num">${a}</span> to <span class="num">${b}</span> hours of music`;
@@ -703,9 +731,9 @@ function renderMonthly(){
 /* -------- Panel 5: routine — HOUR × WEEKDAY HEATMAP (selected period) ------ */
 function renderHeatmaps(){
   const grid = d3.select("#heatmaps").html("");
-  const p = state.d2.period;
-  // fixed max across BOTH owners and BOTH periods, so flipping the filter compares honestly
-  const max = d3.max(PERIODS, pp => d3.max(OWNERS, o => d3.max(D.heatmap[pp][o], d => d.plays)));
+  const p = cut();
+  // fixed max across both owners and all cuts, so flipping the filter compares honestly
+  const max = d3.max(PERIOD_OPTIONS, pp => d3.max(OWNERS, o => d3.max(D.heatmap[pp][o], d => d.plays)));
   const cw = 26, chh = 15.5, mLh = 40, mTh = 32;
   const W = mLh + 7 * cw + 4, H = mTh + 24 * chh + 4;
 
@@ -773,7 +801,7 @@ function renderWindowPanel(){
     el.html(`<p class="hint">Click any cell to open that hour: who listens more in it, and what actually plays there.</p>`);
     return;
   }
-  const {weekday, hour} = state.d2.selectedWindow, p = state.d2.period;
+  const {weekday, hour} = state.d2.selectedWindow, p = cut();
   const rw = o => D.routine_window[`${p}|${o}|${weekday}|${hour}`]
     || {plays: 0, minutes: 0, top_artists: [], top_families: []};
   const A = rw("Or"), B = rw("Roman");
@@ -803,7 +831,7 @@ const BIN_MIN = 30, BIN_COUNT = 20;                    // 20 bins of 30 min; las
 const binIndex = v => Math.min(Math.floor(v / BIN_MIN), BIN_COUNT - 1);
 
 function renderHistograms(){
-  const p = state.d2.period;
+  const p = cut();
   const counts = {};
   for (const o of OWNERS){
     counts[o] = new Array(BIN_COUNT).fill(0);
@@ -854,7 +882,7 @@ function renderHistograms(){
 }
 
 /* ================================================================ init */
-renderD1(); renderD2();
+renderAll();
 
 /* gentle scroll-reveal; skipped entirely under prefers-reduced-motion */
 if (matchMedia("(prefers-reduced-motion: no-preference)").matches){
