@@ -788,6 +788,15 @@ function renderHeatmaps(){
       .on("mouseout", () => { hoverWD(null); hideTip(); });
   }
 
+  if (p === "all"){
+    const lineAll = o => {
+      const a = D.kpis.pre_uni[o].peak_hour, b = D.kpis.university[o].peak_hour;
+      if (a === b) return `${HEB[o]} peaks at <span class="num">${fhour(a)}</span> in both eras`;
+      return `${HEB[o]} shifts from <span class="num">${fhour(a)}</span> pre-uni to <span class="num">${fhour(b)}</span> at university`;
+    };
+    d3.select("#t-routine").html(`${lineAll("Or")}; ${lineAll("Roman")}.`);
+    return;
+  }
   // phrase the comparison in the right direction: pre-uni looks forward, university looks back
   const other = p === "pre_uni" ? "university" : "pre_uni";
   const line = o => {
