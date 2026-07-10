@@ -73,6 +73,7 @@ section.dash>h2{font:700 24px/1.2 var(--display);letter-spacing:.4px}
   padding:6px 14px;cursor:pointer;font:12.5px var(--sans)}
 .reset:hover{color:var(--ink);border-color:var(--ink2)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
+.dash>.chips:not(:empty){margin-bottom:16px}
 .fchip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);
   border-radius:20px;color:var(--ink);font:12px var(--mono);padding:3px 10px;cursor:pointer}
 .fchip .x{color:var(--ink2);font-weight:700}
@@ -199,10 +200,7 @@ text.num,text.val{font-family:var(--mono)}
 
   <div class="kpis" id="d1-kpis"></div>
 
-  <div class="ctlbar">
-    <button class="reset" id="d1-reset">Reset</button>
-    <span class="chips" id="d1-chips"></span>
-  </div>
+  <div class="chips" id="d1-chips"></div>
 
   <div class="grid">
     <div class="panel" id="p-families">
@@ -242,11 +240,6 @@ text.num,text.val{font-family:var(--mono)}
   <p class="thesis">Then university happened — did music become a bigger, more routine part of our days?</p>
 
   <div class="kpis" id="d2-kpis"></div>
-
-  <div class="ctlbar">
-    <button class="reset" id="d2-reset">Reset</button>
-    <span class="chips" id="d2-chips"></span>
-  </div>
 
   <div class="bridge" id="bridge"></div>
 
@@ -364,8 +357,6 @@ function renderD1(){
   renderChips("#d1-chips", chips);
   renderD1Kpis(); renderFamilies(); renderArtists(); renderOverlap();
 }
-d3.select("#d1-reset").on("click", () => setD1({...DEFAULTS.d1}));
-
 function renderD1Kpis(){
   const el = d3.select("#d1-kpis").html("");
   for (const o of OWNERS){
@@ -679,7 +670,6 @@ function renderMonthly(){
   }
   svg.append("line").attr("x1", uniX).attr("x2", uniX).attr("y1", mT).attr("y2", h - mB)
     .attr("stroke","#8888A0").attr("stroke-dasharray","4 3");
-  svg.append("text").attr("x", uniX + 6).attr("y", h - mB - 6).attr("class","val").text("university begins");
 
   for (const o of OWNERS){
     const sign = o === "Or" ? 1 : -1;
