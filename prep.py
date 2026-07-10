@@ -239,42 +239,43 @@ def monthly_hours(df):
 
 
 def heatmaps(df):
-    """weekday x hour plays per owner+period (absolute plays only)."""
+    """weekday x hour plays per owner+cut (absolute plays only)."""
     out = {}
-    for p in PERIODS:
-        out[p] = {}
+    for cut, d in cuts(df):
+        out[cut] = {}
         for owner in OWNERS:
-            g = df[(df["period"] == p) & (df["owner"] == owner)]
+            g = d[d["owner"] == owner]
             cells = g.groupby(["weekday", "hour_local"]).size()
-            out[p][owner] = [{"weekday": wd, "hour": int(h), "plays": int(n)}
-                             for (wd, h), n in cells.items()]
+            out[cut][owner] = [{"weekday": wd, "hour": int(h), "plays": int(n)}
+                               for (wd, h), n in cells.items()]
     return out
 
 
 def daily_minutes(df):
-    """Minutes listened per ACTIVE day, per owner+period — backs the histogram."""
+    """Minutes listened per ACTIVE day, per owner+cut — backs the histogram."""
     out = {}
-    for p in PERIODS:
-        out[p] = {}
+    for cut, d in cuts(df):
+        out[cut] = {}
         for owner in OWNERS:
-            g = df[(df["period"] == p) & (df["owner"] == owner)]
+            g = d[d["owner"] == owner]
             daily = g.groupby("date")["minutes_played"].sum()
-            out[p][owner] = [int(round(v)) for v in daily.values if v > 0]
+            out[cut][owner] = [int(round(v)) for v in daily.values if v > 0]
     return out
 
 
 def routine_windows(df):
-    """Per (period, owner, weekday, hour): totals + top artists/families for the
-    heatmap-cell drilldown. Keyed 'period|owner|weekday|hour' for O(1) lookup."""
+    """Per (cut, owner, weekday, hour): totals + top artists/families for the
+    heatmap-cell drilldown. Keyed 'cut|owner|weekday|hour' for O(1) lookup."""
     out = {}
-    for (p, owner, wd, h), g in df.groupby(["period", "owner", "weekday", "hour_local"]):
-        top_a = g.groupby("artist")["minutes_played"].sum().nlargest(WINDOW_TOP_ARTISTS)
-        top_f = g.groupby("family")["minutes_played"].sum().nlargest(WINDOW_TOP_FAMILIES)
-        out[f"{p}|{owner}|{wd}|{int(h)}"] = {
-            "plays": int(len(g)), "minutes": round(g["minutes_played"].sum(), 1),
-            "top_artists": [[a, round(m, 1)] for a, m in top_a.items()],
-            "top_families": [[f, round(m, 1)] for f, m in top_f.items()],
-        }
+    for cut, d in cuts(df):
+        for (owner, wd, h), g in d.groupby(["owner", "weekday", "hour_local"]):
+            top_a = g.groupby("artist")["minutes_played"].sum().nlargest(WINDOW_TOP_ARTISTS)
+            top_f = g.groupby("family")["minutes_played"].sum().nlargest(WINDOW_TOP_FAMILIES)
+            out[f"{cut}|{owner}|{wd}|{int(h)}"] = {
+                "plays": int(len(g)), "minutes": round(g["minutes_played"].sum(), 1),
+                "top_artists": [[a, round(m, 1)] for a, m in top_a.items()],
+                "top_families": [[f, round(m, 1)] for f, m in top_f.items()],
+            }
     return out
 
 
