@@ -298,6 +298,7 @@ def main():
             "last_month": df["ym"].max(), "months_per_period": months,
             # calendar days per period (university runs to the last observed date)
             "period_days": {
+                "all": (df["date"].max() - pd.Timestamp(WINDOW_START)).days + 1,
                 "pre_uni": (pd.Timestamp(UNI_START) - pd.Timestamp(WINDOW_START)).days,
                 "university": (df["date"].max() - pd.Timestamp(UNI_START)).days + 1,
             },
