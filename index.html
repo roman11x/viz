@@ -224,7 +224,7 @@ text.num,text.val{font-family:var(--mono)}
 
     <div class="panel span2" id="p-overlap">
       <h3>How much music do we actually share?</h3>
-      <p class="hint">Each strip is one person's listening time, split into artists both play vs artists only they play. Click a shared artist to spot them above. (The one place we use percentages — רומן simply plays more hours.)</p>
+      <p class="hint">Each strip is one person's listening time, split into artists both play for at least 3 minutes each vs artists only they play. Click a shared artist to spot them above. (The one place we use percentages — רומן simply plays more hours.)</p>
       <div class="overlap-flex">
         <div class="strips" id="overlap-strips"></div>
         <div class="stable" id="shared-table"></div>
@@ -545,14 +545,14 @@ function renderOverlap(){
       .attr("height", barH).attr("rx", 3).attr("fill", COLOR[o])
       .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — music we share</div>
         <span class="num">${sharedPct}%</span> of ${HEB[o]}'s minutes · ${fmin(totalMin * sharedPct / 100)}<br>
-        on the ${D.shared.count} artists both really play`))
+        on the ${D.shared.count_by_cut[c]} artists both clear ${D.meta.shared_min_minutes} minutes`))
       .on("mouseout", hideTip);
     g.append("rect").attr("x", 2 + sharedW + 1).attr("y", y + 18)
       .attr("width", Math.max(1.5, stripW - sharedW - 1)).attr("height", barH).attr("rx", 3)
       .attr("fill","var(--muted)")
       .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — mine alone</div>
         <span class="num">${fm1(100 - sharedPct)}%</span> of ${HEB[o]}'s minutes · ${fmin(totalMin * (100 - sharedPct) / 100)}<br>
-        on artists ${HEB[OTHER_OF[o]]} never really plays`))
+        on artists outside the ${D.meta.shared_min_minutes}-minute shared set`))
       .on("mouseout", hideTip);
     const fits = sharedW > 96;
     g.append("text").attr("class","val").style("font-weight", 600)
@@ -565,10 +565,10 @@ function renderOverlap(){
         .attr("text-anchor","end").text("mine alone");
   });
 
-  const rows = D.shared.top_shared[c].filter(s => s.or_minutes > 0 || s.roman_minutes > 0);
+  const rows = D.shared.top_shared[c];
   const tbl = d3.select("#shared-table").html("");
   const t = tbl.append("table");
-  t.append("tr").html(`<th>the music we share — ${PLABEL[c]}</th>
+  t.append("tr").html(`<th>the music we share — ${PLABEL[c]} · ${D.meta.shared_min_minutes}+ min each</th>
     <th style="color:${COLOR.Or}">אור</th><th style="color:${COLOR.Roman}">רומן</th>`);
   const tr = t.selectAll("tr.row").data(rows).join("tr")
     .attr("class", d => "row clickable" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
@@ -577,16 +577,15 @@ function renderOverlap(){
     .on("mousemove", (ev, d) => showTip(ev, `<div class="t">${d.artist}</div>
       אור: <span class="num">${fmin(d.or_minutes)}</span><br>רומן: <span class="num">${fmin(d.roman_minutes)}</span>`))
     .on("mouseout", hideTip);
-  // "—" = shared overall, but this side didn't touch them in THIS period
-  const cell = m => m >= 1 ? fmin(m) : m > 0 ? "<1 min" : "—";
+  const cell = m => fmin(m);
   tr.append("td").text(d => d.artist);
   tr.append("td").text(d => cell(d.or_minutes));
   tr.append("td").text(d => cell(d.roman_minutes));
 
   const p = D.shared.pct_minutes[c];
   d3.select("#t-overlap").html(
-    `It only flows one way: <span class="num">${p.Or}%</span> of ${HEB.Or}'s listening is artists ${HEB.Roman}
-     also plays — but just <span class="num">${p.Roman}%</span> of ${HEB.Roman}'s comes back the other way.`);
+    `It only flows one way: <span class="num">${p.Or}%</span> of ${HEB.Or}'s listening clears the ${D.meta.shared_min_minutes}-minute shared floor with ${HEB.Roman}
+     — but just <span class="num">${p.Roman}%</span> of ${HEB.Roman}'s comes back the other way.`);
 }
 
 /* ================================================================ DASHBOARD 2 */

@@ -27,6 +27,7 @@ FAMILY_ARTISTS_N = 8      # artists listed per family (backs the genre->artist f
 SHARED_LIST_N = 15        # top shared artists shown by name
 WINDOW_TOP_ARTISTS = 5    # per heatmap cell
 WINDOW_TOP_FAMILIES = 3   # per heatmap cell
+SHARED_MIN_MINUTES = 3    # per listener, per cut
 
 # ---------------------------------------------------------------- genre families
 # The external fine genres collapse into ~6 broad families for display.
@@ -267,27 +268,39 @@ def artist_tables(df, shared_set):
 
 
 def shared_overlap(df):
-    """Minutes-weighted overlap. 'Shared' now requires REAL listening on both
-    sides: at least one over-30-seconds play by each person (this drops
-    name-only matches where one side has 0 meaningful minutes)."""
-    real = df[~df["under_30s"]]
-    real_sets = {o: set(real[real["owner"] == o]["artist"].unique()) for o in OWNERS}
+    """Minutes-weighted overlap. 'Shared' requires real listening and enough minutes."""
     name_sets = {o: set(df[df["owner"] == o]["artist"].unique()) for o in OWNERS}
-    shared_set = real_sets["Or"] & real_sets["Roman"]
     name_only = len(name_sets["Or"] & name_sets["Roman"])
+
+    def shared_for(d):
+        real = d[~d["under_30s"]]
+        real_sets = {o: set(real[real["owner"] == o]["artist"].unique()) for o in OWNERS}
+        per_owner = (d.groupby(["artist", "owner"])["minutes_played"].sum()
+                     .unstack(fill_value=0).reindex(columns=OWNERS, fill_value=0))
+        over_threshold = set(per_owner[(per_owner["Or"] >= SHARED_MIN_MINUTES)
+                                       & (per_owner["Roman"] >= SHARED_MIN_MINUTES)].index)
+        return over_threshold & real_sets["Or"] & real_sets["Roman"]
+
+    shared_by_cut = {cut: shared_for(d) for cut, d in cuts(df)}
+    shared_set = shared_by_cut["all"]
 
     pct = {}
     for cut, d in cuts(df):
         pct[cut] = {}
+        cut_shared = shared_by_cut[cut]
         for owner in OWNERS:
             g = d[d["owner"] == owner]
             total = g["minutes_played"].sum()
-            on_shared = g[g["artist"].isin(shared_set)]["minutes_played"].sum()
+            on_shared = g[g["artist"].isin(cut_shared)]["minutes_played"].sum()
             pct[cut][owner] = round(on_shared / total * 100, 1)
 
     top_shared = {}
     for c, d in cuts(df):
-        per_owner = (d[d["artist"].isin(shared_set)]
+        cut_shared = shared_by_cut[c]
+        if not cut_shared:
+            top_shared[c] = []
+            continue
+        per_owner = (d[d["artist"].isin(cut_shared)]
                      .groupby(["artist", "owner"])["minutes_played"].sum().unstack(fill_value=0)
                      .reindex(columns=OWNERS, fill_value=0))
         per_owner["total"] = per_owner.sum(axis=1)
@@ -295,7 +308,9 @@ def shared_overlap(df):
                           "roman_minutes": round(r["Roman"], 1)}
                          for a, r in per_owner.sort_values("total", ascending=False)
                                               .head(SHARED_LIST_N).iterrows()]
-    return {"count": len(shared_set), "name_matches": name_only,
+    return {"count": len(shared_set),
+            "count_by_cut": {cut: len(s) for cut, s in shared_by_cut.items()},
+            "name_matches": name_only,
             "pct_minutes": pct, "top_shared": top_shared}, shared_set
 
 
@@ -365,6 +380,7 @@ def main():
             "window_start": WINDOW_START, "uni_start": UNI_START,
             "periods": PERIODS, "owners": OWNERS,
             "last_month": df["ym"].max(), "months_per_period": months,
+            "shared_min_minutes": SHARED_MIN_MINUTES,
             # calendar days per period (university runs to the last observed date)
             "period_days": {
                 "all": (df["date"].max() - pd.Timestamp(WINDOW_START)).days + 1,
@@ -419,11 +435,12 @@ def main():
         print(f"  {o:6} {row}")
         print(f"         'Other' residual: {fam_other}%  (was {raw_other[o]}% before family collapse + curation)")
 
-    print(f"\n-- shared artists: {shared['count']} with real listening on both sides "
+    print(f"\n-- shared artists: {shared['count']} with {SHARED_MIN_MINUTES}+ min on both sides "
           f"(name-only matches in window: {shared['name_matches']})")
     for cut in ["all", *PERIODS]:
         p = shared["pct_minutes"][cut]
-        print(f"  {cut:10} minutes-weighted shared share: Or {p['Or']}%  Roman {p['Roman']}%")
+        print(f"  {cut:10} minutes-weighted shared share: Or {p['Or']}%  Roman {p['Roman']}%  "
+              f"({shared['count_by_cut'][cut]} artists)")
     print("  top shared:", ", ".join(a["artist"] for a in shared["top_shared"]["all"][:8]))
 
     print("\n-- avg monthly hours (for the bridge sentence)")
