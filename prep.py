@@ -443,7 +443,7 @@ def main():
               f"({shared['count_by_cut'][cut]} artists)")
     print("  top shared:", ", ".join(a["artist"] for a in shared["top_shared"]["all"][:8]))
 
-    print("\n-- avg monthly hours (for the bridge sentence)")
+    print("\n-- avg monthly hours")
     for o in OWNERS:
         print(f"  {o:6} {change[o]['pre_uni']['avg_monthly_hours']} -> "
               f"{change[o]['university']['avg_monthly_hours']} h/mo")
