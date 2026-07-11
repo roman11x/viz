@@ -150,21 +150,10 @@ text.num,text.val{font-family:var(--mono)}
     <span class="chip"><i style="--c:var(--or)"></i>אור <small>Apple Music</small></span>
     <span class="chip"><i style="--c:var(--roman)"></i>רומן <small>Spotify</small></span>
   </div>
-  <details class="about">
-    <summary>About the data</summary>
-    <ul>
-      <li>Analysis window: <span class="mono">2021-01</span> onward. Period split: pre-uni = 2021-01..2023-12; university = 2024-01 onward.</li>
-      <li>Genre tags are external and provisional, collapsed into broad families. Unclassified artists remain “Other”.</li>
-      <li>Shared artists require at least <span class="mono">3</span> minutes by each listener in the selected period.</li>
-      <li>Skips aren't compared — Apple and Spotify count them differently.</li>
-      <li>City-level location exists only for אור, so there is no map.</li>
-    </ul>
-  </details>
 </header>
 
 <div class="periodbar" aria-label="Global period filter">
   <span class="ctl"><label>Period:</label><span class="seg" id="global-period"></span></span>
-  <span class="period-note" id="period-note"></span>
 </div>
 
 <section class="dash" id="d1">
@@ -311,9 +300,6 @@ const cut = () => state.period;
 function renderAll(){ renderPeriodBar(); renderD1(); renderD2(); }
 function renderPeriodBar(){
   segControl("#global-period", PERIOD_OPTIONS, PLABEL, state.period, setPeriod);
-  d3.select("#period-note").text(state.period === "all"
-    ? "Showing every play from 2021 onward."
-    : `Showing ${PLABEL[state.period].toLowerCase()} across both dashboards.`);
 }
 
 function renderD1(){
