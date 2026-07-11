@@ -175,7 +175,7 @@ text.num,text.val{font-family:var(--mono)}
   <div class="chips" id="d1-chips"></div>
 
   <div class="grid">
-    <div class="panel" id="p-families">
+    <div class="panel span2" id="p-families">
       <h3>Genre Family Distribution</h3>
       <p class="hint">Bars show percent of listener minutes by external genre family. Click a family to filter artist lists.</p>
       <div class="duo">
@@ -184,11 +184,13 @@ text.num,text.val{font-family:var(--mono)}
       </div>
     </div>
 
-    <div class="panel" id="p-artists">
+    <div class="panel span2" id="p-artists">
       <h3>Top Artist Concentration</h3>
       <p class="hint">Lollipops rank artists by total minutes. Ring = artist appears in the shared set.</p>
-      <div id="artists-Or"></div>
-      <div id="artists-Roman" style="margin-top:14px"></div>
+      <div class="duo">
+        <div id="artists-Or"></div>
+        <div id="artists-Roman"></div>
+      </div>
       <div id="artist-detail"></div>
     </div>
 
