@@ -99,13 +99,13 @@ text.num,text.val{font-family:var(--mono)}
 #tooltip .num{font-family:var(--mono)}
 #tooltip .t{font-weight:600;margin-bottom:2px}
 
-#artist-detail{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+.artist-detail{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
   padding:10px 12px;margin-top:12px;display:none;font-size:12.5px}
-#artist-detail.show{display:block}
-#artist-detail .cols{display:flex;gap:26px;flex-wrap:wrap;margin-top:4px}
-#artist-detail table{border-collapse:collapse}
-#artist-detail td{padding:1px 12px 1px 0;color:var(--ink2)}
-#artist-detail td.num{color:var(--ink);font-family:var(--mono)}
+.artist-detail.show{display:block}
+.artist-detail .cols{display:flex;gap:26px;flex-wrap:wrap;margin-top:4px}
+.artist-detail table{border-collapse:collapse}
+.artist-detail td{padding:1px 12px 1px 0;color:var(--ink2)}
+.artist-detail td.num{color:var(--ink);font-family:var(--mono)}
 
 .overlap-flex{display:flex;gap:30px;flex-wrap:wrap}
 .overlap-flex>.strips{flex:1 1 480px;min-width:340px}
@@ -191,14 +191,17 @@ text.num,text.val{font-family:var(--mono)}
         <div id="artists-Or"></div>
         <div id="artists-Roman"></div>
       </div>
-      <div id="artist-detail"></div>
+      <div class="artist-detail" id="artist-detail"></div>
     </div>
 
     <div class="panel span2" id="p-overlap">
       <h3>Minutes-Weighted Shared Listening</h3>
       <p class="hint">Each strip splits total listening minutes into shared artists and non-shared artists. Shared = 3+ minutes by each listener in the selected period.</p>
       <div class="overlap-flex">
-        <div class="strips" id="overlap-strips"></div>
+        <div class="strips">
+          <div id="overlap-strips"></div>
+          <div class="artist-detail" id="shared-artist-detail"></div>
+        </div>
         <div class="stable" id="shared-table"></div>
       </div>
     </div>
@@ -260,7 +263,7 @@ const fhour = h => `${h}:00`;
 
 const DEFAULTS = {
   period:"all",
-  d1: {selectedFamily:null, selectedArtist:null},
+  d1: {selectedFamily:null, selectedArtist:null, selectedArtistSource:null},
   d2: {selectedWindow:null}
 };
 const state = {period: DEFAULTS.period, d1: {...DEFAULTS.d1}, d2: {...DEFAULTS.d2}};
@@ -299,6 +302,11 @@ function renderChips(el, chips){
     .on("click", (ev, c) => c.clear());
 }
 
+function pickArtist(artist, source){
+  const same = state.d1.selectedArtist === artist && state.d1.selectedArtistSource === source;
+  setD1({selectedArtist: same ? null : artist, selectedArtistSource: same ? null : source});
+}
+
 const cut = () => state.period;
 function renderAll(){ renderPeriodBar(); renderD1(); renderD2(); }
 function renderPeriodBar(){
@@ -311,7 +319,7 @@ function renderPeriodBar(){
 function renderD1(){
   const chips = [];
   if (state.d1.selectedFamily) chips.push({label:`Genre: ${state.d1.selectedFamily}`, clear: () => setD1({selectedFamily:null})});
-  if (state.d1.selectedArtist) chips.push({label:`Artist: ${state.d1.selectedArtist}`, clear: () => setD1({selectedArtist:null})});
+  if (state.d1.selectedArtist) chips.push({label:`Artist: ${state.d1.selectedArtist}`, clear: () => setD1({selectedArtist:null, selectedArtistSource:null})});
   renderChips("#d1-chips", chips);
   renderD1Kpis(); renderFamilies(); renderArtists(); renderOverlap();
 }
@@ -415,7 +423,7 @@ function renderArtists(){
       .attr("stroke-width", d => d.artist === state.d1.selectedArtist ? 1.6 : 1);
     g.append("text").attr("class","val")
       .attr("x", d => x(d.minutes) + 11).attr("y", 4).text(d => fmin(d.minutes));
-    g.on("click", (ev, d) => setD1({selectedArtist: state.d1.selectedArtist === d.artist ? null : d.artist}))
+    g.on("click", (ev, d) => pickArtist(d.artist, "artists"))
      .on("mouseover", function(ev, d){
         highlightArtist(d.artist);
         showTip(ev, `<div class="t">${d.artist}</div>${fmin(d.minutes)} · <span class="num">${d.share}%</span> of ${HEB[o]}'s music`
@@ -425,7 +433,7 @@ function renderArtists(){
      .on("mousemove", moveTip)
      .on("mouseout", () => { highlightArtist(null); hideTip(); });
   }
-  renderArtistDetail();
+  renderArtistDetail("#artist-detail", "artists");
 }
 
 function highlightArtist(name){
@@ -450,9 +458,12 @@ function findArtist(owner, name){
   return null;
 }
 
-function renderArtistDetail(){
-  const el = d3.select("#artist-detail");
-  if (!state.d1.selectedArtist){ el.classed("show", false); return; }
+function renderArtistDetail(target, source){
+  const el = d3.select(target);
+  if (!state.d1.selectedArtist || state.d1.selectedArtistSource !== source){
+    el.html("").classed("show", false);
+    return;
+  }
   const name = state.d1.selectedArtist;
   const recs = OWNERS.map(o => [o, findArtist(o, name)]).filter(([, r]) => r);
   const family = artistFamily(name);
@@ -516,7 +527,7 @@ function renderOverlap(){
   const tr = t.selectAll("tr.row").data(rows).join("tr")
     .attr("class", d => "row clickable" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
     .attr("data-artist", d => d.artist)
-    .on("click", (ev, d) => setD1({selectedArtist: state.d1.selectedArtist === d.artist ? null : d.artist}))
+    .on("click", (ev, d) => pickArtist(d.artist, "overlap"))
     .on("mousemove", (ev, d) => showTip(ev, `<div class="t">${d.artist}</div>
       אור: <span class="num">${fmin(d.or_minutes)}</span><br>רומן: <span class="num">${fmin(d.roman_minutes)}</span>`))
     .on("mouseout", hideTip);
@@ -525,6 +536,7 @@ function renderOverlap(){
   tr.append("td").text(d => cell(d.or_minutes));
   tr.append("td").text(d => cell(d.roman_minutes));
 
+  renderArtistDetail("#shared-artist-detail", "overlap");
 }
 
 const parseYM = d3.timeParse("%Y-%m");
