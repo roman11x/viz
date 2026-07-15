@@ -58,11 +58,16 @@
         max-width: 820px;
         margin: 14px 0 10px;
       }
-      .hero .question em {
+      .hero .subquestion {
+        color: var(--ink2);
+        max-width: 720px;
+        margin: 0 0 10px;
+      }
+      .hero em {
         font-style: normal;
         color: var(--or);
       }
-      .hero .question em.r {
+      .hero em.r {
         color: var(--roman);
       }
       .legend {
@@ -119,46 +124,6 @@
         font: 700 24px/1.2 var(--display);
         letter-spacing: 0.4px;
       }
-      .kpis {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        margin-bottom: 14px;
-      }
-      .kcard {
-        flex: 1 1 300px;
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 12px 14px;
-        display: flex;
-        gap: 14px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .kcard .who {
-        font: 700 16px var(--display);
-        min-width: 60px;
-      }
-      .kcard .who small {
-        display: block;
-        color: var(--ink2);
-        font: 400 11px var(--sans);
-      }
-      .kcard .stat {
-        min-width: 72px;
-      }
-      .kcard .stat b {
-        display: block;
-        font: 500 15px var(--mono);
-        color: var(--ink);
-        white-space: nowrap;
-      }
-      .kcard .stat span {
-        font-size: 11px;
-        color: var(--ink2);
-      }
-
       .periodbar {
         position: sticky;
         top: 0;
@@ -505,6 +470,13 @@
         margin: 7px 0 2px;
       }
 
+      .slope-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 8px;
+        justify-content: space-between;
+      }
+
       @media (prefers-reduced-motion: no-preference) {
         .reveal {
           opacity: 0;
@@ -533,7 +505,11 @@
       <header class="hero">
         <h1>Two Listeners</h1>
         <p class="question">
-          Comparative visualization of two personal listening histories from 2021 onward:
+          Does similarity between two listeners have to live in musical taste — or can it be found in
+          listening patterns, routines, and the intensity of the bond to music?
+        </p>
+        <p class="subquestion">
+          Two complete listening histories, 2021 onward, with almost no overlapping taste:
           <em>Orr uses Apple Music.</em> <em class="r">Roman uses Spotify.</em>
         </p>
       </header>
@@ -548,8 +524,6 @@
 
       <section class="dash" id="d1">
         <h2>Taste Profile and Shared Listening</h2>
-
-        <div class="kpis" id="d1-kpis"></div>
 
         <div class="chips" id="d1-chips"></div>
 
@@ -598,8 +572,6 @@
       <section class="dash" id="d2">
         <h2>Routine and Listening Intensity</h2>
 
-        <div class="kpis" id="d2-kpis"></div>
-
         <div class="grid">
           <div class="panel span2" id="p-monthly">
             <h3>Monthly Listening Volume</h3>
@@ -613,19 +585,30 @@
           <div class="panel" id="p-routine">
             <h3>Listening Activity by Weekday and Hour</h3>
             <p class="hint">
-              Cells count plays by weekday and hour. Both listeners use the same color scale.
+              Cells count plays by weekday and hour. Each listener has their own color scale, so the two
+              routine shapes are comparable despite very different volumes.
             </p>
             <div class="duo" id="heatmaps"></div>
             <div id="window-panel"></div>
           </div>
 
-          <div class="panel" id="p-days">
-            <h3>Distribution of Active-Day Listening Minutes</h3>
+          <div class="panel" id="p-discovery">
+            <h3>Cumulative Artist Discovery</h3>
             <p class="hint">
-              Bars count active listening days by total minutes listened in the selected period.
+              Lines count how many distinct artists each listener has heard by each month. A steep line
+              keeps meeting new music; a flat line returns to known artists.
             </p>
-            <div id="hist-Or"></div>
-            <div id="hist-Roman" style="margin-top: 12px"></div>
+            <div id="discovery-chart"></div>
+          </div>
+
+          <div class="panel span2" id="p-change">
+            <h3>Before Uni vs University: Same Direction or Opposite?</h3>
+            <p class="hint">
+              Each mini chart connects a metric's Pre-uni value to its University value, one line per
+              listener. Parallel slopes = the two changed the same way; crossing slopes = they diverged.
+              Selecting a period highlights that side of every slope.
+            </p>
+            <div id="slopes"></div>
           </div>
         </div>
       </section>
@@ -756,29 +739,9 @@
             clear: () => setD1({ selectedArtist: null, selectedArtistSource: null }),
           });
         renderChips("#d1-chips", chips);
-        renderD1Kpis();
         renderFamilies();
         renderArtists();
         renderOverlap();
-      }
-      function renderD1Kpis() {
-        const el = d3.select("#d1-kpis").html("");
-        for (const o of OWNERS) {
-          const k = D.kpis[cut()][o];
-          const card = el.append("div").attr("class", "kcard");
-          card
-            .append("div")
-            .attr("class", "who")
-            .html(
-              `<span style="color:${COLOR[o]}">${NAME[o]}</span><small>${SRC[o]} · ${PLABEL[cut()]}</small>`,
-            );
-          const stat = (v, l) =>
-            card.append("div").attr("class", "stat").html(`<b>${v}</b><span>${l}</span>`);
-          stat(fm0(Math.round(k.hours)) + " h", "hours of music");
-          stat(fm0(k.plays), "plays");
-          stat(fm0(k.unique_artists), "different artists");
-          stat(trunc(k.top_artist, 15), `top artist · ${k.top_artist_share}%`);
-        }
       }
 
       function artistFamily(name) {
@@ -1149,32 +1112,11 @@
           });
         }
         renderChips("#d2-chips", chips);
-        renderD2Kpis();
         renderMonthly();
         renderHeatmaps();
         renderWindowPanel();
-        renderHistograms();
-      }
-      function renderD2Kpis() {
-        const el = d3.select("#d2-kpis").html(""),
-          p = cut();
-        for (const o of OWNERS) {
-          const k = D.kpis[p][o];
-          const monthly = p === "all" ? k.hours / D.monthly[o].length : D.change[o][p].avg_monthly_hours;
-          const card = el.append("div").attr("class", "kcard");
-          card
-            .append("div")
-            .attr("class", "who")
-            .html(`<span style="color:${COLOR[o]}">${NAME[o]}</span><small>${SRC[o]} · ${PLABEL[p]}</small>`);
-          const stat = (v, l) =>
-            card.append("div").attr("class", "stat").html(`<b>${v}</b><span>${l}</span>`);
-          stat(fm1t(monthly) + " h", "per month");
-          stat(
-            `${fm0(k.active_days)} <span style="font-size:11px;color:var(--ink2)">of ${fm0(D.meta.period_days[p])}</span>`,
-            "days with music",
-          );
-          stat(fhour(k.peak_hour), "peak hour");
-        }
+        renderDiscovery();
+        renderSlopes();
       }
 
       function renderMonthly() {
@@ -1363,9 +1305,11 @@
       function renderHeatmaps() {
         const grid = d3.select("#heatmaps").html("");
         const p = cut();
-        const max = d3.max(PERIOD_OPTIONS, (pp) =>
-          d3.max(OWNERS, (o) => d3.max(D.heatmap[pp][o], (d) => d.plays)),
-        );
+        // Per-listener color scale (own max across periods): Roman's volume would
+        // otherwise wash out Orr's pattern, and the panel compares routine SHAPE.
+        const ownerMax = {};
+        for (const o of OWNERS)
+          ownerMax[o] = d3.max(PERIOD_OPTIONS, (pp) => d3.max(D.heatmap[pp][o], (d) => d.plays));
         const cw = 26,
           chh = 15.5,
           mLh = 40,
@@ -1422,7 +1366,7 @@
             .attr("width", cw - 1)
             .attr("height", chh - 1)
             .attr("rx", 2)
-            .attr("fill", (d) => (d.plays > 0 ? ramp(d.plays / max) : "none"))
+            .attr("fill", (d) => (d.plays > 0 ? ramp(d.plays / ownerMax[o]) : "none"))
             .attr("stroke", (d) =>
               state.d2.selectedWindow &&
               d.weekday === state.d2.selectedWindow.weekday &&
@@ -1503,90 +1447,287 @@
         el.html(html + "</div>");
       }
 
-      const BIN_MIN = 30,
-        BIN_COUNT = 20;
-      const binIndex = (v) => Math.min(Math.floor(v / BIN_MIN), BIN_COUNT - 1);
+      // Cumulative discovery curve: distinct artists heard by the end of each
+      // month. Shows the whole span; the period filter dims the other period
+      // (same emphasis idiom as the monthly river).
+      function renderDiscovery() {
+        const el = d3.select("#discovery-chart").html("");
+        const w = 440,
+          h = 330,
+          mL = 46,
+          mR = 56,
+          mT = 14,
+          mB = 24;
+        const svg = el.append("svg").attr("viewBox", `0 0 ${w} ${h}`).style("width", "100%");
+        const months = D.discovery.Or.map((d) => d.ym);
+        const byYM = {};
+        for (const o of OWNERS) byYM[o] = new Map(D.discovery[o].map((d) => [d.ym, d]));
+        const x = d3.scaleTime(
+          [parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)],
+          [mL, w - mR],
+        );
+        const yMax = d3.max(OWNERS, (o) => D.discovery[o][D.discovery[o].length - 1].cum) * 1.06;
+        const y = d3.scaleLinear([0, yMax], [h - mB, mT]);
 
-      function renderHistograms() {
-        const p = cut();
-        const counts = {};
+        const uniX = x(parseYM(UNI_START.slice(0, 7)));
+        const active = cut();
+        const bands = [
+          ["pre_uni", mL, uniX],
+          ["university", uniX, w - mR],
+        ];
+        svg
+          .append("line")
+          .attr("x1", uniX)
+          .attr("x2", uniX)
+          .attr("y1", mT)
+          .attr("y2", h - mB)
+          .attr("stroke", "#8888A0")
+          .attr("stroke-dasharray", "4 3");
+
         for (const o of OWNERS) {
-          counts[o] = new Array(BIN_COUNT).fill(0);
-          for (const v of D.daily[p][o]) counts[o][binIndex(v)]++;
-        }
-        const yMax = d3.max(OWNERS, (o) => d3.max(counts[o]));
-        for (const o of OWNERS) {
-          const host = d3.select(`#hist-${o}`).html("");
-          const k = D.kpis[p][o];
-          host
-            .append("h4")
-            .attr("class", "owner-h")
-            .html(`${NAME[o]} <span class="kpi">a typical day: ${fmin(k.median_daily_min)}</span>`);
-          const w = 440,
-            h = 150,
-            mL = 34,
-            mB = 22,
-            mT = 6;
-          const x = d3.scaleBand(d3.range(BIN_COUNT), [mL, w - 6]).paddingInner(0.15);
-          const y = d3.scaleLinear([0, yMax], [h - mB, mT]);
-          const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("width", w);
           svg
-            .append("g")
-            .attr("class", "axis")
-            .attr("transform", `translate(${mL},0)`)
-            .call(d3.axisLeft(y).ticks(3));
-          const tickBins = d3.range(0, BIN_COUNT, 4);
-          svg
-            .selectAll(".xt")
-            .data(tickBins)
-            .join("text")
-            .attr("class", "val")
-            .attr("x", (b) => x(b))
-            .attr("y", h - 8)
-            .text((b) => (b * BIN_MIN) / 60 + "h");
+            .append("path")
+            .datum(D.discovery[o])
+            .attr(
+              "d",
+              d3
+                .line()
+                .x((d) => x(parseYM(d.ym)))
+                .y((d) => y(d.cum))
+                .curve(d3.curveMonotoneX),
+            )
+            .attr("fill", "none")
+            .attr("stroke", COLOR[o])
+            .attr("stroke-width", 2);
+          const last = D.discovery[o][D.discovery[o].length - 1];
           svg
             .append("text")
-            .attr("class", "val")
-            .attr("x", x(BIN_COUNT - 1) + x.bandwidth())
-            .attr("y", h - 8)
-            .attr("text-anchor", "end")
-            .text("9.5h+");
-          svg
-            .selectAll(".hbar")
-            .data(d3.range(BIN_COUNT))
-            .join("rect")
-            .attr("x", (b) => x(b))
-            .attr("y", (b) => y(counts[o][b]))
-            .attr("width", x.bandwidth())
-            .attr("height", (b) => y(0) - y(counts[o][b]))
-            .attr("rx", 2)
+            .attr("class", "val num")
+            .attr("x", x(parseYM(last.ym)) + 6)
+            .attr("y", y(last.cum) + 4)
             .attr("fill", COLOR[o])
-            .attr("fill-opacity", 0.85)
-            .on("mouseover", function (ev, b) {
-              d3.select(this).attr("fill-opacity", 1);
-              const lo = b * BIN_MIN,
-                hi = lo + BIN_MIN;
-              // Range in a single unit: hours once the bin crosses 60 minutes.
-              const range =
-                b === BIN_COUNT - 1
-                  ? lo > 60
-                    ? `${fm1t(lo / 60)}+ h`
-                    : `${lo}+ min`
-                  : hi > 60
-                    ? `${fm1t(lo / 60)}–${fm1t(hi / 60)} h`
-                    : `${lo}–${hi} min`;
-              showTip(
-                ev,
-                `<div class="t">${NAME[o]} · ${PLABEL[p]}</div>
-          <span class="num">${range}</span> of music in a day<br>
-          <span class="num">${fm0(counts[o][b])}</span> days`,
-              );
-            })
-            .on("mousemove", moveTip)
-            .on("mouseout", function () {
-              d3.select(this).attr("fill-opacity", 0.85);
-              hideTip();
-            });
+            .text(fm0(last.cum));
+        }
+        if (active !== "all") {
+          for (const [p, x0, x1] of bands.filter(([p]) => p !== active)) {
+            svg
+              .append("rect")
+              .attr("x", x0)
+              .attr("y", mT)
+              .attr("width", x1 - x0)
+              .attr("height", h - mT - mB)
+              .attr("fill", "rgba(13,13,18,.58)")
+              .attr("pointer-events", "none");
+          }
+          const [, x0, x1] = bands.find(([p]) => p === active);
+          svg
+            .append("rect")
+            .attr("x", x0)
+            .attr("y", mT)
+            .attr("width", x1 - x0)
+            .attr("height", h - mT - mB)
+            .attr("fill", "none")
+            .attr("stroke", "#C9C9D6")
+            .attr("stroke-width", 1)
+            .attr("pointer-events", "none");
+        }
+        svg
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", `translate(${mL},0)`)
+          .call(d3.axisLeft(y).ticks(5).tickFormat(fm0));
+        svg
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", `translate(0,${h - mB})`)
+          .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
+
+        const cross = svg
+          .append("line")
+          .attr("y1", mT)
+          .attr("y2", h - mB)
+          .attr("stroke", "#C9C9D6")
+          .attr("stroke-width", 0.7)
+          .style("display", "none");
+        svg
+          .append("rect")
+          .attr("x", mL)
+          .attr("y", mT)
+          .attr("width", w - mL - mR)
+          .attr("height", h - mT - mB)
+          .attr("fill", "transparent")
+          .on("mousemove", function (ev) {
+            const [mx] = d3.pointer(ev, this);
+            const m = months[d3.bisectCenter(months.map((s) => +parseYM(s)), +x.invert(mx))];
+            if (!m) return;
+            cross.attr("x1", x(parseYM(m))).attr("x2", x(parseYM(m))).style("display", null);
+            showTip(
+              ev,
+              `<div class="t num">${m}</div>` +
+                OWNERS.map((o) => {
+                  const d = byYM[o].get(m);
+                  return `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}:
+                    <span class="num">${fm0(d.cum)}</span> artists ·
+                    <span class="num">${fm0(d.new)}</span> new this month`;
+                }).join("<br>"),
+            );
+          })
+          .on("mouseout", () => {
+            cross.style("display", "none");
+            hideTip();
+          });
+      }
+
+      // Slopegraph: pre_uni -> university per metric, one line per listener.
+      // Always shows both periods; the period filter emphasizes its side.
+      function renderSlopes() {
+        const host = d3.select("#slopes").html("");
+        const days = D.meta.period_days;
+        // Selected side index: -1 = no period selected, both sides full strength.
+        const si = state.period === "pre_uni" ? 0 : state.period === "university" ? 1 : -1;
+        const sideOn = (s) => si < 0 || s === si;
+        const metrics = [
+          {
+            label: "hours / month",
+            fmt: (v) => fm1t(v) + " h",
+            val: (o, p) => D.change[o][p].avg_monthly_hours,
+          },
+          {
+            label: "median listening day",
+            fmt: fmin,
+            val: (o, p) => D.kpis[p][o].median_daily_min,
+          },
+          {
+            label: "days with music",
+            fmt: (v) => Math.round(v) + "%",
+            val: (o, p) => (D.kpis[p][o].active_days / days[p]) * 100,
+            pct: true,
+          },
+          {
+            label: "top-10 artist share",
+            fmt: (v) => fm1t(v) + "%",
+            val: (o, p) => D.kpis[p][o].top10_share,
+            pct: true,
+          },
+          {
+            label: "different artists",
+            fmt: fm0,
+            val: (o, p) => D.kpis[p][o].unique_artists,
+          },
+          {
+            label: "plays kept past 30 s",
+            fmt: (v) => fm1t(v) + "%",
+            val: (o, p) => 100 - D.kpis[p][o].under30_pct,
+            pct: true,
+          },
+        ];
+        const w = 178,
+          h = 170,
+          mT = 28,
+          mB = 20,
+          mX = 52;
+        const grid = host.append("div").attr("class", "slope-grid");
+        for (const m of metrics) {
+          const vals = OWNERS.map((o) => PERIODS.map((p) => m.val(o, p)));
+          const flat = vals.flat();
+          // Zero-based scale so slope steepness reflects real magnitude: percent
+          // metrics span the full 0-100, counts get modest headroom above their max.
+          const top = m.pct ? 100 : d3.max(flat) * 1.12;
+          const y = d3.scaleLinear([0, top], [h - mB, mT]);
+          const x = [mX, w - mX];
+          const svg = grid.append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("width", w);
+          svg
+            .append("text")
+            .attr("x", w / 2)
+            .attr("y", 13)
+            .attr("text-anchor", "middle")
+            .style("font", "600 11.5px var(--sans)")
+            .text(m.label);
+          svg
+            .selectAll(".guide")
+            .data(x)
+            .join("line")
+            .attr("x1", (d) => d)
+            .attr("x2", (d) => d)
+            .attr("y1", mT - 4)
+            .attr("y2", h - mB + 4)
+            .attr("stroke", "var(--border)");
+          svg
+            .selectAll(".pl")
+            .data(["Pre-uni", "Uni"])
+            .join("text")
+            .attr("class", "val")
+            .attr("x", (d, i) => x[i])
+            .attr("y", h - 5)
+            .attr("text-anchor", "middle")
+            .style("font-weight", (d, i) => (si === i ? 700 : 400))
+            .style("fill", (d, i) => (si === i ? "var(--ink)" : null))
+            .text((d) => d);
+          // Nudge the two value labels apart when a side's values nearly coincide.
+          const yPos = vals.map((v) => v.map(y));
+          const labelY = (side) => {
+            let ys = OWNERS.map((o, i) => yPos[i][side]);
+            if (Math.abs(ys[0] - ys[1]) < 11) {
+              const mid = (ys[0] + ys[1]) / 2;
+              ys = ys[0] <= ys[1] ? [mid - 5.5, mid + 5.5] : [mid + 5.5, mid - 5.5];
+            }
+            return ys;
+          };
+          const ly = [labelY(0), labelY(1)];
+          const groups = OWNERS.map((o, i) => {
+            const g = svg.append("g").attr("class", "clickable");
+            g.append("line")
+              .attr("x1", x[0])
+              .attr("x2", x[1])
+              .attr("y1", yPos[i][0])
+              .attr("y2", yPos[i][1])
+              .attr("stroke", COLOR[o])
+              .attr("stroke-width", 2);
+            g.selectAll("circle")
+              .data([0, 1])
+              .join("circle")
+              .attr("cx", (s) => x[s])
+              .attr("cy", (s) => yPos[i][s])
+              .attr("r", (s) => (sideOn(s) ? 3.5 : 2.8))
+              .attr("opacity", (s) => (sideOn(s) ? 1 : 0.4))
+              .attr("fill", COLOR[o]);
+            g.append("text")
+              .attr("class", "val num")
+              .attr("x", x[0] - 7)
+              .attr("y", ly[0][i] + 3.5)
+              .attr("text-anchor", "end")
+              .attr("opacity", sideOn(0) ? 1 : 0.4)
+              .attr("fill", COLOR[o])
+              .text(m.fmt(vals[i][0]));
+            g.append("text")
+              .attr("class", "val num")
+              .attr("x", x[1] + 7)
+              .attr("y", ly[1][i] + 3.5)
+              .attr("opacity", sideOn(1) ? 1 : 0.4)
+              .attr("fill", COLOR[o])
+              .text(m.fmt(vals[i][1]));
+            return g;
+          });
+          OWNERS.forEach((o, i) => {
+            const [v0, v1] = vals[i];
+            const delta = ((v1 - v0) / v0) * 100;
+            groups[i]
+              .on("mouseover", (ev) => {
+                groups.forEach((g, j) => g.attr("opacity", j === i ? 1 : 0.3));
+                showTip(
+                  ev,
+                  `<div class="t">${NAME[o]} — ${m.label}</div>
+                   Pre-uni: <span class="num">${m.fmt(v0)}</span><br>
+                   University: <span class="num">${m.fmt(v1)}</span>
+                   (<span class="num">${delta > 0 ? "+" : ""}${fm1t(delta)}%</span>)`,
+                );
+              })
+              .on("mousemove", moveTip)
+              .on("mouseout", () => {
+                groups.forEach((g) => g.attr("opacity", 1));
+                hideTip();
+              });
+          });
         }
       }
 
@@ -1603,7 +1744,7 @@
             }),
           { threshold: 0.06 },
         );
-        document.querySelectorAll(".panel,.kpis").forEach((el) => {
+        document.querySelectorAll(".panel").forEach((el) => {
           el.classList.add("reveal");
           io.observe(el);
         });

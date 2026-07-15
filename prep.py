@@ -217,6 +217,9 @@ def owner_kpis(df):
                 "active_days": int(len(daily)),
                 "median_daily_min": round(float(daily.median()), 1),
                 "peak_hour": int(g.groupby("hour_local").size().idxmax()),
+                # comparable across services (computed identically from ms_played);
+                # never use the native skip counters
+                "under30_pct": round(g["under_30s"].mean() * 100, 1),
             }
     return out
 
@@ -347,6 +350,21 @@ def daily_minutes(df):
     return out
 
 
+def discovery(df):
+    """Cumulative distinct artists heard by the end of each month, per owner —
+    backs the discovery curve. 'new' = artists first heard that month (in-window)."""
+    out = {}
+    all_months = sorted(df["ym"].unique())
+    for owner in OWNERS:
+        g = df[df["owner"] == owner]
+        first_ym = g.groupby("artist")["ym"].min()
+        new_per_month = first_ym.value_counts().reindex(all_months, fill_value=0).sort_index()
+        cum = new_per_month.cumsum()
+        out[owner] = [{"ym": ym, "new": int(new_per_month[ym]), "cum": int(cum[ym])}
+                      for ym in all_months]
+    return out
+
+
 def routine_windows(df):
     """Per (cut, owner, weekday, hour): totals + top artists/families for the
     heatmap-cell drilldown. Keyed 'cut|owner|weekday|hour' for O(1) lookup."""
@@ -396,6 +414,7 @@ def main():
         "monthly": monthly_hours(df),
         "heatmap": heatmaps(df),
         "daily": daily_minutes(df),
+        "discovery": discovery(df),
         "routine_window": routine_windows(df),
         "change": change,
     }
@@ -447,6 +466,14 @@ def main():
     for o in OWNERS:
         print(f"  {o:6} {change[o]['pre_uni']['avg_monthly_hours']} -> "
               f"{change[o]['university']['avg_monthly_hours']} h/mo")
+
+    print("\n-- discovery: final cumulative == unique_artists (all)")
+    for o in OWNERS:
+        final = data["discovery"][o][-1]["cum"]
+        whole = kpis["all"][o]["unique_artists"]
+        uni_new = sum(r["new"] for r in data["discovery"][o] if r["ym"] >= UNI_START[:7])
+        print(f"  {o:6} {final:,} vs {whole:,}  {'OK' if final == whole else 'MISMATCH'}"
+              f"  (new at university: {uni_new:,})")
 
 
 if __name__ == "__main__":

@@ -7,13 +7,19 @@ A static D3.js website for a University of Haifa Data Visualization course. It c
 complete personal listening histories: **Orr** — Apple Music — and **Roman** — Spotify.
 Central question: is similarity between two listeners only about taste, or also about routine and intensity?
 
-One scrolling page (no tabs), two stacked dashboards, each laid out classically (KPI strip → panel grid,
-hero first), in ONE personal, story-driven voice ("Wrapped for two people") — measures serve the story:
+One scrolling page (no tabs), two stacked dashboards (hero → panel grid; the KPI strips were removed —
+their numbers live in the written report, the page keeps only visualizations), in ONE personal,
+story-driven voice ("Wrapped for two people") — measures serve the story:
 1. **Listening DNA** — genre families, obsessions (top artists), minutes-weighted overlap.
-2. **Before Uni vs Uni: Music as Routine** — whole-span waveform timeline, daily-rhythm heatmap, daily-minutes histogram.
-Six panels, six DISTINCT chart shapes: paired family bars / lollipop dot-plot / 100% strip /
-mirrored-area waveform / heatmap / histogram. Panel titles are human questions; each panel ends with a
-data-computed takeaway line.
+2. **Before Uni vs Uni: Music as Routine** — whole-span waveform timeline, daily-rhythm heatmap,
+   cumulative artist-discovery curve, slopegraph.
+Seven panels, seven DISTINCT chart shapes: paired family bars / lollipop dot-plot / 100% strip /
+mirrored-area waveform / heatmap / cumulative discovery curve / slopegraph small-multiples
+(Pre-uni → University change). Panel titles are human questions. No takeaway lines (considered and
+explicitly declined by the owner). EVERY panel responds to the global period filter; whole-span charts
+(river, discovery curve) and the slopegraph respond by EMPHASIZING the selected period's region/side,
+not by re-cutting. The daily-minutes histogram was replaced by the discovery curve (redundant with the
+slopegraph's median-day and hours/month slopes).
 
 ## Stack and hosting
 - pandas for data prep; D3.js for every chart (required). No build step. Static files on GitHub Pages.
@@ -35,8 +41,11 @@ data-computed takeaway line.
   external/provisional wherever it appears.
 - "Shared" artists require REAL listening on both sides (≥1 over-30s play each), not name-only matches.
   Overlap is weighted by minutes, never artist count (79 shared artists, but 39% of Or's minutes vs ~1% of Roman's).
-- No skip/under_30s comparisons in the UI. If skips ever return, use the comparable `under_30s` measure —
-  never native skip counters (Apple and Spotify count skips differently).
+- Skip behavior appears in the UI only as the comparable `under_30s` measure (shown as "plays kept past
+  30 s" = 100 − under30_pct, in kpis and the slopegraph) — never native skip counters (Apple and Spotify
+  count skips differently).
+- Heatmaps use a PER-LISTENER color scale (own max across periods): the panel compares routine shape,
+  and one absolute scale would let Roman's volume wash out Orr's pattern.
 - Absolute, natural units by default; percentages ONLY in the overlap strip (where Roman's higher volume
   would mislead). No global absolute/normalized toggle.
 - No map: city-level location exists only for Or.
@@ -54,7 +63,8 @@ data-computed takeaway line.
 - State is kept PER DASHBOARD (independent stacked sections), each with its own period filter, reset,
   and removable filter chips:
   `{ d1: {period, selectedFamily, selectedArtist}, d2: {period, selectedWindow} }`.
-- The whole-span timeline (Dashboard 2 hero) deliberately ignores the period filter — it is the overview.
+- Whole-span charts (Dashboard 2 timeline, discovery curve) always draw the full span; the period
+  filter dims the non-selected period band and outlines the selected one (emphasis, not re-cutting).
 
 ## Data files (English names)
 - `fact_plays_with_genre.csv` — event-level (~180,003 rows). Prep only; never shipped to the browser.
