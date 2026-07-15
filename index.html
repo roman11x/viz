@@ -1,760 +1,1613 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Two Listeners — אור vs רומן</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0D0D12; --panel:#181820; --panel2:#1E1E28; --border:#2A2A36;
-  --ink:#E8E8F0; --ink2:#9A9AAD; --muted:#3A3A46; --floor:#242634;
-  --or:#4EA1FF; --roman:#FF9F1C;
-  --display:"Space Grotesk",sans-serif;
-  --sans:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
-}
-*{box-sizing:border-box;margin:0}
-body{background:var(--bg);color:var(--ink);font:14px/1.55 var(--sans);padding:0 20px 60px}
-.wrap{max-width:1180px;margin:0 auto}
-.mono,.num{font-family:var(--mono)}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Two Listeners — Orr vs Roman</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0d0d12;
+        --panel: #181820;
+        --panel2: #1e1e28;
+        --border: #2a2a36;
+        --ink: #e8e8f0;
+        --ink2: #9a9aad;
+        --muted: #3a3a46;
+        --floor: #242634;
+        --or: #4ea1ff;
+        --roman: #ff9f1c;
+        --display: "Space Grotesk", sans-serif;
+        --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font: 14px/1.55 var(--sans);
+        padding: 0 20px 60px;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+      .mono,
+      .num {
+        font-family: var(--mono);
+      }
 
-.hero{padding:48px 0 26px;border-bottom:1px solid var(--border)}
-.hero h1{font:700 clamp(30px,4.5vw,46px)/1.1 var(--display);letter-spacing:.5px}
-.hero .question{font:500 clamp(17px,2.2vw,22px)/1.45 var(--display);max-width:820px;margin:14px 0 10px}
-.hero .question em{font-style:normal;color:var(--or)}
-.hero .question em.r{color:var(--roman)}
-.legend{display:flex;gap:18px;margin:10px 0 12px;flex-wrap:wrap}
-.chip{display:inline-flex;align-items:center;gap:7px;font-weight:600}
-.chip i{width:12px;height:12px;border-radius:3px;background:var(--c)}
-.chip small{color:var(--ink2);font-weight:400}
-details.about{max-width:760px;color:var(--ink2);font-size:12.5px}
-details.about summary{cursor:pointer;color:var(--ink2);font-weight:600;padding:4px 0}
-details.about summary:hover{color:var(--ink)}
-details.about summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-details.about ul{margin:6px 0 4px 18px}
-details.about li{margin:2px 0}
+      .hero {
+        padding: 48px 0 26px;
+        border-bottom: 1px solid var(--border);
+      }
+      .hero h1 {
+        font: 700 clamp(30px, 4.5vw, 46px)/1.1 var(--display);
+        letter-spacing: 0.5px;
+      }
+      .hero .question {
+        font: 500 clamp(17px, 2.2vw, 22px)/1.45 var(--display);
+        max-width: 820px;
+        margin: 14px 0 10px;
+      }
+      .hero .question em {
+        font-style: normal;
+        color: var(--or);
+      }
+      .hero .question em.r {
+        color: var(--roman);
+      }
+      .legend {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-left: auto;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 600;
+      }
+      .chip i {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        background: var(--c);
+      }
+      .chip small {
+        color: var(--ink2);
+        font-weight: 400;
+      }
+      details.about {
+        max-width: 760px;
+        color: var(--ink2);
+        font-size: 12.5px;
+      }
+      details.about summary {
+        cursor: pointer;
+        color: var(--ink2);
+        font-weight: 600;
+        padding: 4px 0;
+      }
+      details.about summary:hover {
+        color: var(--ink);
+      }
+      details.about summary:focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 2px;
+      }
+      details.about ul {
+        margin: 6px 0 4px 18px;
+      }
+      details.about li {
+        margin: 2px 0;
+      }
 
-section.dash{padding:34px 0 8px}
-section.dash>h2{font:700 24px/1.2 var(--display);letter-spacing:.4px}
-.kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-.kcard{flex:1 1 300px;background:var(--panel);border:1px solid var(--border);border-radius:10px;
-  padding:12px 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.kcard .who{font:700 16px var(--display);min-width:60px}
-.kcard .who small{display:block;color:var(--ink2);font:400 11px var(--sans)}
-.kcard .stat{min-width:72px}
-.kcard .stat b{display:block;font:500 15px var(--mono);color:var(--ink);white-space:nowrap}
-.kcard .stat span{font-size:11px;color:var(--ink2)}
+      section.dash {
+        padding: 34px 0 8px;
+      }
+      section.dash > h2 {
+        font: 700 24px/1.2 var(--display);
+        letter-spacing: 0.4px;
+      }
+      .kpis {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .kcard {
+        flex: 1 1 300px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .kcard .who {
+        font: 700 16px var(--display);
+        min-width: 60px;
+      }
+      .kcard .who small {
+        display: block;
+        color: var(--ink2);
+        font: 400 11px var(--sans);
+      }
+      .kcard .stat {
+        min-width: 72px;
+      }
+      .kcard .stat b {
+        display: block;
+        font: 500 15px var(--mono);
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .kcard .stat span {
+        font-size: 11px;
+        color: var(--ink2);
+      }
 
-.periodbar{position:sticky;top:0;z-index:6;background:rgba(24,24,32,.96);backdrop-filter:blur(10px);
-  border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:9px 14px;margin-bottom:18px;
-  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.period-note{color:var(--ink2);font-size:12px}
-.ctlbar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--panel);
-  border:1px solid var(--border);border-radius:10px;padding:9px 14px;margin-bottom:16px}
-.ctl{display:flex;align-items:center;gap:8px}
-.ctl>label{color:var(--ink2);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px}
-.seg{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden}
-.seg button{background:transparent;border:none;color:var(--ink2);font:12.5px var(--sans);
-  padding:6px 14px;cursor:pointer;border-right:1px solid var(--border)}
-.seg button:last-child{border-right:none}
-.seg button.on{background:var(--panel2);color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}
-.reset{background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--ink2);
-  padding:6px 14px;cursor:pointer;font:12.5px var(--sans)}
-.reset:hover{color:var(--ink);border-color:var(--ink2)}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.dash>.chips:not(:empty){margin-bottom:16px}
-.fchip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);
-  border-radius:20px;color:var(--ink);font:12px var(--mono);padding:3px 10px;cursor:pointer}
-.fchip .x{color:var(--ink2);font-weight:700}
-.fchip:hover .x{color:var(--ink)}
-button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+      .periodbar {
+        position: sticky;
+        top: 0;
+        z-index: 6;
+        background: rgba(24, 24, 32, 0.96);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        padding: 9px 14px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .period-note {
+        color: var(--ink2);
+        font-size: 12px;
+      }
+      .ctlbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 9px 14px;
+        margin-bottom: 16px;
+      }
+      .ctl {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ctl > label {
+        color: var(--ink2);
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+      .seg {
+        display: flex;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        overflow: hidden;
+      }
+      .seg button {
+        background: transparent;
+        border: none;
+        color: var(--ink2);
+        font: 12.5px var(--sans);
+        padding: 6px 14px;
+        cursor: pointer;
+        border-right: 1px solid var(--border);
+      }
+      .seg button:last-child {
+        border-right: none;
+      }
+      .seg button.on {
+        background: var(--panel2);
+        color: var(--ink);
+        font-weight: 700;
+        box-shadow: inset 0 -2px 0 var(--ink);
+      }
+      .reset {
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        color: var(--ink2);
+        padding: 6px 14px;
+        cursor: pointer;
+        font: 12.5px var(--sans);
+      }
+      .reset:hover {
+        color: var(--ink);
+        border-color: var(--ink2);
+      }
+      .chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .dash > .chips:not(:empty) {
+        margin-bottom: 16px;
+      }
+      .fchip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        color: var(--ink);
+        font: 12px var(--mono);
+        padding: 3px 10px;
+        cursor: pointer;
+      }
+      .fchip .x {
+        color: var(--ink2);
+        font-weight: 700;
+      }
+      .fchip:hover .x {
+        color: var(--ink);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 2px;
+      }
 
-.grid{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px}
-.grid .span2{grid-column:1/-1}
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;
-  display:flex;flex-direction:column}
-.panel h3{font:700 16px/1.3 var(--display);letter-spacing:.2px}
-.hint{color:var(--ink2);font-size:12px;margin:3px 0 12px}
-.duo{display:flex;gap:26px;flex-wrap:wrap}
-.duo>div{flex:1 1 300px;min-width:280px}
-h4.owner-h{font-size:13px;margin-bottom:6px}
-h4.owner-h .kpi{color:var(--ink2);font-weight:400;font-size:12px;margin-left:8px;font-family:var(--mono)}
+      .grid {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+      .grid .span2 {
+        grid-column: 1/-1;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+      }
+      .panel h3 {
+        font: 700 16px/1.3 var(--display);
+        letter-spacing: 0.2px;
+      }
+      .hint {
+        color: var(--ink2);
+        font-size: 12px;
+        margin: 3px 0 12px;
+      }
+      .duo {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+      }
+      .duo > div {
+        flex: 1 1 300px;
+        min-width: 280px;
+      }
+      h4.owner-h {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      h4.owner-h .kpi {
+        color: var(--ink2);
+        font-weight: 400;
+        font-size: 12px;
+        margin-left: 8px;
+        font-family: var(--mono);
+      }
 
-svg{display:block;max-width:100%}
-svg text{font-family:var(--sans);fill:var(--ink)}
-text.num,text.val{font-family:var(--mono)}
-.bar-label{font-size:12px;fill:var(--ink2)}
-.bar-label.sel{fill:var(--ink);font-weight:600}
-.val{font-size:11px;fill:var(--ink2)}
-.axis text{fill:var(--ink2);font-size:10.5px;font-family:var(--mono)}
-.axis line,.axis path{stroke:var(--border)}
-.clickable{cursor:pointer}
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+      svg text {
+        font-family: var(--sans);
+        fill: var(--ink);
+      }
+      text.num,
+      text.val {
+        font-family: var(--mono);
+      }
+      .bar-label {
+        font-size: 12px;
+        fill: var(--ink2);
+      }
+      .bar-label.sel {
+        fill: var(--ink);
+        font-weight: 600;
+      }
+      .val {
+        font-size: 11px;
+        fill: var(--ink2);
+      }
+      .axis text {
+        fill: var(--ink2);
+        font-size: 10.5px;
+        font-family: var(--mono);
+      }
+      .axis line,
+      .axis path {
+        stroke: var(--border);
+      }
+      .clickable {
+        cursor: pointer;
+      }
 
-#tooltip{position:fixed;display:none;pointer-events:none;background:#22222E;border:1px solid var(--border);
-  border-radius:7px;padding:8px 11px;font:12px/1.5 var(--sans);color:var(--ink);max-width:300px;z-index:10;
-  box-shadow:0 4px 18px rgba(0,0,0,.5)}
-#tooltip .num{font-family:var(--mono)}
-#tooltip .t{font-weight:600;margin-bottom:2px}
+      #tooltip {
+        position: fixed;
+        display: none;
+        pointer-events: none;
+        background: #22222e;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 8px 11px;
+        font: 12px/1.5 var(--sans);
+        color: var(--ink);
+        max-width: 300px;
+        z-index: 10;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+      }
+      #tooltip .num {
+        font-family: var(--mono);
+      }
+      #tooltip .t {
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
 
-.artist-detail{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
-  padding:10px 12px;margin-top:12px;display:none;font-size:12.5px}
-.artist-detail.show{display:block}
-.artist-detail .cols{display:flex;gap:26px;flex-wrap:wrap;margin-top:4px}
-.artist-detail table{border-collapse:collapse}
-.artist-detail td{padding:1px 12px 1px 0;color:var(--ink2)}
-.artist-detail td.num{color:var(--ink);font-family:var(--mono)}
+      .artist-detail {
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-top: 12px;
+        display: none;
+        font-size: 12.5px;
+      }
+      .artist-detail.show {
+        display: block;
+      }
+      .artist-detail .cols {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+      }
+      .artist-detail table {
+        border-collapse: collapse;
+      }
+      .artist-detail td {
+        padding: 1px 12px 1px 0;
+        color: var(--ink2);
+      }
+      .artist-detail td.num {
+        color: var(--ink);
+        font-family: var(--mono);
+      }
 
-.overlap-flex{display:flex;gap:30px;flex-wrap:wrap}
-.overlap-flex>.strips{flex:1 1 480px;min-width:340px}
-.overlap-flex>.stable{flex:1 1 320px;min-width:290px}
-.stable table{border-collapse:collapse;width:100%;font-size:12.5px}
-.stable th{font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.6px;
-  text-align:right;padding:2px 6px;font-weight:500}
-.stable th:first-child{text-align:left}
-.stable td{padding:2px 6px;color:var(--ink2);font-family:var(--mono);text-align:right;white-space:nowrap}
-.stable td:first-child{font-family:var(--sans);text-align:left;overflow:hidden;text-overflow:ellipsis;max-width:170px}
-.stable tr.clickable:hover td,.stable tr.sel td{background:var(--panel2);color:var(--ink)}
+      .overlap-flex {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+      }
+      .overlap-flex > .strips {
+        flex: 1 1 480px;
+        min-width: 340px;
+      }
+      .overlap-flex > .stable {
+        flex: 1 1 320px;
+        min-width: 290px;
+      }
+      .stable table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12.5px;
+      }
+      .stable th {
+        font-size: 11px;
+        color: var(--ink2);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        text-align: right;
+        padding: 2px 6px;
+        font-weight: 500;
+      }
+      .stable th:first-child {
+        text-align: left;
+      }
+      .stable td {
+        padding: 2px 6px;
+        color: var(--ink2);
+        font-family: var(--mono);
+        text-align: right;
+        white-space: nowrap;
+      }
+      .stable td:first-child {
+        font-family: var(--sans);
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 170px;
+      }
+      .stable tr.clickable:hover td,
+      .stable tr.sel td {
+        background: var(--panel2);
+        color: var(--ink);
+      }
+      .stable tr.dim {
+        opacity: 0.32;
+      }
 
-#window-panel{background:var(--panel2);border:1px solid var(--border);border-radius:8px;
-  padding:11px 13px;margin-top:14px}
-#window-panel .hint{margin:0}
-#window-panel h4{font-size:13px;margin-bottom:2px}
-#window-panel .wcols{display:flex;gap:22px;flex-wrap:wrap}
-#window-panel .wcol{flex:1;min-width:130px}
-#window-panel .wcol h5{font-size:12px;margin-bottom:3px}
-#window-panel ul{list-style:none;font-size:11.5px;color:var(--ink2);padding:0}
-#window-panel li b{color:var(--ink);font-weight:500;font-family:var(--mono)}
-#window-panel .sect{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink2);margin:7px 0 2px}
+      #window-panel {
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 11px 13px;
+        margin-top: 14px;
+      }
+      #window-panel .hint {
+        margin: 0;
+      }
+      #window-panel h4 {
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+      #window-panel .wcols {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+      }
+      #window-panel .wcol {
+        flex: 1;
+        min-width: 130px;
+      }
+      #window-panel .wcol h5 {
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      #window-panel ul {
+        list-style: none;
+        font-size: 11.5px;
+        color: var(--ink2);
+        padding: 0;
+      }
+      #window-panel li b {
+        color: var(--ink);
+        font-weight: 500;
+        font-family: var(--mono);
+      }
+      #window-panel .sect {
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--ink2);
+        margin: 7px 0 2px;
+      }
 
-@media (prefers-reduced-motion: no-preference){
-  .reveal{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
-  .reveal.vis{opacity:1;transform:none}
-}
-@media (max-width:900px){
-  .grid{grid-template-columns:1fr}
-  .duo>div{min-width:100%}
-}
-</style>
-</head>
-<body>
-<div class="wrap">
+      @media (prefers-reduced-motion: no-preference) {
+        .reveal {
+          opacity: 0;
+          transform: translateY(10px);
+          transition:
+            opacity 0.5s ease,
+            transform 0.5s ease;
+        }
+        .reveal.vis {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .duo > div {
+          min-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <h1>Two Listeners</h1>
+        <p class="question">
+          Comparative visualization of two personal listening histories from 2021 onward:
+          <em>Orr uses Apple Music.</em> <em class="r">Roman uses Spotify.</em>
+        </p>
+      </header>
 
-<header class="hero">
-  <h1>Two Listeners</h1>
-  <p class="question">Comparative visualization of two personal listening histories from 2021 onward:
-    <em>אור uses Apple Music.</em> <em class="r">רומן uses Spotify.</em></p>
-  <div class="legend">
-    <span class="chip"><i style="--c:var(--or)"></i>אור <small>Apple Music</small></span>
-    <span class="chip"><i style="--c:var(--roman)"></i>רומן <small>Spotify</small></span>
-  </div>
-</header>
-
-<div class="periodbar" aria-label="Global period filter">
-  <span class="ctl"><label>Period:</label><span class="seg" id="global-period"></span></span>
-</div>
-
-<section class="dash" id="d1">
-  <h2>Taste Profile and Shared Listening</h2>
-
-  <div class="kpis" id="d1-kpis"></div>
-
-  <div class="chips" id="d1-chips"></div>
-
-  <div class="grid">
-    <div class="panel span2" id="p-families">
-      <h3>Genre Family Distribution</h3>
-      <p class="hint">Bars show percent of listener minutes by external genre family. Click a family to filter artist lists.</p>
-      <div class="duo">
-        <div id="families-Or"></div>
-        <div id="families-Roman"></div>
-      </div>
-    </div>
-
-    <div class="panel span2" id="p-artists">
-      <h3>Top Artist Concentration</h3>
-      <p class="hint">Lollipops rank artists by total minutes. Ring = artist appears in the shared set.</p>
-      <div class="duo">
-        <div id="artists-Or"></div>
-        <div id="artists-Roman"></div>
-      </div>
-      <div class="artist-detail" id="artist-detail"></div>
-    </div>
-
-    <div class="panel span2" id="p-overlap">
-      <h3>Minutes-Weighted Shared Listening</h3>
-      <p class="hint">Each strip splits total listening minutes into shared artists and non-shared artists. Shared = 3+ minutes by each listener in the selected period.</p>
-      <div class="overlap-flex">
-        <div class="strips">
-          <div id="overlap-strips"></div>
-          <div class="artist-detail" id="shared-artist-detail"></div>
+      <div class="periodbar" aria-label="Global period filter">
+        <span class="ctl"><label>Period:</label><span class="seg" id="global-period"></span></span>
+        <div class="legend">
+          <span class="chip"><i style="--c: var(--or)"></i>Orr <small>Apple Music</small></span>
+          <span class="chip"><i style="--c: var(--roman)"></i>Roman <small>Spotify</small></span>
         </div>
-        <div class="stable" id="shared-table"></div>
       </div>
+
+      <section class="dash" id="d1">
+        <h2>Taste Profile and Shared Listening</h2>
+
+        <div class="kpis" id="d1-kpis"></div>
+
+        <div class="chips" id="d1-chips"></div>
+
+        <div class="grid">
+          <div class="panel span2" id="p-families">
+            <h3>Genre Family Distribution</h3>
+            <p class="hint">
+              Bars show percent of listener minutes by external genre family. Click a family to filter artist
+              lists.
+            </p>
+            <div class="duo">
+              <div id="families-Or"></div>
+              <div id="families-Roman"></div>
+            </div>
+          </div>
+
+          <div class="panel span2" id="p-artists">
+            <h3>Top Artist Concentration</h3>
+            <p class="hint">
+              Lollipops rank artists by total minutes. Ring = artist appears in the shared set.
+            </p>
+            <div class="duo">
+              <div id="artists-Or"></div>
+              <div id="artists-Roman"></div>
+            </div>
+            <div class="artist-detail" id="artist-detail"></div>
+          </div>
+
+          <div class="panel span2" id="p-overlap">
+            <h3>Minutes-Weighted Shared Listening</h3>
+            <p class="hint">
+              Each strip splits total listening minutes into shared artists and non-shared artists. Shared =
+              3+ minutes by each listener in the selected period.<span id="overlap-filter-note"></span>
+            </p>
+            <div class="overlap-flex">
+              <div class="strips">
+                <div id="overlap-strips"></div>
+                <div class="artist-detail" id="shared-artist-detail"></div>
+              </div>
+              <div class="stable" id="shared-table"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dash" id="d2">
+        <h2>Routine and Listening Intensity</h2>
+
+        <div class="kpis" id="d2-kpis"></div>
+
+        <div class="grid">
+          <div class="panel span2" id="p-monthly">
+            <h3>Monthly Listening Volume</h3>
+            <p class="hint">
+              Monthly hours from 2021 onward. Orr is plotted above the baseline; Roman is plotted below it.
+              Distance from the baseline represents hours.
+            </p>
+            <div id="monthly-chart"></div>
+          </div>
+
+          <div class="panel" id="p-routine">
+            <h3>Listening Activity by Weekday and Hour</h3>
+            <p class="hint">
+              Cells count plays by weekday and hour. Both listeners use the same color scale.
+            </p>
+            <div class="duo" id="heatmaps"></div>
+            <div id="window-panel"></div>
+          </div>
+
+          <div class="panel" id="p-days">
+            <h3>Distribution of Active-Day Listening Minutes</h3>
+            <p class="hint">
+              Bars count active listening days by total minutes listened in the selected period.
+            </p>
+            <div id="hist-Or"></div>
+            <div id="hist-Roman" style="margin-top: 12px"></div>
+          </div>
+        </div>
+      </section>
     </div>
-  </div>
-</section>
+    <div id="tooltip"></div>
 
-<section class="dash" id="d2">
-  <h2>Routine and Listening Intensity</h2>
+    <script src="lib/d3.v7.min.js"></script>
+    <script src="data.js"></script>
+    <script>
+      "use strict";
+      const D = EMBEDDED_DATA;
 
-  <div class="kpis" id="d2-kpis"></div>
+      const WINDOW_START = D.meta.window_start;
+      const UNI_START = D.meta.uni_start;
+      const PERIODS = D.meta.periods;
+      const PERIOD_OPTIONS = ["all", ...PERIODS];
+      const OWNERS = ["Or", "Roman"];
+      const NAME = { Or: "Orr", Roman: "Roman" };
+      const SRC = { Or: "Apple Music", Roman: "Spotify" };
+      const COLOR = { Or: "#4EA1FF", Roman: "#FF9F1C" };
+      const OTHER_OF = { Or: "Roman", Roman: "Or" };
+      const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const WD3 = {
+        Sunday: "Sun",
+        Monday: "Mon",
+        Tuesday: "Tue",
+        Wednesday: "Wed",
+        Thursday: "Thu",
+        Friday: "Fri",
+        Saturday: "Sat",
+      };
+      const PLABEL = { all: "All", pre_uni: "Pre-uni", university: "University" };
 
-  <div class="grid">
-    <div class="panel span2" id="p-monthly">
-      <h3>Monthly Listening Volume</h3>
-      <p class="hint">Monthly hours from 2021 onward. אור is plotted above the baseline; רומן is plotted below it. Distance from the baseline represents hours.</p>
-      <div id="monthly-chart"></div>
-    </div>
+      const fm0 = d3.format(","),
+        fm1 = d3.format(",.1f"),
+        fm1t = d3.format(",.1~f");
+      // Hours once past 60 minutes (1 decimal under 10 h), minutes below.
+      const fmin = (m) =>
+        m > 60 ? (m >= 600 ? fm0(Math.round(m / 60)) : fm1t(m / 60)) + " h" : fm0(Math.round(m)) + " min";
+      const fhour = (h) => `${h}:00`;
 
-    <div class="panel" id="p-routine">
-      <h3>Listening Activity by Weekday and Hour</h3>
-      <p class="hint">Cells count plays by weekday and hour. Both listeners use the same color scale.</p>
-      <div class="duo" id="heatmaps"></div>
-      <div id="window-panel"></div>
-    </div>
+      const DEFAULTS = {
+        period: "all",
+        d1: { selectedFamily: null, selectedArtist: null, selectedArtistSource: null },
+        d2: { selectedWindow: null },
+      };
+      const state = { period: DEFAULTS.period, d1: { ...DEFAULTS.d1 }, d2: { ...DEFAULTS.d2 } };
+      function setPeriod(period) {
+        state.period = period;
+        renderAll();
+      }
+      function setD1(patch) {
+        Object.assign(state.d1, patch);
+        renderD1();
+      }
+      function setD2(patch) {
+        Object.assign(state.d2, patch);
+        renderD2();
+      }
 
-    <div class="panel" id="p-days">
-      <h3>Distribution of Active-Day Listening Minutes</h3>
-      <p class="hint">Bars count active listening days by total minutes listened in the selected period.</p>
-      <div id="hist-Or"></div>
-      <div id="hist-Roman" style="margin-top:12px"></div>
-    </div>
-  </div>
-</section>
-</div>
-<div id="tooltip"></div>
+      const tip = d3.select("#tooltip");
+      function showTip(ev, html) {
+        tip.html(html).style("display", "block");
+        const w = tip.node().offsetWidth,
+          h = tip.node().offsetHeight;
+        let x = ev.clientX + 14,
+          y = ev.clientY + 12;
+        if (x + w > innerWidth - 10) x = ev.clientX - w - 14;
+        if (y + h > innerHeight - 10) y = ev.clientY - h - 12;
+        tip.style("left", x + "px").style("top", y + "px");
+      }
+      const moveTip = (ev) => tip.style("display") === "block" && showTip(ev, tip.html());
+      const hideTip = () => tip.style("display", "none");
 
-<script src="lib/d3.v7.min.js"></script>
-<script src="data.js"></script>
-<script>
-'use strict';
-const D = EMBEDDED_DATA;
+      function ownerShade(owner, i, n) {
+        const c = d3.hsl(COLOR[owner]);
+        const l0 = Math.min(0.74, c.l + 0.1),
+          l1 = 0.32;
+        return d3.hsl(c.h, c.s, n <= 1 ? l0 : l0 - ((l0 - l1) * i) / Math.max(1, n - 1)).toString();
+      }
+      const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
-const WINDOW_START = D.meta.window_start;
-const UNI_START    = D.meta.uni_start;
-const PERIODS      = D.meta.periods;
-const PERIOD_OPTIONS = ["all", ...PERIODS];
-const OWNERS       = ["Or", "Roman"];
-const HEB   = {Or:"אור", Roman:"רומן"};
-const SRC   = {Or:"Apple Music", Roman:"Spotify"};
-const COLOR = {Or:"#4EA1FF", Roman:"#FF9F1C"};
-const OTHER_OF = {Or:"Roman", Roman:"Or"};
-const WEEKDAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-const WD3 = {Sunday:"Sun",Monday:"Mon",Tuesday:"Tue",Wednesday:"Wed",Thursday:"Thu",Friday:"Fri",Saturday:"Sat"};
-const PLABEL = {all:"All", pre_uni:"Pre-uni", university:"University"};
+      function segControl(el, options, labels, current, onPick) {
+        d3.select(el)
+          .selectAll("button")
+          .data(options)
+          .join("button")
+          .text((o) => labels[o])
+          .classed("on", (o) => o === current)
+          .on("click", (ev, o) => onPick(o));
+      }
+      function renderChips(el, chips) {
+        d3.select(el)
+          .selectAll("button")
+          .data(chips, (c) => c.label)
+          .join("button")
+          .attr("class", "fchip")
+          .html((c) => `<b>${c.label}</b><span class="x">×</span>`)
+          .attr("title", "Remove this filter")
+          .on("click", (ev, c) => c.clear());
+      }
 
-const fm0 = d3.format(","), fm1 = d3.format(",.1f");
-const fmin = m => m >= 6000 ? fm0(Math.round(m / 60)) + " h" : fm0(Math.round(m)) + " min";
-const fhour = h => `${h}:00`;
+      function pickArtist(artist, source) {
+        const same = state.d1.selectedArtist === artist && state.d1.selectedArtistSource === source;
+        setD1({ selectedArtist: same ? null : artist, selectedArtistSource: same ? null : source });
+      }
 
-const DEFAULTS = {
-  period:"all",
-  d1: {selectedFamily:null, selectedArtist:null, selectedArtistSource:null},
-  d2: {selectedWindow:null}
-};
-const state = {period: DEFAULTS.period, d1: {...DEFAULTS.d1}, d2: {...DEFAULTS.d2}};
-function setPeriod(period){ state.period = period; renderAll(); }
-function setD1(patch){ Object.assign(state.d1, patch); renderD1(); }
-function setD2(patch){ Object.assign(state.d2, patch); renderD2(); }
+      const cut = () => state.period;
+      function renderAll() {
+        renderPeriodBar();
+        renderD1();
+        renderD2();
+      }
+      function renderPeriodBar() {
+        segControl("#global-period", PERIOD_OPTIONS, PLABEL, state.period, setPeriod);
+      }
 
-const tip = d3.select("#tooltip");
-function showTip(ev, html){
-  tip.html(html).style("display","block");
-  const w = tip.node().offsetWidth, h = tip.node().offsetHeight;
-  let x = ev.clientX + 14, y = ev.clientY + 12;
-  if (x + w > innerWidth - 10) x = ev.clientX - w - 14;
-  if (y + h > innerHeight - 10) y = ev.clientY - h - 12;
-  tip.style("left", x + "px").style("top", y + "px");
-}
-const moveTip = ev => tip.style("display") === "block" && showTip(ev, tip.html());
-const hideTip = () => tip.style("display","none");
+      function renderD1() {
+        const chips = [];
+        if (state.d1.selectedFamily)
+          chips.push({
+            label: `Genre: ${state.d1.selectedFamily}`,
+            clear: () => setD1({ selectedFamily: null }),
+          });
+        if (state.d1.selectedArtist)
+          chips.push({
+            label: `Artist: ${state.d1.selectedArtist}`,
+            clear: () => setD1({ selectedArtist: null, selectedArtistSource: null }),
+          });
+        renderChips("#d1-chips", chips);
+        renderD1Kpis();
+        renderFamilies();
+        renderArtists();
+        renderOverlap();
+      }
+      function renderD1Kpis() {
+        const el = d3.select("#d1-kpis").html("");
+        for (const o of OWNERS) {
+          const k = D.kpis[cut()][o];
+          const card = el.append("div").attr("class", "kcard");
+          card
+            .append("div")
+            .attr("class", "who")
+            .html(
+              `<span style="color:${COLOR[o]}">${NAME[o]}</span><small>${SRC[o]} · ${PLABEL[cut()]}</small>`,
+            );
+          const stat = (v, l) =>
+            card.append("div").attr("class", "stat").html(`<b>${v}</b><span>${l}</span>`);
+          stat(fm0(Math.round(k.hours)) + " h", "hours of music");
+          stat(fm0(k.plays), "plays");
+          stat(fm0(k.unique_artists), "different artists");
+          stat(trunc(k.top_artist, 15), `top artist · ${k.top_artist_share}%`);
+        }
+      }
 
-function ownerShade(owner, i, n){
-  const c = d3.hsl(COLOR[owner]);
-  const l0 = Math.min(.74, c.l + .10), l1 = .32;
-  return d3.hsl(c.h, c.s, n <= 1 ? l0 : l0 - (l0 - l1) * i / Math.max(1, n - 1)).toString();
-}
-const trunc = (s, n) => s.length > n ? s.slice(0, n - 1) + "…" : s;
+      function artistFamily(name) {
+        for (const o of OWNERS) {
+          const r = D.top_artists[cut()][o].find((a) => a.artist === name);
+          if (r) return r.family;
+        }
+        return state.d1.selectedFamily;
+      }
 
-function segControl(el, options, labels, current, onPick){
-  d3.select(el).selectAll("button").data(options).join("button")
-    .text(o => labels[o]).classed("on", o => o === current)
-    .on("click", (ev, o) => onPick(o));
-}
-function renderChips(el, chips){
-  d3.select(el).selectAll("button").data(chips, c => c.label).join("button")
-    .attr("class","fchip").html(c => `<b>${c.label}</b><span class="x">×</span>`)
-    .attr("title","Remove this filter")
-    .on("click", (ev, c) => c.clear());
-}
+      function renderFamilies() {
+        const c = cut();
+        const echo = state.d1.selectedArtist ? artistFamily(state.d1.selectedArtist) : null;
+        const xMax = d3.max(OWNERS, (o) => d3.max(D.families[c][o], (g) => g.pct));
+        for (const o of OWNERS) {
+          const host = d3.select(`#families-${o}`).html("");
+          host
+            .append("h4")
+            .attr("class", "owner-h")
+            .html(`${NAME[o]} <span class="kpi">${fm0(Math.round(D.kpis[c][o].hours))} h</span>`);
+          const rows = D.families[c][o].filter((g) => g.pct >= 0.1);
+          const rowH = 30,
+            barH = 18,
+            mL = 112,
+            w = 330;
+          const x = d3.scaleLinear([0, xMax], [0, w - mL - 56]);
+          const svg = host
+            .append("svg")
+            .attr("viewBox", `0 0 ${w} ${rows.length * rowH + 4}`)
+            .attr("width", w);
+          const g = svg
+            .selectAll("g")
+            .data(rows)
+            .join("g")
+            .attr("transform", (d, i) => `translate(0,${i * rowH + 2})`)
+            .attr("class", "clickable");
+          g.append("rect")
+            .attr("width", w)
+            .attr("height", rowH - 1)
+            .attr("fill", "transparent");
+          g.append("text")
+            .attr("class", (d) => "bar-label" + (d.family === state.d1.selectedFamily ? " sel" : ""))
+            .attr("x", mL - 9)
+            .attr("y", barH - 3)
+            .attr("text-anchor", "end")
+            .text((d) => d.family);
+          g.append("rect")
+            .attr("x", mL + 2)
+            .attr("y", 2)
+            .attr("height", barH)
+            .attr("rx", 3)
+            .attr("width", (d) => Math.max(1.5, x(d.pct)))
+            .attr("fill", (d, i) =>
+              state.d1.selectedFamily && d.family !== state.d1.selectedFamily
+                ? "var(--muted)"
+                : ownerShade(o, i, rows.length),
+            )
+            .attr("stroke", (d) =>
+              d.family === state.d1.selectedFamily ? "#FFF" : d.family === echo ? "#C9C9D6" : "none",
+            )
+            .attr("stroke-dasharray", (d) =>
+              d.family === echo && d.family !== state.d1.selectedFamily ? "3 2" : null,
+            );
+          g.append("text")
+            .attr("class", "val")
+            .attr("x", (d) => mL + 8 + Math.max(1.5, x(d.pct)))
+            .attr("y", barH - 3)
+            .text((d) => fm1(d.pct) + "%");
+          g.on("click", (ev, d) =>
+            setD1({ selectedFamily: state.d1.selectedFamily === d.family ? null : d.family }),
+          )
+            .on("mouseover", function (ev, d) {
+              g.attr("opacity", (r) => (r === d ? 1 : 0.38));
+              showTip(
+                ev,
+                `<div class="t">${d.family}</div>${fmin(d.minutes)} · <span class="num">${d.pct}%</span> of ${NAME[o]}'s music<br>Most played: ${d.top_artist}`,
+              );
+            })
+            .on("mousemove", moveTip)
+            .on("mouseout", () => {
+              g.attr("opacity", 1);
+              hideTip();
+            });
+        }
+      }
 
-function pickArtist(artist, source){
-  const same = state.d1.selectedArtist === artist && state.d1.selectedArtistSource === source;
-  setD1({selectedArtist: same ? null : artist, selectedArtistSource: same ? null : source});
-}
+      function renderArtists() {
+        const c = cut(),
+          family = state.d1.selectedFamily;
+        const xMax = d3.max(OWNERS, (ow) => {
+          const l = family ? D.family_artists[c][ow][family] || [] : D.top_artists[c][ow].slice(0, 10);
+          return d3.max(l, (r) => r.minutes) || 0;
+        });
+        for (const o of OWNERS) {
+          const host = d3.select(`#artists-${o}`).html("");
+          const list = family
+            ? (D.family_artists[c][o][family] || []).slice(0, 8)
+            : D.top_artists[c][o].slice(0, 10);
+          const kpi = family
+            ? `their ${family} corner`
+            : `top 10 = ${D.kpis[c][o].top10_share}% of everything`;
+          host.append("h4").attr("class", "owner-h").html(`${NAME[o]} <span class="kpi">${kpi}</span>`);
+          if (!list.length) {
+            host.append("p").attr("class", "hint").text(`${NAME[o]} has no ${family} in this period.`);
+            continue;
+          }
+          const rowH = 23,
+            mL = 118,
+            w = 440;
+          const x = d3.scaleLinear([0, xMax], [mL + 4, w - 70]);
+          const svg = host
+            .append("svg")
+            .attr("viewBox", `0 0 ${w} ${list.length * rowH + 6}`)
+            .attr("width", w);
+          const g = svg
+            .selectAll("g")
+            .data(list)
+            .join("g")
+            .attr("class", "clickable")
+            .attr("data-artist", (d) => d.artist)
+            .attr("transform", (d, i) => `translate(0,${i * rowH + rowH / 2})`);
+          const dim = (d) => state.d1.selectedArtist && d.artist !== state.d1.selectedArtist;
+          g.append("rect")
+            .attr("y", -rowH / 2)
+            .attr("width", w)
+            .attr("height", rowH)
+            .attr("fill", "transparent");
+          g.append("text")
+            .attr("class", (d) => "bar-label" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
+            .attr("x", mL - 9)
+            .attr("y", 4)
+            .attr("text-anchor", "end")
+            .text((d) => trunc(d.artist, 16));
+          g.append("line")
+            .attr("x1", x(0))
+            .attr("x2", (d) => x(d.minutes))
+            .attr("y1", 0)
+            .attr("y2", 0)
+            .attr("stroke", (d) => (dim(d) ? "var(--muted)" : COLOR[o]))
+            .attr("stroke-width", 2)
+            .attr("opacity", 0.55);
+          g.filter((d) => d.shared)
+            .append("circle")
+            .attr("cx", (d) => x(d.minutes))
+            .attr("r", 8)
+            .attr("fill", "none")
+            .attr("stroke", (d) => COLOR[OTHER_OF[o]])
+            .attr("stroke-width", 1.3);
+          g.append("circle")
+            .attr("cx", (d) => x(d.minutes))
+            .attr("r", 4.8)
+            .attr("fill", (d) => (dim(d) ? "var(--muted)" : COLOR[o]))
+            .attr("stroke", (d) => (d.artist === state.d1.selectedArtist ? "#FFF" : "var(--panel)"))
+            .attr("stroke-width", (d) => (d.artist === state.d1.selectedArtist ? 1.6 : 1));
+          g.append("text")
+            .attr("class", "val")
+            .attr("x", (d) => x(d.minutes) + 11)
+            .attr("y", 4)
+            .text((d) => fmin(d.minutes));
+          g.on("click", (ev, d) => pickArtist(d.artist, "artists"))
+            .on("mouseover", function (ev, d) {
+              highlightArtist(d.artist);
+              showTip(
+                ev,
+                `<div class="t">${d.artist}</div>${fmin(d.minutes)} · <span class="num">${d.share}%</span> of ${NAME[o]}'s music` +
+                  (d.plays ? `<br>${fm0(d.plays)} plays` : "") +
+                  (d.shared ? `<br>${NAME[OTHER_OF[o]]} plays them too` : ""),
+              );
+            })
+            .on("mousemove", moveTip)
+            .on("mouseout", () => {
+              highlightArtist(null);
+              hideTip();
+            });
+        }
+        renderArtistDetail("#artist-detail", "artists");
+      }
 
-const cut = () => state.period;
-function renderAll(){ renderPeriodBar(); renderD1(); renderD2(); }
-function renderPeriodBar(){
-  segControl("#global-period", PERIOD_OPTIONS, PLABEL, state.period, setPeriod);
-}
+      function highlightArtist(name) {
+        d3.select("#d1")
+          .selectAll("[data-artist]")
+          .attr("opacity", function () {
+            return !name || this.dataset.artist === name ? 1 : 0.3;
+          })
+          .classed("sel", function () {
+            return name && this.dataset.artist === name;
+          });
+      }
 
-function renderD1(){
-  const chips = [];
-  if (state.d1.selectedFamily) chips.push({label:`Genre: ${state.d1.selectedFamily}`, clear: () => setD1({selectedFamily:null})});
-  if (state.d1.selectedArtist) chips.push({label:`Artist: ${state.d1.selectedArtist}`, clear: () => setD1({selectedArtist:null, selectedArtistSource:null})});
-  renderChips("#d1-chips", chips);
-  renderD1Kpis(); renderFamilies(); renderArtists(); renderOverlap();
-}
-function renderD1Kpis(){
-  const el = d3.select("#d1-kpis").html("");
-  for (const o of OWNERS){
-    const k = D.kpis[cut()][o];
-    const card = el.append("div").attr("class","kcard");
-    card.append("div").attr("class","who")
-      .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]} · ${PLABEL[cut()]}</small>`);
-    const stat = (v, l) => card.append("div").attr("class","stat").html(`<b>${v}</b><span>${l}</span>`);
-    stat(fm0(Math.round(k.hours)) + " h", "hours of music");
-    stat(fm0(k.plays), "plays");
-    stat(fm0(k.unique_artists), "different artists");
-    stat(trunc(k.top_artist, 15), `top artist · ${k.top_artist_share}%`);
-  }
-}
+      function findArtist(owner, name) {
+        const c = cut();
+        const full = D.top_artists[c][owner].find((a) => a.artist === name);
+        if (full) return full;
+        for (const f in D.family_artists[c][owner]) {
+          const r = D.family_artists[c][owner][f].find((a) => a.artist === name);
+          if (r) return { ...r, family: f };
+        }
+        const s = D.shared.top_shared[c].find((a) => a.artist === name);
+        if (s) {
+          const m = owner === "Or" ? s.or_minutes : s.roman_minutes;
+          if (m > 0) return { artist: name, minutes: m, shared: true };
+        }
+        return null;
+      }
 
-function artistFamily(name){
-  for (const o of OWNERS){
-    const r = D.top_artists[cut()][o].find(a => a.artist === name);
-    if (r) return r.family;
-  }
-  return state.d1.selectedFamily;
-}
-
-function renderFamilies(){
-  const c = cut();
-  const echo = state.d1.selectedArtist ? artistFamily(state.d1.selectedArtist) : null;
-  const xMax = d3.max(OWNERS, o => d3.max(D.families[c][o], g => g.pct));
-  for (const o of OWNERS){
-    const host = d3.select(`#families-${o}`).html("");
-    host.append("h4").attr("class","owner-h")
-      .html(`${HEB[o]} <span class="kpi">${fm0(Math.round(D.kpis[c][o].hours))} h</span>`);
-    const rows = D.families[c][o].filter(g => g.pct >= 0.1);
-    const rowH = 30, barH = 18, mL = 112, w = 330;
-    const x = d3.scaleLinear([0, xMax], [0, w - mL - 56]);
-    const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${rows.length * rowH + 4}`).attr("width", w);
-    const g = svg.selectAll("g").data(rows).join("g")
-      .attr("transform", (d, i) => `translate(0,${i * rowH + 2})`).attr("class","clickable");
-    g.append("rect").attr("width", w).attr("height", rowH - 1).attr("fill","transparent");
-    g.append("text").attr("class", d => "bar-label" + (d.family === state.d1.selectedFamily ? " sel" : ""))
-      .attr("x", mL - 9).attr("y", barH - 3).attr("text-anchor","end").text(d => d.family);
-    g.append("rect")
-      .attr("x", mL + 2).attr("y", 2).attr("height", barH).attr("rx", 3)
-      .attr("width", d => Math.max(1.5, x(d.pct)))
-      .attr("fill", (d, i) => state.d1.selectedFamily && d.family !== state.d1.selectedFamily
-        ? "var(--muted)" : ownerShade(o, i, rows.length))
-      .attr("stroke", d => d.family === state.d1.selectedFamily ? "#FFF"
-        : d.family === echo ? "#C9C9D6" : "none")
-      .attr("stroke-dasharray", d => d.family === echo && d.family !== state.d1.selectedFamily ? "3 2" : null);
-    g.append("text").attr("class","val")
-      .attr("x", d => mL + 8 + Math.max(1.5, x(d.pct))).attr("y", barH - 3)
-      .text(d => fm1(d.pct) + "%");
-    g.on("click", (ev, d) => setD1({selectedFamily: state.d1.selectedFamily === d.family ? null : d.family}))
-     .on("mouseover", function(ev, d){
-        g.attr("opacity", r => r === d ? 1 : .38);
-        showTip(ev, `<div class="t">${d.family}</div>${fmin(d.minutes)} · <span class="num">${d.pct}%</span> of ${HEB[o]}'s music<br>Most played: ${d.top_artist}`);
-      })
-     .on("mousemove", moveTip)
-     .on("mouseout", () => { g.attr("opacity", 1); hideTip(); });
-  }
-}
-
-function renderArtists(){
-  const c = cut(), family = state.d1.selectedFamily;
-  const xMax = d3.max(OWNERS, ow => {
-    const l = family ? (D.family_artists[c][ow][family] || []) : D.top_artists[c][ow].slice(0, 10);
-    return d3.max(l, r => r.minutes) || 0;
-  });
-  for (const o of OWNERS){
-    const host = d3.select(`#artists-${o}`).html("");
-    const list = family ? (D.family_artists[c][o][family] || []).slice(0, 8)
-                        : D.top_artists[c][o].slice(0, 10);
-    const kpi = family ? `their ${family} corner` : `top 10 = ${D.kpis[c][o].top10_share}% of everything`;
-    host.append("h4").attr("class","owner-h").html(`${HEB[o]} <span class="kpi">${kpi}</span>`);
-    if (!list.length){
-      host.append("p").attr("class","hint").text(`${HEB[o]} has no ${family} in this period.`);
-      continue;
-    }
-    const rowH = 23, mL = 118, w = 440;
-    const x = d3.scaleLinear([0, xMax], [mL + 4, w - 70]);
-    const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${list.length * rowH + 6}`).attr("width", w);
-    const g = svg.selectAll("g").data(list).join("g")
-      .attr("class","clickable").attr("data-artist", d => d.artist)
-      .attr("transform", (d, i) => `translate(0,${i * rowH + rowH / 2})`);
-    const dim = d => state.d1.selectedArtist && d.artist !== state.d1.selectedArtist;
-    g.append("rect").attr("y", -rowH / 2).attr("width", w).attr("height", rowH).attr("fill","transparent");
-    g.append("text").attr("class", d => "bar-label" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
-      .attr("x", mL - 9).attr("y", 4).attr("text-anchor","end").text(d => trunc(d.artist, 16));
-    g.append("line")
-      .attr("x1", x(0)).attr("x2", d => x(d.minutes)).attr("y1", 0).attr("y2", 0)
-      .attr("stroke", d => dim(d) ? "var(--muted)" : COLOR[o]).attr("stroke-width", 2).attr("opacity", .55);
-    g.filter(d => d.shared).append("circle")
-      .attr("cx", d => x(d.minutes)).attr("r", 8)
-      .attr("fill","none").attr("stroke", d => COLOR[OTHER_OF[o]]).attr("stroke-width", 1.3);
-    g.append("circle")
-      .attr("cx", d => x(d.minutes)).attr("r", 4.8)
-      .attr("fill", d => dim(d) ? "var(--muted)" : COLOR[o])
-      .attr("stroke", d => d.artist === state.d1.selectedArtist ? "#FFF" : "var(--panel)")
-      .attr("stroke-width", d => d.artist === state.d1.selectedArtist ? 1.6 : 1);
-    g.append("text").attr("class","val")
-      .attr("x", d => x(d.minutes) + 11).attr("y", 4).text(d => fmin(d.minutes));
-    g.on("click", (ev, d) => pickArtist(d.artist, "artists"))
-     .on("mouseover", function(ev, d){
-        highlightArtist(d.artist);
-        showTip(ev, `<div class="t">${d.artist}</div>${fmin(d.minutes)} · <span class="num">${d.share}%</span> of ${HEB[o]}'s music`
-          + (d.plays ? `<br>${fm0(d.plays)} plays` : "")
-          + (d.shared ? `<br>${HEB[OTHER_OF[o]]} plays them too` : ""));
-      })
-     .on("mousemove", moveTip)
-     .on("mouseout", () => { highlightArtist(null); hideTip(); });
-  }
-  renderArtistDetail("#artist-detail", "artists");
-}
-
-function highlightArtist(name){
-  d3.select("#d1").selectAll("[data-artist]")
-    .attr("opacity", function(){ return !name || this.dataset.artist === name ? 1 : .3; })
-    .classed("sel", function(){ return name && this.dataset.artist === name; });
-}
-
-function findArtist(owner, name){
-  const c = cut();
-  const full = D.top_artists[c][owner].find(a => a.artist === name);
-  if (full) return full;
-  for (const f in D.family_artists[c][owner]){
-    const r = D.family_artists[c][owner][f].find(a => a.artist === name);
-    if (r) return {...r, family: f};
-  }
-  const s = D.shared.top_shared[c].find(a => a.artist === name);
-  if (s){
-    const m = owner === "Or" ? s.or_minutes : s.roman_minutes;
-    if (m > 0) return {artist: name, minutes: m, shared: true};
-  }
-  return null;
-}
-
-function renderArtistDetail(target, source){
-  const el = d3.select(target);
-  if (!state.d1.selectedArtist || state.d1.selectedArtistSource !== source){
-    el.html("").classed("show", false);
-    return;
-  }
-  const name = state.d1.selectedArtist;
-  const recs = OWNERS.map(o => [o, findArtist(o, name)]).filter(([, r]) => r);
-  const family = artistFamily(name);
-  let html = `<b>${name}</b> <span style="color:var(--ink2)">· ${family || "family unknown"} ·
-    ${recs.length === 2 ? "present for both listeners" : recs.length ? `present for ${HEB[recs[0][0]]}` : "not in this period"}</span>
+      function renderArtistDetail(target, source) {
+        const el = d3.select(target);
+        if (!state.d1.selectedArtist || state.d1.selectedArtistSource !== source) {
+          el.html("").classed("show", false);
+          return;
+        }
+        const name = state.d1.selectedArtist;
+        const recs = OWNERS.map((o) => [o, findArtist(o, name)]).filter(([, r]) => r);
+        const family = artistFamily(name);
+        // Only show fields BOTH displayed records carry — top_shared fallback rows
+        // have minutes only, so per-record fields would render one-sided.
+        const bothHave = (key) => recs.every(([, r]) => r[key] != null);
+        const showPlays = bothHave("plays");
+        const showDates = source !== "overlap" && bothHave("first_played");
+        let html = `<b>${name}</b> <span style="color:var(--ink2)">· ${family || "family unknown"} ·
+    ${recs.length === 2 ? "present for both listeners" : recs.length ? `present for ${NAME[recs[0][0]]}` : "not in this period"}</span>
     <div class="cols">`;
-  for (const [o, r] of recs){
-    html += `<table><tr><td colspan="2" style="color:${COLOR[o]};font-weight:700">${HEB[o]}</td></tr>
+        for (const [o, r] of recs) {
+          const share = r.share != null ? r.share : (r.minutes / (D.kpis[cut()][o].hours * 60)) * 100;
+          html += `<table><tr><td colspan="2" style="color:${COLOR[o]};font-weight:700">${NAME[o]}</td></tr>
       <tr><td>listened</td><td class="num">${fmin(r.minutes)}</td></tr>
-      ${r.plays != null ? `<tr><td>plays</td><td class="num">${fm0(r.plays)}</td></tr>` : ""}
-      ${r.first_played ? `<tr><td>first / last</td><td class="num">${r.first_played} → ${r.last_played}</td></tr>` : ""}
+      <tr><td>share of their music</td><td class="num">${share > 0 && share < 0.05 ? "&lt;0.1" : fm1(share)}%</td></tr>
+      ${showPlays ? `<tr><td>plays</td><td class="num">${fm0(r.plays)}</td></tr>` : ""}
+      ${showDates ? `<tr><td>first / last</td><td class="num">${r.first_played} → ${r.last_played}</td></tr>` : ""}
       </table>`;
-  }
-  el.html(html + "</div>").classed("show", true);
-}
+        }
+        el.html(html + "</div>").classed("show", true);
+      }
 
-function renderOverlap(){
-  const c = cut();
-  const host = d3.select("#overlap-strips").html("");
-  const w = 560, rowH = 62, barH = 26, mT = 6;
-  const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${OWNERS.length * rowH + mT}`).style("width","100%");
-  OWNERS.forEach((o, i) => {
-    const totalMin = D.kpis[c][o].hours * 60;
-    const sharedPct = D.shared.pct_minutes[c][o];
-    const stripW = w - 4, sharedW = stripW * sharedPct / 100;
-    const y = mT + i * rowH;
-    const g = svg.append("g");
-    g.append("text").attr("x", 0).attr("y", y + 12).style("font-weight", 700)
-      .attr("fill", COLOR[o]).text(HEB[o]);
-    g.append("text").attr("class","val").attr("x", 42).attr("y", y + 12)
-      .text("total listening minutes");
-    g.append("rect").attr("x", 2).attr("y", y + 18).attr("width", Math.max(1.5, sharedW - 1))
-      .attr("height", barH).attr("rx", 3).attr("fill", COLOR[o])
-      .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — music we share</div>
-        <span class="num">${sharedPct}%</span> of ${HEB[o]}'s minutes · ${fmin(totalMin * sharedPct / 100)}<br>
-        on the ${D.shared.count_by_cut[c]} artists both clear ${D.meta.shared_min_minutes} minutes`))
-      .on("mouseout", hideTip);
-    g.append("rect").attr("x", 2 + sharedW + 1).attr("y", y + 18)
-      .attr("width", Math.max(1.5, stripW - sharedW - 1)).attr("height", barH).attr("rx", 3)
-      .attr("fill","var(--muted)")
-      .on("mousemove", ev => showTip(ev, `<div class="t">${HEB[o]} — non-shared listening</div>
-        <span class="num">${fm1(100 - sharedPct)}%</span> of ${HEB[o]}'s minutes · ${fmin(totalMin * (100 - sharedPct) / 100)}<br>
-        on artists outside the ${D.meta.shared_min_minutes}-minute shared set`))
-      .on("mouseout", hideTip);
-    const fits = sharedW > 96;
-    g.append("text").attr("class","val").style("font-weight", 600)
-      .style("fill", fits ? "#0D0D12" : "var(--ink)")
-      .attr("x", fits ? 2 + sharedW - 8 : 2 + sharedW + 7)
-      .attr("text-anchor", fits ? "end" : "start").attr("y", y + 35)
-      .text(`shared ${fm1(sharedPct)}%`);
-    if (stripW - sharedW > 90)
-      g.append("text").attr("class","val").attr("x", 2 + stripW - 6).attr("y", y + 35)
-        .attr("text-anchor","end").text("non-shared");
-  });
+      // Strict family lookup for the shared table: unlike artistFamily(), returns
+      // null when the family is unknown so unmatched artists dim under a filter.
+      function sharedArtistFamily(name) {
+        const c = cut();
+        for (const o of OWNERS) {
+          const r = D.top_artists[c][o].find((a) => a.artist === name);
+          if (r) return r.family;
+          for (const f in D.family_artists[c][o])
+            if (D.family_artists[c][o][f].some((a) => a.artist === name)) return f;
+        }
+        return null;
+      }
 
-  const rows = D.shared.top_shared[c];
-  const tbl = d3.select("#shared-table").html("");
-  const t = tbl.append("table");
-  t.append("tr").html(`<th>shared artists — ${PLABEL[c]} · ${D.meta.shared_min_minutes}+ min each</th>
-    <th style="color:${COLOR.Or}">אור</th><th style="color:${COLOR.Roman}">רומן</th>`);
-  const tr = t.selectAll("tr.row").data(rows).join("tr")
-    .attr("class", d => "row clickable" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
-    .attr("data-artist", d => d.artist)
-    .on("click", (ev, d) => pickArtist(d.artist, "overlap"))
-    .on("mousemove", (ev, d) => showTip(ev, `<div class="t">${d.artist}</div>
-      אור: <span class="num">${fmin(d.or_minutes)}</span><br>רומן: <span class="num">${fmin(d.roman_minutes)}</span>`))
-    .on("mouseout", hideTip);
-  const cell = m => fmin(m);
-  tr.append("td").text(d => d.artist);
-  tr.append("td").text(d => cell(d.or_minutes));
-  tr.append("td").text(d => cell(d.roman_minutes));
+      function renderOverlap() {
+        const c = cut();
+        const host = d3.select("#overlap-strips").html("");
+        const w = 560,
+          rowH = 62,
+          barH = 26,
+          mT = 6;
+        const svg = host
+          .append("svg")
+          .attr("viewBox", `0 0 ${w} ${OWNERS.length * rowH + mT}`)
+          .style("width", "100%");
+        OWNERS.forEach((o, i) => {
+          const totalMin = D.kpis[c][o].hours * 60;
+          const sharedPct = D.shared.pct_minutes[c][o];
+          const stripW = w - 4,
+            sharedW = (stripW * sharedPct) / 100;
+          const y = mT + i * rowH;
+          const g = svg.append("g");
+          g.append("text")
+            .attr("x", 0)
+            .attr("y", y + 12)
+            .style("font-weight", 700)
+            .attr("fill", COLOR[o])
+            .text(NAME[o]);
+          g.append("rect")
+            .attr("x", 2)
+            .attr("y", y + 18)
+            .attr("width", Math.max(1.5, sharedW - 1))
+            .attr("height", barH)
+            .attr("rx", 3)
+            .attr("fill", COLOR[o])
+            .on("mousemove", (ev) =>
+              showTip(
+                ev,
+                `<div class="t">${NAME[o]} — music we share</div>
+        <span class="num">${sharedPct}%</span> of ${NAME[o]}'s minutes · ${fmin((totalMin * sharedPct) / 100)}<br>
+        on the ${D.shared.count_by_cut[c]} artists both clear ${D.meta.shared_min_minutes} minutes`,
+              ),
+            )
+            .on("mouseout", hideTip);
+          g.append("rect")
+            .attr("x", 2 + sharedW + 1)
+            .attr("y", y + 18)
+            .attr("width", Math.max(1.5, stripW - sharedW - 1))
+            .attr("height", barH)
+            .attr("rx", 3)
+            .attr("fill", "var(--muted)")
+            .on("mousemove", (ev) =>
+              showTip(
+                ev,
+                `<div class="t">${NAME[o]} — non-shared listening</div>
+        <span class="num">${fm1(100 - sharedPct)}%</span> of ${NAME[o]}'s minutes · ${fmin((totalMin * (100 - sharedPct)) / 100)}<br>
+        on artists outside the ${D.meta.shared_min_minutes}-minute shared set`,
+              ),
+            )
+            .on("mouseout", hideTip);
+          const fits = sharedW > 96;
+          g.append("text")
+            .attr("class", "val")
+            .style("font-weight", 600)
+            .style("fill", fits ? "#0D0D12" : "var(--ink)")
+            .attr("x", fits ? 2 + sharedW - 8 : 2 + sharedW + 7)
+            .attr("text-anchor", fits ? "end" : "start")
+            .attr("y", y + 35)
+            .text(`shared ${fm1(sharedPct)}%`);
+          if (stripW - sharedW > 90)
+            g.append("text")
+              .attr("class", "val")
+              .attr("x", 2 + stripW - 6)
+              .attr("y", y + 35)
+              .attr("text-anchor", "end")
+              .text("non-shared");
+        });
 
-  renderArtistDetail("#shared-artist-detail", "overlap");
-}
+        const rows = D.shared.top_shared[c].slice(0, 10);
+        const tbl = d3.select("#shared-table").html("");
+        const t = tbl.append("table");
+        t.append("tr")
+          .html(`<th>top 10 shared artists — ${PLABEL[c]} · ${D.meta.shared_min_minutes}+ min each</th>
+    <th style="color:${COLOR.Or}">Orr</th><th style="color:${COLOR.Roman}">Roman</th>`);
+        const tr = t
+          .selectAll("tr.row")
+          .data(rows)
+          .join("tr")
+          .attr("class", (d) => "row clickable" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
+          .attr("data-artist", (d) => d.artist)
+          .on("click", (ev, d) => pickArtist(d.artist, "overlap"))
+          .on("mousemove", (ev, d) =>
+            showTip(
+              ev,
+              `<div class="t">${d.artist}</div>
+      Orr: <span class="num">${fmin(d.or_minutes)}</span><br>Roman: <span class="num">${fmin(d.roman_minutes)}</span>`,
+            ),
+          )
+          .on("mouseout", hideTip);
+        const cell = (m) => fmin(m);
+        tr.append("td").text((d) => d.artist);
+        tr.append("td").text((d) => cell(d.or_minutes));
+        tr.append("td").text((d) => cell(d.roman_minutes));
 
-const parseYM = d3.timeParse("%Y-%m");
+        const fam = state.d1.selectedFamily;
+        tr.classed("dim", (d) => fam && sharedArtistFamily(d.artist) !== fam);
+        d3.select("#overlap-filter-note").text(
+          fam
+            ? ` Strips always show total listening; the ${fam} filter dims non-matching artists in the table.`
+            : "",
+        );
 
-function renderD2(){
-  const chips = [];
-  if (state.d2.selectedWindow){
-    const {weekday, hour} = state.d2.selectedWindow;
-    chips.push({label:`Window: ${WD3[weekday]} ${fhour(hour)}`, clear: () => setD2({selectedWindow:null})});
-  }
-  renderChips("#d2-chips", chips);
-  renderD2Kpis(); renderMonthly(); renderHeatmaps(); renderWindowPanel(); renderHistograms();
-}
-function renderD2Kpis(){
-  const el = d3.select("#d2-kpis").html(""), p = cut();
-  for (const o of OWNERS){
-    const k = D.kpis[p][o];
-    const monthly = p === "all" ? k.hours / D.monthly[o].length : D.change[o][p].avg_monthly_hours;
-    const card = el.append("div").attr("class","kcard");
-    card.append("div").attr("class","who")
-      .html(`<span style="color:${COLOR[o]}">${HEB[o]}</span><small>${SRC[o]} · ${PLABEL[p]}</small>`);
-    const stat = (v, l) => card.append("div").attr("class","stat").html(`<b>${v}</b><span>${l}</span>`);
-    stat(fm1(monthly) + " h", "per month");
-    stat(`${fm0(k.active_days)} <span style="font-size:11px;color:var(--ink2)">of ${fm0(D.meta.period_days[p])}</span>`, "days with music");
-    stat(fhour(k.peak_hour), "peak hour");
-  }
-}
+        renderArtistDetail("#shared-artist-detail", "overlap");
+      }
 
-function renderMonthly(){
-  const el = d3.select("#monthly-chart").html("");
-  const w = 1120, h = 320, mL = 52, mR = 14, mT = 20, mB = 26;
-  const svg = el.append("svg").attr("viewBox", `0 0 ${w} ${h}`).style("width","100%");
-  const months = D.monthly.Or.map(d => d.ym);
-  const byYM = {};
-  for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map(d => [d.ym, d]));
-  const val = (o, ym) => byYM[o].get(ym)?.hours ?? 0;
-  const x = d3.scaleTime([parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)], [mL, w - mR]);
-  const yMax = d3.max(OWNERS, o => d3.max(months, ym => val(o, ym))) * 1.05;
-  const y = d3.scaleLinear([-yMax, yMax], [h - mB, mT]);
+      const parseYM = d3.timeParse("%Y-%m");
 
-  const uniX = x(parseYM(UNI_START.slice(0, 7)));
-  const active = cut();
-  const bands = [["pre_uni", mL, uniX], ["university", uniX, w - mR]];
-  for (const [p, x0, x1] of bands){
-    svg.append("rect").attr("x", x0).attr("y", mT).attr("width", x1 - x0).attr("height", h - mT - mB)
-      .attr("fill", p === "university" ? "rgba(255,255,255,.035)" : "transparent");
-    svg.append("text").attr("x", x0 + 8).attr("y", mT + 13).attr("class","val")
-      .style("text-transform","uppercase").style("letter-spacing","1px").text(PLABEL[p]);
-  }
-  svg.append("line").attr("x1", uniX).attr("x2", uniX).attr("y1", mT).attr("y2", h - mB)
-    .attr("stroke","#8888A0").attr("stroke-dasharray","4 3");
+      function renderD2() {
+        const chips = [];
+        if (state.d2.selectedWindow) {
+          const { weekday, hour } = state.d2.selectedWindow;
+          chips.push({
+            label: `Window: ${WD3[weekday]} ${fhour(hour)}`,
+            clear: () => setD2({ selectedWindow: null }),
+          });
+        }
+        renderChips("#d2-chips", chips);
+        renderD2Kpis();
+        renderMonthly();
+        renderHeatmaps();
+        renderWindowPanel();
+        renderHistograms();
+      }
+      function renderD2Kpis() {
+        const el = d3.select("#d2-kpis").html(""),
+          p = cut();
+        for (const o of OWNERS) {
+          const k = D.kpis[p][o];
+          const monthly = p === "all" ? k.hours / D.monthly[o].length : D.change[o][p].avg_monthly_hours;
+          const card = el.append("div").attr("class", "kcard");
+          card
+            .append("div")
+            .attr("class", "who")
+            .html(`<span style="color:${COLOR[o]}">${NAME[o]}</span><small>${SRC[o]} · ${PLABEL[p]}</small>`);
+          const stat = (v, l) =>
+            card.append("div").attr("class", "stat").html(`<b>${v}</b><span>${l}</span>`);
+          stat(fm1t(monthly) + " h", "per month");
+          stat(
+            `${fm0(k.active_days)} <span style="font-size:11px;color:var(--ink2)">of ${fm0(D.meta.period_days[p])}</span>`,
+            "days with music",
+          );
+          stat(fhour(k.peak_hour), "peak hour");
+        }
+      }
 
-  for (const o of OWNERS){
-    const sign = o === "Or" ? 1 : -1;
-    svg.append("path").datum(months)
-      .attr("d", d3.area().x(ym => x(parseYM(ym))).y0(y(0))
-        .y1(ym => y(sign * val(o, ym))).curve(d3.curveMonotoneX))
-      .attr("fill", COLOR[o]).attr("fill-opacity", .42)
-      .attr("stroke", COLOR[o]).attr("stroke-width", 1.5);
-    svg.append("g").selectAll("line")
-      .data(months.filter(ym => val(o, ym) > 0)).join("line")
-      .attr("x1", ym => x(parseYM(ym))).attr("x2", ym => x(parseYM(ym)))
-      .attr("y1", y(0)).attr("y2", ym => y(sign * val(o, ym)))
-      .attr("stroke", COLOR[o]).attr("stroke-width", 1.4).attr("opacity", .5);
-  }
-  if (active !== "all"){
-    for (const [p, x0, x1] of bands.filter(([p]) => p !== active)){
-      svg.append("rect").attr("x", x0).attr("y", mT).attr("width", x1 - x0).attr("height", h - mT - mB)
-        .attr("fill", "rgba(13,13,18,.58)").attr("pointer-events", "none");
-    }
-    const [, x0, x1] = bands.find(([p]) => p === active);
-    svg.append("rect").attr("x", x0).attr("y", mT).attr("width", x1 - x0).attr("height", h - mT - mB)
-      .attr("fill", "none").attr("stroke", "#C9C9D6").attr("stroke-width", 1).attr("pointer-events", "none");
-  }
-  svg.append("line").attr("x1", mL).attr("x2", w - mR).attr("y1", y(0)).attr("y2", y(0))
-    .attr("stroke","var(--border)");
-  svg.append("g").attr("class","axis").attr("transform", `translate(${mL},0)`)
-    .call(d3.axisLeft(y).ticks(7).tickFormat(t => fm0(Math.abs(t)) + " h"));
-  svg.append("g").attr("class","axis").attr("transform", `translate(0,${h - mB})`)
-    .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
-  svg.append("text").attr("x", mL + 8).attr("y", y(yMax * .8)).attr("fill", COLOR.Or)
-    .style("font-weight", 700).text("אור");
-  svg.append("text").attr("x", mL + 8).attr("y", y(-yMax * .8)).attr("fill", COLOR.Roman)
-    .style("font-weight", 700).text("רומן");
+      function renderMonthly() {
+        const el = d3.select("#monthly-chart").html("");
+        const w = 1120,
+          h = 320,
+          mL = 52,
+          mR = 14,
+          mT = 20,
+          mB = 26;
+        const svg = el.append("svg").attr("viewBox", `0 0 ${w} ${h}`).style("width", "100%");
+        const months = D.monthly.Or.map((d) => d.ym);
+        const byYM = {};
+        for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map((d) => [d.ym, d]));
+        const val = (o, ym) => byYM[o].get(ym)?.hours ?? 0;
+        const x = d3.scaleTime([parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)], [mL, w - mR]);
+        const yMax = d3.max(OWNERS, (o) => d3.max(months, (ym) => val(o, ym))) * 1.05;
+        const y = d3.scaleLinear([-yMax, yMax], [h - mB, mT]);
 
-  const cross = svg.append("line").attr("y1", mT).attr("y2", h - mB)
-    .attr("stroke","#C9C9D6").attr("stroke-width", .7).style("display","none");
-  svg.append("rect").attr("x", mL).attr("y", mT).attr("width", w - mL - mR).attr("height", h - mT - mB)
-    .attr("fill","transparent")
-    .on("mousemove", function(ev){
-      const [mx] = d3.pointer(ev, this);
-      const m = months[d3.bisectCenter(months.map(s => +parseYM(s)), +x.invert(mx))];
-      if (!m) return;
-      cross.attr("x1", x(parseYM(m))).attr("x2", x(parseYM(m))).style("display", null);
-      showTip(ev, `<div class="t num">${m}</div>` + OWNERS.map(o => {
-        const d = byYM[o].get(m);
-        return `<span style="color:${COLOR[o]}">●</span> ${HEB[o]}: <span class="num">${d ? fm1(d.hours) : 0} h</span> · ${d ? fm0(d.plays) : 0} plays`;
-      }).join("<br>"));
-    })
-    .on("mouseout", () => { cross.style("display","none"); hideTip(); });
+        const uniX = x(parseYM(UNI_START.slice(0, 7)));
+        const active = cut();
+        const bands = [
+          ["pre_uni", mL, uniX],
+          ["university", uniX, w - mR],
+        ];
+        for (const [p, x0, x1] of bands) {
+          svg
+            .append("rect")
+            .attr("x", x0)
+            .attr("y", mT)
+            .attr("width", x1 - x0)
+            .attr("height", h - mT - mB)
+            .attr("fill", p === "university" ? "rgba(255,255,255,.035)" : "transparent");
+          svg
+            .append("text")
+            .attr("x", x0 + 8)
+            .attr("y", mT + 13)
+            .attr("class", "val")
+            .style("text-transform", "uppercase")
+            .style("letter-spacing", "1px")
+            .text(PLABEL[p]);
+        }
+        svg
+          .append("line")
+          .attr("x1", uniX)
+          .attr("x2", uniX)
+          .attr("y1", mT)
+          .attr("y2", h - mB)
+          .attr("stroke", "#8888A0")
+          .attr("stroke-dasharray", "4 3");
 
-}
+        for (const o of OWNERS) {
+          const sign = o === "Or" ? 1 : -1;
+          svg
+            .append("path")
+            .datum(months)
+            .attr(
+              "d",
+              d3
+                .area()
+                .x((ym) => x(parseYM(ym)))
+                .y0(y(0))
+                .y1((ym) => y(sign * val(o, ym)))
+                .curve(d3.curveMonotoneX),
+            )
+            .attr("fill", COLOR[o])
+            .attr("fill-opacity", 0.42)
+            .attr("stroke", COLOR[o])
+            .attr("stroke-width", 1.5);
+          svg
+            .append("g")
+            .selectAll("line")
+            .data(months.filter((ym) => val(o, ym) > 0))
+            .join("line")
+            .attr("x1", (ym) => x(parseYM(ym)))
+            .attr("x2", (ym) => x(parseYM(ym)))
+            .attr("y1", y(0))
+            .attr("y2", (ym) => y(sign * val(o, ym)))
+            .attr("stroke", COLOR[o])
+            .attr("stroke-width", 1.4)
+            .attr("opacity", 0.5);
+        }
+        if (active !== "all") {
+          for (const [p, x0, x1] of bands.filter(([p]) => p !== active)) {
+            svg
+              .append("rect")
+              .attr("x", x0)
+              .attr("y", mT)
+              .attr("width", x1 - x0)
+              .attr("height", h - mT - mB)
+              .attr("fill", "rgba(13,13,18,.58)")
+              .attr("pointer-events", "none");
+          }
+          const [, x0, x1] = bands.find(([p]) => p === active);
+          svg
+            .append("rect")
+            .attr("x", x0)
+            .attr("y", mT)
+            .attr("width", x1 - x0)
+            .attr("height", h - mT - mB)
+            .attr("fill", "none")
+            .attr("stroke", "#C9C9D6")
+            .attr("stroke-width", 1)
+            .attr("pointer-events", "none");
+        }
+        svg
+          .append("line")
+          .attr("x1", mL)
+          .attr("x2", w - mR)
+          .attr("y1", y(0))
+          .attr("y2", y(0))
+          .attr("stroke", "var(--border)");
+        svg
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", `translate(${mL},0)`)
+          .call(
+            d3
+              .axisLeft(y)
+              .ticks(7)
+              .tickFormat((t) => fm0(Math.abs(t)) + " h"),
+          );
+        svg
+          .append("g")
+          .attr("class", "axis")
+          .attr("transform", `translate(0,${h - mB})`)
+          .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
+        svg
+          .append("text")
+          .attr("x", mL + 8)
+          .attr("y", y(yMax * 0.8))
+          .attr("fill", COLOR.Or)
+          .style("font-weight", 700)
+          .text("Orr");
+        svg
+          .append("text")
+          .attr("x", mL + 8)
+          .attr("y", y(-yMax * 0.8))
+          .attr("fill", COLOR.Roman)
+          .style("font-weight", 700)
+          .text("Roman");
 
-function renderHeatmaps(){
-  const grid = d3.select("#heatmaps").html("");
-  const p = cut();
-  const max = d3.max(PERIOD_OPTIONS, pp => d3.max(OWNERS, o => d3.max(D.heatmap[pp][o], d => d.plays)));
-  const cw = 26, chh = 15.5, mLh = 40, mTh = 32;
-  const W = mLh + 7 * cw + 4, H = mTh + 24 * chh + 4;
+        const cross = svg
+          .append("line")
+          .attr("y1", mT)
+          .attr("y2", h - mB)
+          .attr("stroke", "#C9C9D6")
+          .attr("stroke-width", 0.7)
+          .style("display", "none");
+        svg
+          .append("rect")
+          .attr("x", mL)
+          .attr("y", mT)
+          .attr("width", w - mL - mR)
+          .attr("height", h - mT - mB)
+          .attr("fill", "transparent")
+          .on("mousemove", function (ev) {
+            const [mx] = d3.pointer(ev, this);
+            const m =
+              months[
+                d3.bisectCenter(
+                  months.map((s) => +parseYM(s)),
+                  +x.invert(mx),
+                )
+              ];
+            if (!m) return;
+            cross
+              .attr("x1", x(parseYM(m)))
+              .attr("x2", x(parseYM(m)))
+              .style("display", null);
+            showTip(
+              ev,
+              `<div class="t num">${m}</div>` +
+                OWNERS.map((o) => {
+                  const d = byYM[o].get(m);
+                  return `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}: <span class="num">${d ? fm1t(d.hours) : 0} h</span> · ${d ? fm0(d.plays) : 0} plays`;
+                }).join("<br>"),
+            );
+          })
+          .on("mouseout", () => {
+            cross.style("display", "none");
+            hideTip();
+          });
+      }
 
-  for (const o of OWNERS){
-    const lookup = new Map(D.heatmap[p][o].map(d => [`${d.weekday}|${d.hour}`, d.plays]));
-    const cells = WEEKDAYS.flatMap(wd => d3.range(24).map(hr =>
-      ({weekday: wd, hour: hr, plays: lookup.get(`${wd}|${hr}`) || 0})));
-    const box = grid.append("div");
-    const svg = box.append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", W);
-    svg.append("text").attr("x", mLh).attr("y", 12).style("font","600 12px var(--display)")
-      .attr("fill", COLOR[o]).text(`${HEB[o]} · ${PLABEL[p]}`);
-    svg.selectAll(".wdl").data(WEEKDAYS).join("text").attr("class","val wdl")
-      .attr("data-wd", d => d)
-      .attr("x", d => mLh + WEEKDAYS.indexOf(d) * cw + cw / 2).attr("y", mTh - 6)
-      .attr("text-anchor","middle").style("font-size","9px").text(d => WD3[d])
-      .on("mouseover", (ev, d) => hoverWD(d)).on("mouseout", () => hoverWD(null));
-    svg.selectAll(".hrl").data([0, 6, 12, 18]).join("text").attr("class","val")
-      .attr("x", mLh - 5).attr("y", d => mTh + d * chh + 11).attr("text-anchor","end")
-      .style("font-size","9px").text(fhour);
-    const ramp = d3.interpolateLab("#242634", COLOR[o]);
-    svg.selectAll(".hm-cell").data(cells).join("rect")
-      .attr("class","hm-cell clickable").attr("data-wd", d => d.weekday)
-      .attr("x", d => mLh + WEEKDAYS.indexOf(d.weekday) * cw).attr("y", d => mTh + d.hour * chh)
-      .attr("width", cw - 1).attr("height", chh - 1).attr("rx", 2)
-      .attr("fill", d => d.plays > 0 ? ramp(d.plays / max) : "none")
-      .attr("stroke", d => state.d2.selectedWindow && d.weekday === state.d2.selectedWindow.weekday
-          && d.hour === state.d2.selectedWindow.hour ? "#FFF" : "var(--border)")
-      .attr("stroke-width", d => state.d2.selectedWindow && d.weekday === state.d2.selectedWindow.weekday
-          && d.hour === state.d2.selectedWindow.hour ? 1.4 : .5)
-      .on("click", (ev, d) => {
-        const s = state.d2.selectedWindow;
-        setD2({selectedWindow: s && s.weekday === d.weekday && s.hour === d.hour
-          ? null : {weekday: d.weekday, hour: d.hour}});
-      })
-      .on("mouseover", function(ev, d){
-        hoverWD(d.weekday);
-        showTip(ev, `<div class="t">${HEB[o]} · ${PLABEL[p]}</div>${WD3[d.weekday]}
-          <span class="num">${d.hour}:00–${d.hour + 1}:00</span><br><span class="num">${fm0(d.plays)}</span> plays`);
-      })
-      .on("mousemove", moveTip)
-      .on("mouseout", () => { hoverWD(null); hideTip(); });
-  }
+      function renderHeatmaps() {
+        const grid = d3.select("#heatmaps").html("");
+        const p = cut();
+        const max = d3.max(PERIOD_OPTIONS, (pp) =>
+          d3.max(OWNERS, (o) => d3.max(D.heatmap[pp][o], (d) => d.plays)),
+        );
+        const cw = 26,
+          chh = 15.5,
+          mLh = 40,
+          mTh = 32;
+        const W = mLh + 7 * cw + 4,
+          H = mTh + 24 * chh + 4;
 
-}
-function hoverWD(wd){
-  d3.selectAll(".hm-cell").attr("opacity", d => !wd || d.weekday === wd ? 1 : .35);
-  d3.selectAll(".wdl").style("font-weight", function(){ return this.dataset.wd === wd ? 700 : 400; })
-    .style("fill", function(){ return this.dataset.wd === wd ? "var(--ink)" : null; });
-}
+        for (const o of OWNERS) {
+          const lookup = new Map(D.heatmap[p][o].map((d) => [`${d.weekday}|${d.hour}`, d.plays]));
+          const cells = WEEKDAYS.flatMap((wd) =>
+            d3.range(24).map((hr) => ({ weekday: wd, hour: hr, plays: lookup.get(`${wd}|${hr}`) || 0 })),
+          );
+          const box = grid.append("div");
+          const svg = box.append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", W);
+          svg
+            .append("text")
+            .attr("x", mLh)
+            .attr("y", 12)
+            .style("font", "600 12px var(--display)")
+            .attr("fill", COLOR[o])
+            .text(`${NAME[o]} · ${PLABEL[p]}`);
+          svg
+            .selectAll(".wdl")
+            .data(WEEKDAYS)
+            .join("text")
+            .attr("class", "val wdl")
+            .attr("data-wd", (d) => d)
+            .attr("x", (d) => mLh + WEEKDAYS.indexOf(d) * cw + cw / 2)
+            .attr("y", mTh - 6)
+            .attr("text-anchor", "middle")
+            .style("font-size", "9px")
+            .text((d) => WD3[d])
+            .on("mouseover", (ev, d) => hoverWD(d))
+            .on("mouseout", () => hoverWD(null));
+          svg
+            .selectAll(".hrl")
+            .data([0, 6, 12, 18])
+            .join("text")
+            .attr("class", "val")
+            .attr("x", mLh - 5)
+            .attr("y", (d) => mTh + d * chh + 11)
+            .attr("text-anchor", "end")
+            .style("font-size", "9px")
+            .text(fhour);
+          const ramp = d3.interpolateLab("#242634", COLOR[o]);
+          svg
+            .selectAll(".hm-cell")
+            .data(cells)
+            .join("rect")
+            .attr("class", "hm-cell clickable")
+            .attr("data-wd", (d) => d.weekday)
+            .attr("x", (d) => mLh + WEEKDAYS.indexOf(d.weekday) * cw)
+            .attr("y", (d) => mTh + d.hour * chh)
+            .attr("width", cw - 1)
+            .attr("height", chh - 1)
+            .attr("rx", 2)
+            .attr("fill", (d) => (d.plays > 0 ? ramp(d.plays / max) : "none"))
+            .attr("stroke", (d) =>
+              state.d2.selectedWindow &&
+              d.weekday === state.d2.selectedWindow.weekday &&
+              d.hour === state.d2.selectedWindow.hour
+                ? "#FFF"
+                : "var(--border)",
+            )
+            .attr("stroke-width", (d) =>
+              state.d2.selectedWindow &&
+              d.weekday === state.d2.selectedWindow.weekday &&
+              d.hour === state.d2.selectedWindow.hour
+                ? 1.4
+                : 0.5,
+            )
+            .on("click", (ev, d) => {
+              const s = state.d2.selectedWindow;
+              setD2({
+                selectedWindow:
+                  s && s.weekday === d.weekday && s.hour === d.hour
+                    ? null
+                    : { weekday: d.weekday, hour: d.hour },
+              });
+            })
+            .on("mouseover", function (ev, d) {
+              hoverWD(d.weekday);
+              showTip(
+                ev,
+                `<div class="t">${NAME[o]} · ${PLABEL[p]}</div>${WD3[d.weekday]}
+          <span class="num">${d.hour}:00–${d.hour + 1}:00</span><br><span class="num">${fm0(d.plays)}</span> plays`,
+              );
+            })
+            .on("mousemove", moveTip)
+            .on("mouseout", () => {
+              hoverWD(null);
+              hideTip();
+            });
+        }
+      }
+      function hoverWD(wd) {
+        d3.selectAll(".hm-cell").attr("opacity", (d) => (!wd || d.weekday === wd ? 1 : 0.35));
+        d3.selectAll(".wdl")
+          .style("font-weight", function () {
+            return this.dataset.wd === wd ? 700 : 400;
+          })
+          .style("fill", function () {
+            return this.dataset.wd === wd ? "var(--ink)" : null;
+          });
+      }
 
-function renderWindowPanel(){
-  const el = d3.select("#window-panel");
-  if (!state.d2.selectedWindow){
-    el.html(`<p class="hint">Select a heatmap cell to show totals and top artists for that hour.</p>`);
-    return;
-  }
-  const {weekday, hour} = state.d2.selectedWindow, p = cut();
-  const rw = o => D.routine_window[`${p}|${o}|${weekday}|${hour}`]
-    || {plays: 0, minutes: 0, top_artists: [], top_families: []};
-  let html = `<h4>${weekday} · <span class="num">${hour}:00–${hour + 1}:00</span> · ${PLABEL[p]}</h4>
+      function renderWindowPanel() {
+        const el = d3.select("#window-panel");
+        if (!state.d2.selectedWindow) {
+          el.html(`<p class="hint">Select a heatmap cell to show totals and top artists for that hour.</p>`);
+          return;
+        }
+        const { weekday, hour } = state.d2.selectedWindow,
+          p = cut();
+        const rw = (o) =>
+          D.routine_window[`${p}|${o}|${weekday}|${hour}`] || {
+            plays: 0,
+            minutes: 0,
+            top_artists: [],
+            top_families: [],
+          };
+        let html = `<h4>${weekday} · <span class="num">${hour}:00–${hour + 1}:00</span> · ${PLABEL[p]}</h4>
     <div class="wcols">`;
-  for (const o of OWNERS){
-    const r = rw(o);
-    html += `<div class="wcol"><h5 style="color:${COLOR[o]}">${HEB[o]}</h5>
+        for (const o of OWNERS) {
+          const r = rw(o);
+          html += `<div class="wcol"><h5 style="color:${COLOR[o]}">${NAME[o]}</h5>
       <ul><li><b>${fm0(r.plays)}</b> plays · <b>${fmin(r.minutes)}</b></li></ul>
-      <div class="sect">what plays here</div><ul>${r.top_artists.map(([a, m]) =>
-        `<li>${trunc(a, 18)} <b>${fmin(m)}</b></li>`).join("") || "<li>—</li>"}</ul>
-      <div class="sect">families <span style="text-transform:none">(external tags)</span></div><ul>${r.top_families.map(([f, m]) =>
-        `<li>${f} <b>${fmin(m)}</b></li>`).join("") || "<li>—</li>"}</ul></div>`;
-  }
-  el.html(html + "</div>");
-}
+      <div class="sect">what plays here</div><ul>${
+        r.top_artists.map(([a, m]) => `<li>${trunc(a, 18)} <b>${fmin(m)}</b></li>`).join("") || "<li>—</li>"
+      }</ul>
+      <div class="sect">families <span style="text-transform:none">(external tags)</span></div><ul>${
+        r.top_families.map(([f, m]) => `<li>${f} <b>${fmin(m)}</b></li>`).join("") || "<li>—</li>"
+      }</ul></div>`;
+        }
+        el.html(html + "</div>");
+      }
 
-const BIN_MIN = 30, BIN_COUNT = 20;
-const binIndex = v => Math.min(Math.floor(v / BIN_MIN), BIN_COUNT - 1);
+      const BIN_MIN = 30,
+        BIN_COUNT = 20;
+      const binIndex = (v) => Math.min(Math.floor(v / BIN_MIN), BIN_COUNT - 1);
 
-function renderHistograms(){
-  const p = cut();
-  const counts = {};
-  for (const o of OWNERS){
-    counts[o] = new Array(BIN_COUNT).fill(0);
-    for (const v of D.daily[p][o]) counts[o][binIndex(v)]++;
-  }
-  const yMax = d3.max(OWNERS, o => d3.max(counts[o]));
-  for (const o of OWNERS){
-    const host = d3.select(`#hist-${o}`).html("");
-    const k = D.kpis[p][o];
-    host.append("h4").attr("class","owner-h")
-      .html(`${HEB[o]} <span class="kpi">a typical day: ${fm0(Math.round(k.median_daily_min))} min</span>`);
-    const w = 440, h = 150, mL = 34, mB = 22, mT = 6;
-    const x = d3.scaleBand(d3.range(BIN_COUNT), [mL, w - 6]).paddingInner(.15);
-    const y = d3.scaleLinear([0, yMax], [h - mB, mT]);
-    const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("width", w);
-    svg.append("g").attr("class","axis").attr("transform", `translate(${mL},0)`)
-      .call(d3.axisLeft(y).ticks(3));
-    const tickBins = d3.range(0, BIN_COUNT, 4);
-    svg.selectAll(".xt").data(tickBins).join("text").attr("class","val")
-      .attr("x", b => x(b)).attr("y", h - 8).text(b => (b * BIN_MIN / 60) + "h");
-    svg.append("text").attr("class","val").attr("x", x(BIN_COUNT - 1) + x.bandwidth()).attr("y", h - 8)
-      .attr("text-anchor","end").text("9.5h+");
-    svg.selectAll(".hbar").data(d3.range(BIN_COUNT)).join("rect")
-      .attr("x", b => x(b)).attr("y", b => y(counts[o][b]))
-      .attr("width", x.bandwidth()).attr("height", b => y(0) - y(counts[o][b]))
-      .attr("rx", 2).attr("fill", COLOR[o]).attr("fill-opacity", .85)
-      .on("mouseover", function(ev, b){
-        d3.select(this).attr("fill-opacity", 1);
-        const lo = b * BIN_MIN, hi = lo + BIN_MIN;
-        showTip(ev, `<div class="t">${HEB[o]} · ${PLABEL[p]}</div>
-          ${b === BIN_COUNT - 1 ? `<span class="num">${lo}+ min</span> of music in a day` :
-          `<span class="num">${lo}–${hi} min</span> of music in a day`}<br>
-          <span class="num">${fm0(counts[o][b])}</span> days`);
-      })
-      .on("mousemove", moveTip)
-      .on("mouseout", function(){ d3.select(this).attr("fill-opacity", .85); hideTip(); });
-  }
-}
+      function renderHistograms() {
+        const p = cut();
+        const counts = {};
+        for (const o of OWNERS) {
+          counts[o] = new Array(BIN_COUNT).fill(0);
+          for (const v of D.daily[p][o]) counts[o][binIndex(v)]++;
+        }
+        const yMax = d3.max(OWNERS, (o) => d3.max(counts[o]));
+        for (const o of OWNERS) {
+          const host = d3.select(`#hist-${o}`).html("");
+          const k = D.kpis[p][o];
+          host
+            .append("h4")
+            .attr("class", "owner-h")
+            .html(`${NAME[o]} <span class="kpi">a typical day: ${fmin(k.median_daily_min)}</span>`);
+          const w = 440,
+            h = 150,
+            mL = 34,
+            mB = 22,
+            mT = 6;
+          const x = d3.scaleBand(d3.range(BIN_COUNT), [mL, w - 6]).paddingInner(0.15);
+          const y = d3.scaleLinear([0, yMax], [h - mB, mT]);
+          const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${h}`).attr("width", w);
+          svg
+            .append("g")
+            .attr("class", "axis")
+            .attr("transform", `translate(${mL},0)`)
+            .call(d3.axisLeft(y).ticks(3));
+          const tickBins = d3.range(0, BIN_COUNT, 4);
+          svg
+            .selectAll(".xt")
+            .data(tickBins)
+            .join("text")
+            .attr("class", "val")
+            .attr("x", (b) => x(b))
+            .attr("y", h - 8)
+            .text((b) => (b * BIN_MIN) / 60 + "h");
+          svg
+            .append("text")
+            .attr("class", "val")
+            .attr("x", x(BIN_COUNT - 1) + x.bandwidth())
+            .attr("y", h - 8)
+            .attr("text-anchor", "end")
+            .text("9.5h+");
+          svg
+            .selectAll(".hbar")
+            .data(d3.range(BIN_COUNT))
+            .join("rect")
+            .attr("x", (b) => x(b))
+            .attr("y", (b) => y(counts[o][b]))
+            .attr("width", x.bandwidth())
+            .attr("height", (b) => y(0) - y(counts[o][b]))
+            .attr("rx", 2)
+            .attr("fill", COLOR[o])
+            .attr("fill-opacity", 0.85)
+            .on("mouseover", function (ev, b) {
+              d3.select(this).attr("fill-opacity", 1);
+              const lo = b * BIN_MIN,
+                hi = lo + BIN_MIN;
+              // Range in a single unit: hours once the bin crosses 60 minutes.
+              const range =
+                b === BIN_COUNT - 1
+                  ? lo > 60
+                    ? `${fm1t(lo / 60)}+ h`
+                    : `${lo}+ min`
+                  : hi > 60
+                    ? `${fm1t(lo / 60)}–${fm1t(hi / 60)} h`
+                    : `${lo}–${hi} min`;
+              showTip(
+                ev,
+                `<div class="t">${NAME[o]} · ${PLABEL[p]}</div>
+          <span class="num">${range}</span> of music in a day<br>
+          <span class="num">${fm0(counts[o][b])}</span> days`,
+              );
+            })
+            .on("mousemove", moveTip)
+            .on("mouseout", function () {
+              d3.select(this).attr("fill-opacity", 0.85);
+              hideTip();
+            });
+        }
+      }
 
-renderAll();
+      renderAll();
 
-if (matchMedia("(prefers-reduced-motion: no-preference)").matches){
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting){ e.target.classList.add("vis"); io.unobserve(e.target); }
-  }), {threshold:.06});
-  document.querySelectorAll(".panel,.kpis").forEach(el => { el.classList.add("reveal"); io.observe(el); });
-}
-</script>
-</body>
+      if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+        const io = new IntersectionObserver(
+          (es) =>
+            es.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add("vis");
+                io.unobserve(e.target);
+              }
+            }),
+          { threshold: 0.06 },
+        );
+        document.querySelectorAll(".panel,.kpis").forEach((el) => {
+          el.classList.add("reveal");
+          io.observe(el);
+        });
+      }
+    </script>
+  </body>
 </html>

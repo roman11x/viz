@@ -4,7 +4,7 @@ Persistent guidance for this repo. Read before every task.
 
 ## What this project is
 A static D3.js website for a University of Haifa Data Visualization course. It compares two people's
-complete personal listening histories: **אור (Or)** — Apple Music — and **רומן (Roman)** — Spotify.
+complete personal listening histories: **Orr** — Apple Music — and **Roman** — Spotify.
 Central question: is similarity between two listeners only about taste, or also about routine and intensity?
 
 One scrolling page (no tabs), two stacked dashboards, each laid out classically (KPI strip → panel grid,
@@ -26,7 +26,7 @@ data-computed takeaway line.
   in both `prep.py` and the JS.
 
 ## Hard rules
-- English for all code, comments, UI chart titles, and file/column names. UI display names are Hebrew: אור / רומן.
+- English for all code, comments, UI chart titles, and file/column names. UI display names are English: Orr / Roman (changed from the earlier Hebrew אור / רומן — do not revert).
 - Use ONLY the provided CSVs. Never invent artists, figures, or data points. If a needed field is missing,
   say so and propose the closest available alternative.
 - Genre is an EXTERNAL add-on, partial, collapsed into ~6 broad FAMILIES (Pop, Rock, Israeli, Metal,
@@ -45,8 +45,8 @@ data-computed takeaway line.
 - Show evidence (printed numbers, verification checks); do not just assert success.
 
 ## Colors and state
-- Fixed, colorblind-safe owner colors, strong on a dark background: אור = bright blue (~`#4EA1FF`),
-  רומן = bright orange/amber (~`#FF9F1C`). Same colors in every chart and the legend.
+- Fixed, colorblind-safe owner colors, strong on a dark background: Orr = bright blue (~`#4EA1FF`),
+  Roman = bright orange/amber (~`#FF9F1C`). Same colors in every chart and the legend.
 - In a single-person chart with categories, use only LIGHTNESS steps of that person's single hue —
   never a second categorical palette. Muted gray for inactive marks.
 - Heatmap cells ramp from a visible floor (`#242634`), not the page background, with a subtle grid so
