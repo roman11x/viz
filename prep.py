@@ -338,15 +338,38 @@ def heatmaps(df):
     return out
 
 
-def daily_minutes(df):
-    """Minutes listened per ACTIVE day, per owner+cut — backs the histogram."""
+def monthly_detail(df):
+    """Per-owner, per-month breakdown rich enough to recompute the slopegraph's
+    routine/intensity metrics and the heatmap for an ARBITRARY custom month
+    range client-side — this is what lets the Dashboard-2 range brush genuinely
+    re-filter instead of being limited to the three locked cuts (all/pre_uni/
+    university). Still a compact aggregate, not the event table: bounded by
+    (weekday, hour, month) triples that actually have activity, not raw plays.
+    No per-artist breakdown here — top-10 share and unique-artist count are
+    taste/breadth measures that belong to Dashboard 1 and the discovery curve,
+    not this dashboard, so there's nothing here to recompute them from.
+    """
     out = {}
-    for cut, d in cuts(df):
-        out[cut] = {}
-        for owner in OWNERS:
-            g = d[d["owner"] == owner]
-            daily = g.groupby("date")["minutes_played"].sum()
-            out[cut][owner] = [int(round(v)) for v in daily.values if v > 0]
+    for owner in OWNERS:
+        g_all = df[df["owner"] == owner]
+        by_month = {}
+        for ym, gm in g_all.groupby("ym"):
+            minutes = gm["minutes_played"].sum()
+            daily = gm.groupby("date")["minutes_played"].sum()
+            hm = gm.groupby(["weekday", "hour_local"]).size()
+            by_month[ym] = {
+                "hours": round(minutes / 60, 1),
+                "plays": int(len(gm)),
+                "under30_plays": int(gm["under_30s"].sum()),
+                "active_days": int(len(daily)),
+                "heatmap": [[wd, int(h), int(n)] for (wd, h), n in hm.items()],
+            }
+
+        daily_all = g_all.groupby("date")["minutes_played"].sum()
+        out[owner] = {
+            "by_month": by_month,
+            "daily": [[str(d.date()), round(v, 1)] for d, v in daily_all.items()],
+        }
     return out
 
 
@@ -413,7 +436,7 @@ def main():
         "shared": shared,
         "monthly": monthly_hours(df),
         "heatmap": heatmaps(df),
-        "daily": daily_minutes(df),
+        "monthly_detail": monthly_detail(df),
         "discovery": discovery(df),
         "routine_window": routine_windows(df),
         "change": change,

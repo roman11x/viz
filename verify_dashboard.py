@@ -74,10 +74,13 @@ print("== Part B: hardcoded claims in index.html ==")
 html = open("index.html", encoding="utf-8").read()
 prep_src = open("prep.py", encoding="utf-8").read()
 
-shared_min_html = int(re.search(r"at least (\d+) minutes", html).group(1))
+# A3's sub-label says "played it N+ min"; the footer says "≥ N minutes".
+shared_min_html = int(re.search(r"played it (\d+)\+ min", html).group(1))
+shared_min_foot = int(re.search(r"≥ (\d+) minutes", html).group(1))
 shared_min_prep = int(re.search(r"SHARED_MIN_MINUTES = (\d+)", prep_src).group(1))
-check("hint 'at least N minutes' == prep SHARED_MIN_MINUTES", shared_min_html, shared_min_prep)
-check("hint 'at least N minutes' == data.js meta", shared_min_html, D["meta"]["shared_min_minutes"])
+check("A3 sub 'N+ min' == prep SHARED_MIN_MINUTES", shared_min_html, shared_min_prep)
+check("footer '≥ N minutes' == prep SHARED_MIN_MINUTES", shared_min_foot, shared_min_prep)
+check("A3 sub 'N+ min' == data.js meta", shared_min_html, D["meta"]["shared_min_minutes"])
 
 top_n_header = int(re.search(r"top (\d+) shared artists", html).group(1))
 # data-row truncations only: WINDOW_START/UNI_START.slice(0, 7) are string slices

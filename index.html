@@ -20,18 +20,19 @@
     />
     <style>
       :root {
-        --bg: #0d0d12;
-        --panel: #181820;
-        --panel2: #1e1e28;
-        --border: #2a2a36;
-        --ink: #e8e8f0;
-        --ink2: #9a9aad;
-        --muted: #3a3a46;
-        --floor: #242634;
+        /* Blue-tinted night palette (terminal identity) — chrome only; the two
+           locked person hues are untouched. */
+        --bg: #0f1117;
+        --panel: #151926;
+        --panel2: #1a2030;
+        --border: #232a3a;
+        --ink: #c8d0e0;
+        --ink2: #8b94a8;
+        --muted: #454e63;
+        --floor: #232b3d;
         --or: #4ea1ff;
         --roman: #ff9f1c;
         --display: "Space Grotesk", sans-serif;
-        --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
       }
       * {
@@ -39,10 +40,20 @@
         margin: 0;
       }
       body {
-        background: var(--bg);
+        /* A faint vinyl-groove ring texture site-wide — kept low-opacity so it
+           reads as texture, never competes with chart ink. */
+        background:
+          repeating-radial-gradient(
+            circle at 50% -10%,
+            rgba(255, 255, 255, 0.018) 0px,
+            rgba(255, 255, 255, 0.018) 1px,
+            transparent 1px,
+            transparent 9px
+          ),
+          var(--bg);
         color: var(--ink);
-        font: 14px/1.55 var(--sans);
-        padding: 0 20px 60px;
+        font: 13px/1.55 var(--mono);
+        padding: 0 18px 40px;
       }
       .wrap {
         max-width: 1180px;
@@ -56,7 +67,7 @@
       .hero {
         position: relative;
         overflow: hidden;
-        padding: 48px 0 26px;
+        padding: 30px 0 22px;
         border-bottom: 1px solid var(--border);
       }
       #hero-wave {
@@ -66,11 +77,28 @@
         opacity: 0.16;
         pointer-events: none;
       }
+      .hero .prompt,
       .hero h1,
-      .hero .question,
-      .hero .subquestion {
+      .hero .question {
         position: relative;
         z-index: 1;
+      }
+      .hero .prompt {
+        font: 500 13px var(--mono);
+        color: var(--ink2);
+        margin-bottom: 10px;
+        letter-spacing: 0.3px;
+      }
+      .hero .prompt .u1 {
+        color: var(--or);
+        font-weight: 700;
+      }
+      .hero .prompt .u2 {
+        color: var(--roman);
+        font-weight: 700;
+      }
+      .hero .prompt .path {
+        color: var(--muted);
       }
       .hero h1 {
         font: 700 clamp(30px, 4.5vw, 46px)/1.1 var(--display);
@@ -86,21 +114,10 @@
         }
       }
       .hero .question {
-        font: 500 clamp(17px, 2.2vw, 22px)/1.45 var(--display);
-        max-width: 820px;
-        margin: 14px 0 10px;
-      }
-      .hero .subquestion {
-        color: var(--ink2);
-        max-width: 720px;
-        margin: 0 0 10px;
-      }
-      .hero em {
-        font-style: normal;
-        color: var(--or);
-      }
-      .hero em.r {
-        color: var(--roman);
+        font: 500 clamp(15px, 1.9vw, 19px)/1.5 var(--display);
+        max-width: 780px;
+        margin: 12px 0 8px;
+        color: var(--ink);
       }
       .legend {
         display: flex;
@@ -112,7 +129,22 @@
         display: inline-flex;
         align-items: center;
         gap: 7px;
-        font-weight: 600;
+        font: 600 12px var(--mono);
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 3px 11px 3px 8px;
+        color: var(--ink);
+        cursor: pointer;
+        transition:
+          opacity 0.15s,
+          border-color 0.15s;
+      }
+      .chip:hover {
+        border-color: var(--ink2);
+      }
+      .chip.off {
+        opacity: 0.32;
       }
       .chip i {
         width: 12px;
@@ -124,47 +156,40 @@
         color: var(--ink2);
         font-weight: 400;
       }
-      details.about {
-        max-width: 760px;
-        color: var(--ink2);
-        font-size: 12.5px;
-      }
-      details.about summary {
-        cursor: pointer;
-        color: var(--ink2);
-        font-weight: 600;
-        padding: 4px 0;
-      }
-      details.about summary:hover {
-        color: var(--ink);
-      }
-      details.about summary:focus-visible {
-        outline: 2px solid var(--ink);
-        outline-offset: 2px;
-      }
-      details.about ul {
-        margin: 6px 0 4px 18px;
-      }
-      details.about li {
-        margin: 2px 0;
-      }
-
       section.dash {
-        padding: 34px 0 8px;
+        padding: 22px 0 4px;
       }
       .dash-head {
         display: flex;
-        align-items: center;
+        align-items: flex-end;
         justify-content: space-between;
         gap: 16px;
         flex-wrap: wrap;
         margin-bottom: 4px;
       }
+      .side-label {
+        font: 700 11px var(--mono);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--roman);
+        margin-bottom: 6px;
+      }
+      .side-label::before {
+        content: "── ";
+        color: var(--muted);
+        letter-spacing: 0;
+      }
+      .side-label::after {
+        content: " ──";
+        color: var(--muted);
+        letter-spacing: 0;
+      }
       .dash-head h2 {
-        font: 700 24px/1.2 var(--display);
+        font: 700 21px/1.2 var(--display);
         letter-spacing: 0.4px;
         display: flex;
         align-items: center;
+        color: #e6ebf5;
       }
       .eq-icon {
         display: inline-flex;
@@ -179,6 +204,23 @@
         border-radius: 1px;
         background: linear-gradient(var(--or), var(--roman));
         transform-origin: bottom;
+      }
+      .flip-divider {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 40px 0 -6px;
+        color: var(--ink2);
+        font: 700 11px var(--mono);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      .flip-divider::before,
+      .flip-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: repeating-linear-gradient(90deg, var(--border) 0 6px, transparent 6px 11px);
       }
       .eq-icon i:nth-child(1) {
         height: 45%;
@@ -265,21 +307,6 @@
         gap: 14px;
         flex-wrap: wrap;
       }
-      .period-note {
-        color: var(--ink2);
-        font-size: 12px;
-      }
-      .ctlbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 14px;
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 9px 14px;
-        margin-bottom: 16px;
-      }
       .ctl {
         display: flex;
         align-items: center;
@@ -319,109 +346,14 @@
         border: none;
         border-radius: 999px;
         color: var(--ink2);
-        font: 12.5px var(--sans);
+        font: 12px var(--mono);
         padding: 6px 14px;
         cursor: pointer;
         transition: color 0.2s;
       }
       .seg button.on {
-        color: #0d0d12;
+        color: #0f1117;
         font-weight: 700;
-      }
-      .reset {
-        background: transparent;
-        border: 1px solid var(--border);
-        border-radius: 7px;
-        color: var(--ink2);
-        padding: 6px 14px;
-        cursor: pointer;
-        font: 12.5px var(--sans);
-      }
-      .reset:hover {
-        color: var(--ink);
-        border-color: var(--ink2);
-      }
-      .d1-search {
-        position: relative;
-      }
-      .search-btn {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--panel2);
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        color: var(--ink);
-        font-size: 14px;
-        cursor: pointer;
-      }
-      .search-btn:hover {
-        border-color: var(--ink2);
-      }
-      .search-box {
-        position: absolute;
-        right: 0;
-        top: 40px;
-        z-index: 8;
-        width: 250px;
-        flex-direction: column;
-        background: var(--panel2);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 8px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-      }
-      .search-box input {
-        width: 100%;
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        color: var(--ink);
-        padding: 7px 9px;
-        font: 13px var(--sans);
-        outline: none;
-      }
-      .search-box input:focus {
-        border-color: var(--ink2);
-      }
-      .search-results {
-        display: none;
-        flex-direction: column;
-        margin-top: 6px;
-        max-height: 220px;
-        overflow-y: auto;
-      }
-      .search-results.show {
-        display: flex;
-      }
-      .search-results button {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        background: transparent;
-        border: none;
-        border-radius: 6px;
-        color: var(--ink);
-        text-align: left;
-        padding: 6px 8px;
-        font: 12.5px var(--sans);
-        cursor: pointer;
-      }
-      .search-results button:hover {
-        background: var(--panel);
-      }
-      .search-results .fam {
-        color: var(--ink2);
-        font-size: 11px;
-        font-family: var(--mono);
-      }
-      .search-empty {
-        color: var(--ink2);
-        font-size: 12px;
-        padding: 6px 8px;
       }
       .chips {
         display: flex;
@@ -458,8 +390,8 @@
       .grid {
         display: grid;
         grid-template-columns: 3fr 2fr;
-        gap: 18px;
-        margin-bottom: 18px;
+        gap: 12px;
+        margin-bottom: 12px;
       }
       .grid .span2 {
         grid-column: 1/-1;
@@ -467,31 +399,72 @@
       .panel {
         background: var(--panel);
         border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 16px 18px;
+        border-radius: 8px;
+        padding: 11px 14px 8px;
         display: flex;
         flex-direction: column;
+        min-width: 0;
       }
+      /* Terminal-style panel title row: ▍accent + track number + small-caps
+         name on the left, a terse functional sub-label on the right. */
       .panel h3 {
-        font: 700 16px/1.3 var(--display);
-        letter-spacing: 0.2px;
-        text-wrap: balance;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font: 500 11px var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 1.6px;
+        color: var(--ink2);
+        margin-bottom: 8px;
+      }
+      .panel h3::before {
+        content: "▍";
+        color: var(--or);
+        letter-spacing: 0;
+      }
+      .panel h3 .track-num {
+        color: var(--roman);
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .panel h3 .sub {
+        margin-left: auto;
+        text-align: right;
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 10.5px;
+        /* ink2, not muted: these subs carry the interaction instructions, and
+           muted measures ~2.1:1 on the panel surface — below legible. */
+        color: var(--ink2);
+        font-weight: 400;
       }
       ::selection {
         background: rgba(78, 161, 255, 0.35);
       }
       .foot {
         border-top: 1px solid var(--border);
-        margin-top: 26px;
-        padding-top: 14px;
+        margin-top: 22px;
+        padding-top: 12px;
         color: var(--ink2);
-        font-size: 11.5px;
-        max-width: 720px;
+        font-size: 10.5px;
+        line-height: 1.7;
+      }
+      .foot b {
+        color: var(--ink);
+        font-weight: 500;
       }
       .hint {
         color: var(--ink2);
         font-size: 12px;
         margin: 3px 0 12px;
+      }
+      .d2-intro {
+        max-width: 760px;
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+      .d2-intro i {
+        font-style: italic;
       }
       .duo {
         display: flex;
@@ -519,7 +492,7 @@
         max-width: 100%;
       }
       svg text {
-        font-family: var(--sans);
+        font-family: var(--mono);
         fill: var(--ink);
       }
       text.num,
@@ -527,7 +500,7 @@
         font-family: var(--mono);
       }
       .bar-label {
-        font-size: 12px;
+        font-size: 10.5px;
         fill: var(--ink2);
       }
       .bar-label.sel {
@@ -555,11 +528,11 @@
         position: fixed;
         display: none;
         pointer-events: none;
-        background: #22222e;
+        background: #10131c;
         border: 1px solid var(--border);
         border-radius: 7px;
         padding: 8px 11px;
-        font: 12px/1.5 var(--sans);
+        font: 11.5px/1.5 var(--mono);
         color: var(--ink);
         max-width: 300px;
         z-index: 10;
@@ -641,7 +614,7 @@
         white-space: nowrap;
       }
       .stable td:first-child {
-        font-family: var(--sans);
+        font-family: var(--mono);
         text-align: left;
         max-width: 170px;
       }
@@ -715,6 +688,69 @@
         justify-content: space-between;
       }
 
+      .scrub-wrap {
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px dashed var(--border);
+      }
+      .scrub-hint {
+        margin: 0 0 8px;
+      }
+      #range-scrub {
+        cursor: pointer;
+        user-select: none;
+      }
+      #range-scrub svg {
+        touch-action: none;
+      }
+      .scrub-readout {
+        margin-top: 8px;
+        font: 12.5px var(--mono);
+        color: var(--ink2);
+      }
+      .scrub-label {
+        font-family: var(--mono);
+        margin-bottom: 6px;
+      }
+      .scrub-label b {
+        font-family: var(--mono);
+        color: var(--ink);
+      }
+      .scrub-readout .clear-btn {
+        margin-left: 10px;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        color: var(--ink2);
+        padding: 1px 9px;
+        font: 10.5px var(--mono);
+        cursor: pointer;
+      }
+      .scrub-readout .clear-btn:hover {
+        color: var(--ink);
+        border-color: var(--ink2);
+      }
+      .scrub-metrics {
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .scrub-metrics th,
+      .scrub-metrics td {
+        padding: 2px 14px 2px 0;
+        text-align: right;
+        font-weight: 400;
+      }
+      .scrub-metrics th:first-child,
+      .scrub-metrics td:first-child {
+        text-align: left;
+        color: var(--ink2);
+        font-family: var(--mono);
+        padding-right: 20px;
+      }
+      .scrub-metrics td.num {
+        color: var(--ink);
+      }
+
       @media (prefers-reduced-motion: no-preference) {
         .reveal {
           opacity: 0;
@@ -742,6 +778,10 @@
     <div class="wrap">
       <header class="hero">
         <div id="hero-wave" aria-hidden="true"></div>
+        <div class="prompt">
+          <span class="u1">orr@apple-music</span> × <span class="u2">roman@spotify</span>
+          <span class="path">~/two-listeners · jan 2021 → may 2026</span>
+        </div>
         <h1>Two Listeners</h1>
         <p class="question">
           Does similarity between two listeners have to come from musical taste, or can it also be found
@@ -752,20 +792,20 @@
       <div class="periodbar" aria-label="Global period filter">
         <span class="ctl"><label>Period:</label><span class="seg" id="global-period"></span></span>
         <div class="legend">
-          <span class="chip"><i style="--c: var(--or)"></i>Orr <small>Apple Music</small></span>
-          <span class="chip"><i style="--c: var(--roman)"></i>Roman <small>Spotify</small></span>
+          <button class="chip" id="chip-Or" type="button" title="Click to solo Orr">
+            <i style="--c: var(--or)"></i>Orr <small>Apple Music</small>
+          </button>
+          <button class="chip" id="chip-Roman" type="button" title="Click to solo Roman">
+            <i style="--c: var(--roman)"></i>Roman <small>Spotify</small>
+          </button>
         </div>
       </div>
 
       <section class="dash" id="d1">
         <div class="dash-head">
-          <h2><span class="eq-icon" aria-hidden="true"><i></i><i></i><i></i></span>Dashboard 1: Taste Profile and Shared Listening</h2>
-          <div class="d1-search">
-            <button class="search-btn" id="artist-search-btn" type="button" aria-label="Search artists" title="Search artists">🔍</button>
-            <div class="search-box" id="artist-search-box" style="display: none">
-              <input type="text" id="artist-search-input" placeholder="Search an artist…" autocomplete="off" />
-              <div class="search-results" id="artist-search-results"></div>
-            </div>
+          <div>
+            <div class="side-label">Side A</div>
+            <h2><span class="eq-icon" aria-hidden="true"><i></i><i></i><i></i></span>Taste Profile and Shared Listening</h2>
           </div>
         </div>
 
@@ -773,10 +813,8 @@
 
         <div class="grid">
           <div class="panel span2" id="p-families">
-            <h3>Genre Family Distribution</h3>
-            <p class="hint">
-              Bars show what percent of each person's minutes goes to each genre family. Click a family to filter the artist lists.
-            </p>
+            <h3><span class="track-num">A1</span> Genre Family Distribution
+              <span class="sub">share of minutes · genre tags are external · click a family to filter</span></h3>
             <div class="duo">
               <div id="families-Or"></div>
               <div id="families-Roman"></div>
@@ -784,14 +822,8 @@
           </div>
 
           <div class="panel span2" id="p-artists">
-            <h3>Top Artist Concentration</h3>
-            <p class="hint">
-              Lollipops rank artists by total minutes. A ring around a dot means the artist is in the
-              shared set.
-              <br />
-              Click an artist to see its details. Its genre family gets outlined in the chart above and
-              the artist is highlighted in the shared list below.
-            </p>
+            <h3><span class="track-num">A2</span> Top Artist Concentration
+              <span class="sub">hours in range · ring = artist the other one plays too · click for details</span></h3>
             <div class="duo">
               <div id="artists-Or"></div>
               <div id="artists-Roman"></div>
@@ -800,12 +832,9 @@
           </div>
 
           <div class="panel span2" id="p-overlap">
-            <h3>Minutes-Weighted Shared Listening</h3>
-            <p class="hint">
-              Each strip splits the total listening minutes into shared and non-shared artists. An artist
-              counts as shared if both of us played it for at least 3 minutes in the selected
-              period.<span id="overlap-filter-note"></span>
-            </p>
+            <h3><span class="track-num">A3</span> Minutes-Weighted Shared Listening
+              <span class="sub">shared = both of us played it 3+ min in the period</span></h3>
+            <p class="hint"><span id="overlap-filter-note"></span></p>
             <div class="overlap-flex">
               <div class="strips">
                 <div id="overlap-strips"></div>
@@ -817,54 +846,79 @@
         </div>
       </section>
 
+      <div class="flip-divider" aria-hidden="true"><span>flip the record — side b</span></div>
+
       <section class="dash" id="d2">
         <div class="dash-head">
-          <h2><span class="eq-icon" aria-hidden="true"><i></i><i></i><i></i></span>Dashboard 2: Routine and Listening Intensity</h2>
+          <div>
+            <div class="side-label">Side B</div>
+            <h2><span class="eq-icon" aria-hidden="true"><i></i><i></i><i></i></span>Routine, Disrupted — Before Uni vs. University</h2>
+          </div>
         </div>
+        <p class="hint d2-intro">
+          Moving from home life into university broke both listeners' routines. Research on listening
+          behavior finds that when a personal routine is disrupted, people don't retreat to old favorites —
+          they explore more (Kim et al., <i>PNAS</i> 2024). The four panels below ask: how much did each
+          person listen, when did they listen, did the routine break come with a burst of exploration, and
+          how much did each habit shift overall?
+        </p>
 
         <div class="chips" id="d2-chips"></div>
 
         <div class="grid">
           <div class="panel span2" id="p-monthly">
-            <h3>Monthly Listening Volume</h3>
-            <p class="hint">
-              Orr is plotted above the baseline and Roman is plotted below it.
-            </p>
+            <h3><span class="track-num">B1</span> Monthly Listening Volume
+              <span class="sub">hours per month · Orr above the line, Roman below</span></h3>
             <div id="monthly-chart"></div>
+            <div class="scrub-wrap">
+              <p class="hint scrub-hint">
+                drag to select any custom range — recomputes the B2 grid and the stats below for exactly
+                those months
+              </p>
+              <div id="range-scrub"></div>
+              <div class="scrub-readout" id="scrub-readout">Drag or click a month to inspect it.</div>
+            </div>
           </div>
 
           <div class="panel" id="p-routine">
-            <h3>Listening Activity by Weekday and Hour</h3>
+            <h3><span class="track-num">B2</span> When Each of Us Listens
+              <span class="sub">plays by weekday × hour · per-listener color scale · click a cell</span></h3>
             <p class="hint">
-              Cells count plays by weekday and hour. Each listener has their own color scale, so you can
-              compare the shape of the routines even though the amounts are very different.
-              <br />
-              Click a cell to see the totals and top artists for that hour.
+              Each listener has his own color scale, so the shapes of the routines compare even though the
+              volumes are very different.
             </p>
             <div class="duo" id="heatmaps"></div>
             <div id="window-panel"></div>
           </div>
 
           <div class="panel" id="p-discovery">
-            <h3>Cumulative Artist Discovery</h3>
+            <h3><span class="track-num">B3</span> Cumulative Artist Discovery
+              <span class="sub">distinct artists heard, running total</span></h3>
             <p class="hint">
-              Lines count how many different artists each listener has heard up to each month. A steep
-              line means always finding new music, a flat line means going back to the same artists.
+              If breaking routine comes with more exploring, a line should visibly bend at the university
+              marker; no bend means the disruption didn't change how adventurously that person listened.
             </p>
             <div id="discovery-chart"></div>
           </div>
 
           <div class="panel span2" id="p-change">
-            <h3>Before Uni vs University: Same Direction or Opposite?</h3>
-            <p class="hint">
-              Each mini chart connects the value before university to the value during university, one
-              line per listener. Parallel lines mean we changed in the same way, crossing lines mean we
-              went in opposite directions. Picking a period highlights that side of every chart.
-            </p>
+            <h3><span class="track-num">B4</span> Before Uni vs University: Same Direction or Opposite?
+              <span class="sub">one line per listener · parallel = same way, crossing = opposite · zero-based axes</span></h3>
             <div id="slopes"></div>
           </div>
         </div>
       </section>
+
+      <footer class="foot">
+        <b>method</b> · orr's apple music play activity + roman's spotify extended history (full exports)
+        → one pandas fact table, cut to jan 2021+ (138,894 plays), local time asia/jerusalem. genre is an
+        external, partial add-on collapsed into ~6 broad families — treat it as provisional; the honest
+        residual stays "Other". shared = both listeners played the artist ≥ 3 minutes in the period,
+        weighted by minutes, never by artist count. skips are compared only via the same 30-second rule
+        computed from played-milliseconds on both sides — never the platforms' own skip counters. one
+        period filter + one range brush drive the page; every displayed number is recomputed from the
+        source table by an automated check suite. built with d3 v7.
+      </footer>
     </div>
     <div id="tooltip"></div>
 
@@ -908,10 +962,26 @@
         d1: { selectedFamily: null, selectedArtist: null, selectedArtistSource: null },
         d2: { selectedWindow: null },
       };
-      const state = { period: DEFAULTS.period, d1: { ...DEFAULTS.d1 }, d2: { ...DEFAULTS.d2 } };
+      const state = { period: DEFAULTS.period, solo: null, d1: { ...DEFAULTS.d1 }, d2: { ...DEFAULTS.d2 } };
       function setPeriod(period) {
         state.period = period;
         renderAll();
+      }
+      // Live legend: clicking a listener chip solos him (dims the other's marks
+      // everywhere); clicking again un-solos. The legend is a control, not just a key.
+      function soloOp(owner) {
+        return !state.solo || state.solo === owner ? 1 : 0.15;
+      }
+      function toggleSolo(owner) {
+        state.solo = state.solo === owner ? null : owner;
+        renderAll();
+      }
+      function renderLegend() {
+        for (const o of OWNERS)
+          d3.select(`#chip-${o}`)
+            .classed("off", state.solo !== null && state.solo !== o)
+            .attr("title", state.solo === o ? `Click to show both listeners` : `Click to solo ${NAME[o]}`)
+            .on("click", () => toggleSolo(o));
       }
       function setD1(patch) {
         Object.assign(state.d1, patch);
@@ -984,6 +1054,7 @@
       const cut = () => state.period;
       function renderAll() {
         renderPeriodBar();
+        renderLegend();
         renderD1();
         renderD2();
       }
@@ -1028,7 +1099,7 @@
         const echo = state.d1.selectedArtist ? artistFamily(state.d1.selectedArtist) : null;
         const xMax = d3.max(OWNERS, (o) => d3.max(D.families[c][o], (g) => g.pct));
         for (const o of OWNERS) {
-          const host = d3.select(`#families-${o}`).html("");
+          const host = d3.select(`#families-${o}`).html("").style("opacity", soloOp(o));
           host
             .append("h4")
             .attr("class", "owner-h")
@@ -1063,7 +1134,7 @@
             .attr("x", mL + 2)
             .attr("y", 2)
             .attr("height", barH)
-            .attr("rx", 3)
+            .attr("rx", 8)
             .attr("width", (d) => Math.max(1.5, x(d.pct)))
             .attr("fill", (d, i) =>
               state.d1.selectedFamily && d.family !== state.d1.selectedFamily
@@ -1107,7 +1178,7 @@
           return d3.max(l, (r) => r.minutes) || 0;
         });
         for (const o of OWNERS) {
-          const host = d3.select(`#artists-${o}`).html("");
+          const host = d3.select(`#artists-${o}`).html("").style("opacity", soloOp(o));
           const list = family
             ? (D.family_artists[c][o][family] || []).slice(0, 8)
             : D.top_artists[c][o].slice(0, 10);
@@ -1173,12 +1244,19 @@
             .attr("fill", "none")
             .attr("stroke", (d) => COLOR[OTHER_OF[o]])
             .attr("stroke-width", 1.3);
+          // Dot styled as a tiny vinyl record: a filled disc with a small "label
+          // hole" punched in the middle, instead of a plain dot.
           g.append("circle")
             .attr("cx", (d) => x(d.minutes))
             .attr("r", 4.8)
             .attr("fill", (d) => (dim(d) ? "var(--muted)" : COLOR[o]))
             .attr("stroke", (d) => (d.artist === state.d1.selectedArtist ? "#FFF" : "var(--panel)"))
             .attr("stroke-width", (d) => (d.artist === state.d1.selectedArtist ? 1.6 : 1));
+          g.append("circle")
+            .attr("cx", (d) => x(d.minutes))
+            .attr("r", 1.5)
+            .attr("fill", "var(--panel)")
+            .attr("pointer-events", "none");
           g.append("text")
             .attr("class", "val")
             .attr("x", (d) => x(d.minutes) + 11)
@@ -1289,7 +1367,7 @@
           const stripW = w - 4,
             sharedW = (stripW * sharedPct) / 100;
           const y = mT + i * rowH;
-          const g = svg.append("g");
+          const g = svg.append("g").attr("opacity", soloOp(o));
           g.append("text")
             .attr("x", 0)
             .attr("y", y + 12)
@@ -1332,7 +1410,7 @@
           g.append("text")
             .attr("class", "val")
             .style("font-weight", 600)
-            .style("fill", fits ? "#0D0D12" : "var(--ink)")
+            .style("fill", fits ? "#0f1117" : "var(--ink)")
             .attr("x", fits ? 2 + sharedW - 8 : 2 + sharedW + 7)
             .attr("text-anchor", fits ? "end" : "start")
             .attr("y", y + 35)
@@ -1400,11 +1478,26 @@
         monthlyByYM = null,
         discoveryCross = null,
         discoveryX = null,
-        discoveryByYM = null;
+        discoveryY = null,
+        discoveryByYM = null,
+        discoveryPlayheads = null;
       function syncMonthHover(ev, m) {
         if (monthlyCross) monthlyCross.attr("x1", monthlyX(parseYM(m))).attr("x2", monthlyX(parseYM(m))).style("display", null);
         if (discoveryCross)
           discoveryCross.attr("x1", discoveryX(parseYM(m))).attr("x2", discoveryX(parseYM(m))).style("display", null);
+        // Turntable-needle touch: a small playhead circle rides each owner's
+        // discovery line at the hovered month instead of just a bare crosshair.
+        if (discoveryPlayheads && discoveryX && discoveryY) {
+          for (const o of OWNERS) {
+            const dd = discoveryByYM?.[o]?.get(m);
+            if (dd)
+              discoveryPlayheads[o]
+                .attr("cx", discoveryX(parseYM(m)))
+                .attr("cy", discoveryY(dd.cum))
+                .style("display", null);
+            else discoveryPlayheads[o].style("display", "none");
+          }
+        }
         showTip(
           ev,
           `<div class="t num">${m}</div>` +
@@ -1421,10 +1514,15 @@
       function clearMonthHover() {
         if (monthlyCross) monthlyCross.style("display", "none");
         if (discoveryCross) discoveryCross.style("display", "none");
+        if (discoveryPlayheads) for (const o of OWNERS) discoveryPlayheads[o].style("display", "none");
         hideTip();
       }
 
-      function renderD2() {
+      // Rebuilds just the D2 chip bar — called from renderD2() on a normal
+      // render pass, AND from applyScrubHighlight() during a drag, since
+      // dragging only does lightweight updates and never calls renderD2()
+      // itself (that would rebuild the heatmap on every mousemove).
+      function renderD2Chips() {
         const chips = [];
         if (state.d2.selectedWindow) {
           const { weekday, hour } = state.d2.selectedWindow;
@@ -1433,8 +1531,20 @@
             clear: () => setD2({ selectedWindow: null }),
           });
         }
+        if (scrubRange) {
+          const [a, b] = [scrubRange.startYM, scrubRange.endYM].sort();
+          chips.push({
+            label: `Range: ${a === b ? a : `${a} → ${b}`}`,
+            clear: clearScrubRange,
+          });
+        }
         renderChips("#d2-chips", chips);
+      }
+
+      function renderD2() {
+        renderD2Chips();
         renderMonthly();
+        renderRangeScrub();
         renderHeatmaps();
         renderWindowPanel();
         renderDiscovery();
@@ -1492,36 +1602,27 @@
           .attr("stroke", "#8888A0")
           .attr("stroke-dasharray", "4 3");
 
+        // Equalizer-bar rendering: one rounded-cap bar per month per listener,
+        // mirrored around the baseline, instead of a smooth filled area — this is
+        // the "music bars" look, and it keeps the same scaleTime x so hover/bisect
+        // logic below still works unchanged.
+        const barW = Math.max(1.6, ((w - mL - mR) / months.length) * 0.62);
+        monthlyBarW = barW;
         for (const o of OWNERS) {
           const sign = o === "Or" ? 1 : -1;
           svg
-            .append("path")
-            .datum(months)
-            .attr(
-              "d",
-              d3
-                .area()
-                .x((ym) => x(parseYM(ym)))
-                .y0(y(0))
-                .y1((ym) => y(sign * val(o, ym)))
-                .curve(d3.curveMonotoneX),
-            )
-            .attr("fill", COLOR[o])
-            .attr("fill-opacity", 0.42)
-            .attr("stroke", COLOR[o])
-            .attr("stroke-width", 1.5);
-          svg
             .append("g")
-            .selectAll("line")
+            .attr("opacity", soloOp(o))
+            .selectAll("rect")
             .data(months.filter((ym) => val(o, ym) > 0))
-            .join("line")
-            .attr("x1", (ym) => x(parseYM(ym)))
-            .attr("x2", (ym) => x(parseYM(ym)))
-            .attr("y1", y(0))
-            .attr("y2", (ym) => y(sign * val(o, ym)))
-            .attr("stroke", COLOR[o])
-            .attr("stroke-width", 1.4)
-            .attr("opacity", 0.5);
+            .join("rect")
+            .attr("x", (ym) => x(parseYM(ym)) - barW / 2)
+            .attr("width", barW)
+            .attr("y", (ym) => Math.min(y(0), y(sign * val(o, ym))))
+            .attr("height", (ym) => Math.abs(y(sign * val(o, ym)) - y(0)))
+            .attr("rx", Math.min(barW / 2, 2.6))
+            .attr("fill", COLOR[o])
+            .attr("fill-opacity", 0.88);
         }
         if (active !== "all") {
           for (const [p, x0, x1] of bands.filter(([p]) => p !== active)) {
@@ -1531,7 +1632,7 @@
               .attr("y", mT)
               .attr("width", x1 - x0)
               .attr("height", h - mT - mB)
-              .attr("fill", "rgba(13,13,18,.58)")
+              .attr("fill", "rgba(15,17,23,.58)")
               .attr("pointer-events", "none");
           }
           const [, x0, x1] = bands.find(([p]) => p === active);
@@ -1573,6 +1674,7 @@
           .attr("x", mL + 8)
           .attr("y", y(yMax * 0.8))
           .attr("fill", COLOR.Or)
+          .attr("opacity", soloOp("Or"))
           .style("font-weight", 700)
           .text("Orr");
         svg
@@ -1580,8 +1682,23 @@
           .attr("x", mL + 8)
           .attr("y", y(-yMax * 0.8))
           .attr("fill", COLOR.Roman)
+          .attr("opacity", soloOp("Roman"))
           .style("font-weight", 700)
           .text("Roman");
+
+        // Echo of the scrubber's custom range (see renderRangeScrub below) — drawn
+        // as a dashed outline so a drag-selected range shows up on the main chart
+        // too, not just in the strip underneath it.
+        monthlyScrubRect = svg
+          .append("rect")
+          .attr("y", mT)
+          .attr("height", h - mT - mB)
+          .attr("fill", "none")
+          .attr("stroke", "#C9C9D6")
+          .attr("stroke-width", 1.3)
+          .attr("stroke-dasharray", "3 2")
+          .style("display", "none")
+          .attr("pointer-events", "none");
 
         monthlyCross = svg
           .append("line")
@@ -1612,14 +1729,245 @@
           .on("mouseout", clearMonthHover);
       }
 
+      // Custom range scrubber: an audio-editor-style strip under the waveform.
+      // Deliberately styled differently from the waveform above it (stacked bars,
+      // no mirroring) so the two don't just look like duplicates of each other —
+      // this one's job is letting you drag an arbitrary range the fixed
+      // All/Pre-uni/University toggle can't give you, and totalling it up live.
+      let scrubRange = null; // {startYM, endYM} or null
+      let monthlyScrubRect = null,
+        monthlyBarW = 0;
+      let scrubX = null,
+        scrubMonths = null,
+        scrubSelRect = null,
+        scrubBarW = 0,
+        scrubDragging = false,
+        scrubDragStartYM = null;
+
+      // Months (inclusive) covered by a [startYM,endYM] scrub selection, in
+      // canonical calendar order.
+      function monthsInRange(startYM, endYM) {
+        const [a, b] = [startYM, endYM].sort();
+        const i0 = scrubMonths.indexOf(a),
+          i1 = scrubMonths.indexOf(b);
+        return scrubMonths.slice(i0, i1 + 1);
+      }
+
+      // Recomputes every slopegraph-equivalent metric for an ARBITRARY set of
+      // months from D.monthly_detail — this is what makes the brush a genuine
+      // filter instead of a decorative echo: it isn't limited to the three
+      // locked cuts (all/pre_uni/university).
+      function rangeMetrics(owner, months) {
+        const md = D.monthly_detail[owner];
+        let hours = 0,
+          plays = 0,
+          under30 = 0,
+          activeDays = 0;
+        for (const ym of months) {
+          const m = md.by_month[ym];
+          if (!m) continue;
+          hours += m.hours;
+          plays += m.plays;
+          under30 += m.under30_plays;
+          activeDays += m.active_days;
+        }
+        const firstDay = parseYM(months[0]),
+          lastDayExclusive = d3.timeMonth.offset(parseYM(months[months.length - 1]), 1);
+        const calDays = Math.round((lastDayExclusive - firstDay) / 864e5);
+        const lastYMStr = d3.timeFormat("%Y-%m-%d")(lastDayExclusive);
+        const dailyVals = md.daily
+          .filter(([date]) => date >= `${months[0]}-01` && date < lastYMStr)
+          .map(([, m]) => m);
+        return {
+          avg_monthly_hours: hours / months.length,
+          median_daily_min: dailyVals.length ? d3.quantile(dailyVals.sort(d3.ascending), 0.5) : 0,
+          days_pct: calDays ? (activeDays / calDays) * 100 : 0,
+          under30_pct: plays ? (under30 / plays) * 100 : 0,
+        };
+      }
+
+      // Weekday x hour play counts for an arbitrary set of months, in the same
+      // shape renderHeatmaps() already expects from D.heatmap[cut][owner].
+      function rangeHeatmapCells(owner, months) {
+        const md = D.monthly_detail[owner];
+        const totals = new Map();
+        for (const ym of months) {
+          const m = md.by_month[ym];
+          if (!m) continue;
+          for (const [wd, hr, n] of m.heatmap) {
+            const key = `${wd}|${hr}`;
+            totals.set(key, (totals.get(key) || 0) + n);
+          }
+        }
+        return WEEKDAYS.flatMap((wd) =>
+          d3.range(24).map((hr) => ({ weekday: wd, hour: hr, plays: totals.get(`${wd}|${hr}`) || 0 })),
+        );
+      }
+
+      function applyScrubHighlight() {
+        renderD2Chips();
+        const readout = d3.select("#scrub-readout");
+        if (!scrubRange) {
+          if (monthlyScrubRect) monthlyScrubRect.style("display", "none");
+          if (scrubSelRect) scrubSelRect.style("display", "none");
+          readout.text("Drag or click a month to inspect it.");
+          return;
+        }
+        const [a, b] = [scrubRange.startYM, scrubRange.endYM].sort();
+        if (monthlyScrubRect && monthlyX) {
+          const x0 = monthlyX(parseYM(a)) - monthlyBarW / 2,
+            x1 = monthlyX(parseYM(b)) + monthlyBarW / 2;
+          monthlyScrubRect.attr("x", x0).attr("width", Math.max(1, x1 - x0)).style("display", null);
+        }
+        if (scrubSelRect && scrubX) {
+          const x0 = scrubX(parseYM(a)) - scrubBarW / 2,
+            x1 = scrubX(parseYM(b)) + scrubBarW / 2;
+          scrubSelRect.attr("x", x0).attr("width", Math.max(1, x1 - x0)).style("display", null);
+        }
+        const span = monthsInRange(a, b);
+        const label = a === b ? a : `${a} → ${b}`;
+        const M = { Or: rangeMetrics("Or", span), Roman: rangeMetrics("Roman", span) };
+        // Same four metrics the slopegraph shows (top-10 share and unique-artist
+        // count were dropped from both — they're taste/breadth measures already
+        // covered by D1 and by this dashboard's own discovery curve).
+        const rows = [
+          ["hours / month", (o) => fm1t(M[o].avg_monthly_hours) + " h"],
+          ["median listening day", (o) => fmin(M[o].median_daily_min)],
+          ["days with music", (o) => Math.round(M[o].days_pct) + "%"],
+          ["plays kept past 30 s", (o) => fm1t(100 - M[o].under30_pct) + "%"],
+        ];
+        readout.html(
+          `<div class="scrub-label"><b>${label}</b> (${span.length} month${span.length === 1 ? "" : "s"}) — recomputed for exactly this range, incl. the weekday/hour grid on the right
+           <button class="clear-btn" id="scrub-clear" type="button">clear ×</button></div>
+           <table class="scrub-metrics">
+             <tr><th></th><th style="color:${COLOR.Or}">Orr</th><th style="color:${COLOR.Roman}">Roman</th></tr>
+             ${rows.map(([label, fmt]) => `<tr><td>${label}</td><td class="num">${fmt("Or")}</td><td class="num">${fmt("Roman")}</td></tr>`).join("")}
+           </table>`,
+        );
+        d3.select("#scrub-clear").on("click", clearScrubRange);
+      }
+      function setScrubRangeLive(startYM, endYM) {
+        scrubRange = { startYM, endYM };
+        applyScrubHighlight();
+      }
+      // Single reset path for the range brush, used by both the inline "clear ×"
+      // next to the readout and the "Range: ..." chip in the sticky D2 chip bar
+      // (the same removable-chip pattern the heatmap window-selection already
+      // uses) — whichever one the user actually notices first.
+      function clearScrubRange() {
+        scrubRange = null;
+        renderD2();
+      }
+      window.addEventListener("mouseup", () => {
+        // Heatmap rebuild (DOM-heavy) only happens once, on release — the
+        // lightweight readout/echo already updated live during the drag.
+        if (scrubDragging && scrubRange) {
+          renderHeatmaps();
+          renderWindowPanel(); // swap any open drill-down for the range notice
+        }
+        scrubDragging = false;
+      });
+
+      function renderRangeScrub() {
+        const el = d3.select("#range-scrub").html("");
+        const w = 1120,
+          h = 58,
+          mL = 52,
+          mR = 14;
+        const svg = el.append("svg").attr("viewBox", `0 0 ${w} ${h}`).style("width", "100%");
+        const months = D.monthly.Or.map((d) => d.ym);
+        scrubMonths = months;
+        const byYM = {};
+        for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map((d) => [d.ym, d]));
+        const x = d3.scaleTime([parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)], [mL, w - mR]);
+        scrubX = x;
+        const totalMax =
+          d3.max(months, (ym) => (byYM.Or.get(ym)?.hours ?? 0) + (byYM.Roman.get(ym)?.hours ?? 0)) * 1.08;
+        const y = d3.scaleLinear([0, totalMax], [h - 2, 2]);
+        const barW = Math.max(1.4, ((w - mL - mR) / months.length) * 0.72);
+        scrubBarW = barW;
+
+        const bars = svg.append("g");
+        for (const ym of months) {
+          const orH = byYM.Or.get(ym)?.hours ?? 0,
+            roH = byYM.Roman.get(ym)?.hours ?? 0;
+          const cx = x(parseYM(ym));
+          bars
+            .append("rect")
+            .attr("x", cx - barW / 2)
+            .attr("width", barW)
+            .attr("y", y(orH))
+            .attr("height", Math.max(0, y(0) - y(orH)))
+            .attr("rx", Math.min(barW / 2, 2))
+            .attr("fill", COLOR.Or)
+            .attr("fill-opacity", 0.85 * soloOp("Or"));
+          bars
+            .append("rect")
+            .attr("x", cx - barW / 2)
+            .attr("width", barW)
+            .attr("y", y(orH + roH))
+            .attr("height", Math.max(0, y(orH) - y(orH + roH)))
+            .attr("rx", Math.min(barW / 2, 2))
+            .attr("fill", COLOR.Roman)
+            .attr("fill-opacity", 0.85 * soloOp("Roman"));
+        }
+
+        scrubSelRect = svg
+          .append("rect")
+          .attr("y", 0)
+          .attr("height", h)
+          .attr("fill", "rgba(255,255,255,.10)")
+          .attr("stroke", "#C9C9D6")
+          .attr("stroke-width", 1)
+          .style("display", "none")
+          .attr("pointer-events", "none");
+
+        const ymAt = (mx) => months[d3.bisectCenter(months.map((s) => +parseYM(s)), +x.invert(mx))];
+        svg
+          .append("rect")
+          .attr("x", mL)
+          .attr("y", 0)
+          .attr("width", w - mL - mR)
+          .attr("height", h)
+          .attr("fill", "transparent")
+          .on("mousedown", function (ev) {
+            const [mx] = d3.pointer(ev, this);
+            scrubDragStartYM = ymAt(mx);
+            scrubDragging = true;
+            setScrubRangeLive(scrubDragStartYM, scrubDragStartYM);
+          })
+          .on("mousemove", function (ev) {
+            if (!scrubDragging) return;
+            const [mx] = d3.pointer(ev, this);
+            setScrubRangeLive(scrubDragStartYM, ymAt(mx));
+          });
+
+        applyScrubHighlight();
+      }
+
       function renderHeatmaps() {
         const grid = d3.select("#heatmaps").html("");
         const p = cut();
+        // A custom scrub range (see renderRangeScrub) genuinely re-filters this
+        // panel — real weekday/hour totals for exactly those months, not just
+        // the three locked cuts — while All/Pre-uni/University keeps working
+        // exactly as before when no custom range is selected.
+        const span = scrubRange ? monthsInRange(scrubRange.startYM, scrubRange.endYM) : null;
+        const rangeLabel = span
+          ? span.length === 1
+            ? span[0]
+            : `${span[0]} → ${span[span.length - 1]}`
+          : PLABEL[p];
         // Per-listener color scale (own max across periods): Roman's volume would
         // otherwise wash out Orr's pattern, and the panel compares routine SHAPE.
+        // A custom range's own peak can safely extend this floor, never shrink it,
+        // so the scale never rescales wildly for a narrow selection.
         const ownerMax = {};
-        for (const o of OWNERS)
-          ownerMax[o] = d3.max(PERIOD_OPTIONS, (pp) => d3.max(D.heatmap[pp][o], (d) => d.plays));
+        for (const o of OWNERS) {
+          let m = d3.max(PERIOD_OPTIONS, (pp) => d3.max(D.heatmap[pp][o], (d) => d.plays));
+          if (span) m = Math.max(m, d3.max(rangeHeatmapCells(o, span), (d) => d.plays));
+          ownerMax[o] = m;
+        }
         const cw = 26,
           chh = 15.5,
           mLh = 40,
@@ -1628,19 +1976,24 @@
           H = mTh + 24 * chh + 4;
 
         for (const o of OWNERS) {
-          const lookup = new Map(D.heatmap[p][o].map((d) => [`${d.weekday}|${d.hour}`, d.plays]));
-          const cells = WEEKDAYS.flatMap((wd) =>
-            d3.range(24).map((hr) => ({ weekday: wd, hour: hr, plays: lookup.get(`${wd}|${hr}`) || 0 })),
-          );
-          const box = grid.append("div");
+          let cells;
+          if (span) {
+            cells = rangeHeatmapCells(o, span);
+          } else {
+            const lookup = new Map(D.heatmap[p][o].map((d) => [`${d.weekday}|${d.hour}`, d.plays]));
+            cells = WEEKDAYS.flatMap((wd) =>
+              d3.range(24).map((hr) => ({ weekday: wd, hour: hr, plays: lookup.get(`${wd}|${hr}`) || 0 })),
+            );
+          }
+          const box = grid.append("div").style("opacity", soloOp(o));
           const svg = box.append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", W);
           svg
             .append("text")
             .attr("x", mLh)
             .attr("y", 12)
-            .style("font", "600 12px var(--display)")
+            .style("font", "600 11px var(--mono)")
             .attr("fill", COLOR[o])
-            .text(`${NAME[o]} · ${PLABEL[p]}`);
+            .text(`${NAME[o]} · ${rangeLabel}`);
           svg
             .selectAll(".wdl")
             .data(WEEKDAYS)
@@ -1669,7 +2022,7 @@
             .selectAll(".hm-cell")
             .data(cells)
             .join("rect")
-            .attr("class", "hm-cell clickable")
+            .attr("class", span ? "hm-cell" : "hm-cell clickable")
             .attr("data-wd", (d) => d.weekday)
             .attr("x", (d) => mLh + WEEKDAYS.indexOf(d.weekday) * cw)
             .attr("y", (d) => mTh + d.hour * chh)
@@ -1692,6 +2045,11 @@
                 : 0.5,
             )
             .on("click", (ev, d) => {
+              // The per-cell drill-down data only exists for the three fixed
+              // cuts, so while a custom brush range is active a drill-down
+              // would show numbers from a DIFFERENT slice than the cells —
+              // never show mismatched data, so cell selection is off.
+              if (span) return;
               const s = state.d2.selectedWindow;
               setD2({
                 selectedWindow:
@@ -1704,7 +2062,7 @@
               hoverWD(d.weekday);
               showTip(
                 ev,
-                `<div class="t">${NAME[o]} · ${PLABEL[p]}</div>${WD3[d.weekday]}
+                `<div class="t">${NAME[o]} · ${rangeLabel}</div>${WD3[d.weekday]}
           <span class="num">${d.hour}:00–${d.hour + 1}:00</span><br><span class="num">${fm0(d.plays)}</span> plays`,
               );
             })
@@ -1713,6 +2071,22 @@
               hoverWD(null);
               hideTip();
             });
+          // Step-sequencer feel: group the 24 hourly rows into quarter-day
+          // "bars" the way a drum machine groups beats, with a divider every
+          // 6 rows lining up with the 0/6/12/18 hour labels.
+          svg
+            .selectAll(".hm-beat")
+            .data([6, 12, 18])
+            .join("line")
+            .attr("class", "hm-beat")
+            .attr("x1", mLh)
+            .attr("x2", mLh + 7 * cw)
+            .attr("y1", (d) => mTh + d * chh)
+            .attr("y2", (d) => mTh + d * chh)
+            .attr("stroke", "var(--border)")
+            .attr("stroke-width", 1)
+            .attr("opacity", 0.7)
+            .attr("pointer-events", "none");
         }
       }
       function hoverWD(wd) {
@@ -1728,7 +2102,17 @@
 
       function renderWindowPanel() {
         // The "select a cell" prompt lives in the panel hint; hide the empty box.
-        const el = d3.select("#window-panel").style("display", state.d2.selectedWindow ? null : "none");
+        const el = d3.select("#window-panel");
+        // The drill-down aggregates exist only per fixed cut — with a custom
+        // brush range active, showing them would pair range cells with
+        // fixed-cut numbers. Say so instead of showing mismatched data.
+        if (scrubRange) {
+          el.style("display", null).html(
+            `<p class="hint" style="margin:0">Cell drill-down is off while a custom range is selected — clear the range to inspect a single hour of the week.</p>`,
+          );
+          return;
+        }
+        el.style("display", state.d2.selectedWindow ? null : "none");
         if (!state.d2.selectedWindow) {
           el.html("");
           return;
@@ -1781,6 +2165,7 @@
         discoveryX = x;
         const yMax = d3.max(OWNERS, (o) => D.discovery[o][D.discovery[o].length - 1].cum) * 1.06;
         const y = d3.scaleLinear([0, yMax], [h - mB, mT]);
+        discoveryY = y;
 
         const uniX = x(parseYM(UNI_START.slice(0, 7)));
         const active = cut();
@@ -1798,8 +2183,8 @@
           .attr("stroke-dasharray", "4 3");
 
         for (const o of OWNERS) {
-          svg
-            .append("path")
+          const og = svg.append("g").attr("opacity", soloOp(o));
+          og.append("path")
             .datum(D.discovery[o])
             .attr(
               "d",
@@ -1813,15 +2198,13 @@
             .attr("stroke", COLOR[o])
             .attr("stroke-width", 2);
           const last = D.discovery[o][D.discovery[o].length - 1];
-          svg
-            .append("text")
+          og.append("text")
             .attr("x", x(parseYM(last.ym)) + 6)
             .attr("y", y(last.cum) - 7)
             .attr("fill", COLOR[o])
-            .style("font", "600 10.5px var(--sans)")
+            .style("font", "600 10.5px var(--mono)")
             .text(NAME[o]);
-          svg
-            .append("text")
+          og.append("text")
             .attr("class", "val num")
             .attr("x", x(parseYM(last.ym)) + 6)
             .attr("y", y(last.cum) + 6)
@@ -1836,7 +2219,7 @@
               .attr("y", mT)
               .attr("width", x1 - x0)
               .attr("height", h - mT - mB)
-              .attr("fill", "rgba(13,13,18,.58)")
+              .attr("fill", "rgba(15,17,23,.58)")
               .attr("pointer-events", "none");
           }
           const [, x0, x1] = bands.find(([p]) => p === active);
@@ -1869,6 +2252,17 @@
           .attr("stroke", "#C9C9D6")
           .attr("stroke-width", 0.7)
           .style("display", "none");
+        discoveryPlayheads = {};
+        for (const o of OWNERS) {
+          discoveryPlayheads[o] = svg
+            .append("circle")
+            .attr("r", 4)
+            .attr("fill", "#0f1117")
+            .attr("stroke", COLOR[o])
+            .attr("stroke-width", 2)
+            .style("display", "none")
+            .attr("pointer-events", "none");
+        }
         svg
           .append("rect")
           .attr("x", mL)
@@ -1911,23 +2305,18 @@
             pct: true,
           },
           {
-            label: "top-10 artist share",
-            fmt: (v) => fm1t(v) + "%",
-            val: (o, p) => D.kpis[p][o].top10_share,
-            pct: true,
-          },
-          {
-            label: "different artists",
-            fmt: fm0,
-            val: (o, p) => D.kpis[p][o].unique_artists,
-          },
-          {
             label: "plays kept past 30 s",
             fmt: (v) => fm1t(v) + "%",
             val: (o, p) => 100 - D.kpis[p][o].under30_pct,
             pct: true,
           },
         ];
+        // "top-10 artist share" and "different artists" used to live here too,
+        // but they're taste/breadth measures, not routine or intensity: top-10
+        // share is already the headline of Dashboard 1's Top Artist Concentration
+        // panel, and "different artists" duplicates this same dashboard's own
+        // discovery curve (a trajectory of the same count). Keeping them here
+        // muddied what D2 is actually about; dropped rather than re-explained.
         const w = 178,
           h = 170,
           mT = 28,
@@ -1948,7 +2337,7 @@
             .attr("x", w / 2)
             .attr("y", 13)
             .attr("text-anchor", "middle")
-            .style("font", "600 11.5px var(--sans)")
+            .style("font", "600 11px var(--mono)")
             .text(m.label);
           svg
             .selectAll(".guide")
@@ -1982,7 +2371,7 @@
           };
           const ly = [labelY(0), labelY(1)];
           const groups = OWNERS.map((o, i) => {
-            const g = svg.append("g").attr("class", "clickable");
+            const g = svg.append("g").attr("class", "clickable").attr("opacity", soloOp(o));
             g.append("line")
               .attr("x1", x[0])
               .attr("x2", x[1])
@@ -2020,7 +2409,7 @@
             const delta = ((v1 - v0) / v0) * 100;
             groups[i]
               .on("mouseover", (ev) => {
-                groups.forEach((g, j) => g.attr("opacity", j === i ? 1 : 0.3));
+                groups.forEach((g, j) => g.attr("opacity", (j === i ? 1 : 0.3) * soloOp(OWNERS[j])));
                 showTip(
                   ev,
                   `<div class="t">${NAME[o]}: ${m.label}</div>
@@ -2031,7 +2420,7 @@
               })
               .on("mousemove", moveTip)
               .on("mouseout", () => {
-                groups.forEach((g) => g.attr("opacity", 1));
+                groups.forEach((g, j) => g.attr("opacity", soloOp(OWNERS[j])));
                 hideTip();
               });
           });
@@ -2078,76 +2467,6 @@
         }
       }
       renderHeroWave();
-
-      // Artist search: a friendly lookup over the artist universe already shipped
-      // to the browser (top artists + per-family lists + shared artists for the
-      // current period cut). Selecting a hit reuses pickArtist(), so it plugs into
-      // every existing D1 link (family outline, overlap highlight, detail card).
-      function artistUniverse() {
-        const c = cut();
-        const known = new Map();
-        const add = (name, family) => {
-          if (!known.has(name)) known.set(name, { name, family: family || null });
-          else if (family && !known.get(name).family) known.get(name).family = family;
-        };
-        for (const o of OWNERS) {
-          for (const a of D.top_artists[c][o]) add(a.artist, a.family);
-          for (const f in D.family_artists[c][o]) for (const a of D.family_artists[c][o][f]) add(a.artist, f);
-        }
-        for (const s of D.shared.top_shared[c]) add(s.artist, null);
-        return [...known.values()];
-      }
-      function renderSearchResults(query) {
-        const box = d3.select("#artist-search-results");
-        const q = query.trim().toLowerCase();
-        if (!q) {
-          box.html("").classed("show", false);
-          return;
-        }
-        const hits = artistUniverse()
-          .filter((a) => a.name.toLowerCase().includes(q))
-          .sort((a, b) => a.name.toLowerCase().indexOf(q) - b.name.toLowerCase().indexOf(q))
-          .slice(0, 8);
-        box.classed("show", true);
-        if (!hits.length) {
-          box.html('<div class="search-empty">No artist matches in this period.</div>');
-          return;
-        }
-        box
-          .selectAll("button")
-          .data(hits, (d) => d.name)
-          .join("button")
-          .html((d) => `<span>${d.name}</span>${d.family ? `<span class="fam">${d.family}</span>` : ""}`)
-          .on("click", (ev, d) => {
-            pickArtist(d.name, "artists");
-            closeSearch();
-          });
-      }
-      function closeSearch() {
-        d3.select("#artist-search-box").style("display", "none");
-        d3.select("#artist-search-input").property("value", "");
-        d3.select("#artist-search-results").html("").classed("show", false);
-      }
-      d3.select("#artist-search-btn").on("click", () => {
-        const box = d3.select("#artist-search-box");
-        const opening = box.style("display") === "none";
-        if (opening) {
-          box.style("display", "flex");
-          d3.select("#artist-search-input").node().focus();
-        } else closeSearch();
-      });
-      d3.select("#artist-search-input")
-        .on("input", function () {
-          renderSearchResults(this.value);
-        })
-        .on("keydown", (ev) => {
-          if (ev.key === "Escape") closeSearch();
-        });
-      document.addEventListener("click", (ev) => {
-        const box = document.getElementById("artist-search-box"),
-          btn = document.getElementById("artist-search-btn");
-        if (box && box.style.display !== "none" && !box.contains(ev.target) && ev.target !== btn) closeSearch();
-      });
 
       renderAll();
 

@@ -9,17 +9,49 @@ Central question: is similarity between two listeners only about taste, or also 
 
 One scrolling page (no tabs), two stacked dashboards (hero → panel grid; the KPI strips were removed —
 their numbers live in the written report, the page keeps only visualizations), in ONE personal,
-story-driven voice ("Wrapped for two people") — measures serve the story:
+story-driven voice ("Wrapped for two people") — measures serve the story. On-page the two dashboards are
+labeled **Side A / Side B** (a vinyl-record framing, not "Dashboard 1/2" — that read as generic BI-tool
+naming and was flagged as making the whole page feel "web-ie"), with a "flip the record" divider between
+them, and every panel carries a small catalog-style track number (A1–A3, B1–B4) instead of just a title.
+Keep this — don't revert to "Dashboard 1: ..." headings.
 1. **Listening DNA** — genre families, obsessions (top artists), minutes-weighted overlap.
-2. **Before Uni vs Uni: Music as Routine** — whole-span waveform timeline, daily-rhythm heatmap,
-   cumulative artist-discovery curve, slopegraph.
+2. **Routine, Disrupted — Before Uni vs. University** — whole-span waveform timeline (equalizer-bar
+   style), daily-rhythm heatmap, cumulative artist-discovery curve, slopegraph.
 Seven panels, seven DISTINCT chart shapes: paired family bars / lollipop dot-plot / 100% strip /
 mirrored-area waveform / heatmap / cumulative discovery curve / slopegraph small-multiples
 (Pre-uni → University change). Panel titles are human questions. No takeaway lines (considered and
 explicitly declined by the owner). EVERY panel responds to the global period filter; whole-span charts
 (river, discovery curve) and the slopegraph respond by EMPHASIZING the selected period's region/side,
-not by re-cutting. The daily-minutes histogram was replaced by the discovery curve (redundant with the
-slopegraph's median-day and hours/month slopes).
+not by re-cutting.
+
+**Why D2 is framed as "routine, disrupted" and not just "routine":** the discovery curve (artist
+novelty over time) doesn't visually read as "routine" or "intensity" on its own — it reads as a taste/
+exploration measure, and got flagged twice as feeling out of place under a bare "routine" label. The fix
+was to make the whole dashboard explicit about WHY discovery belongs there: Kim et al. (PNAS 2024,
+"Disrupted routines anticipate musical exploration") found that breaking a personal routine is
+systematically associated with MORE musical exploration, not nostalgic retreat. D2's four panels now
+explicitly frame the Pre-uni → University line as a routine-disruption event and ask whether each
+listener's exploration rate visibly shifted around it — that's what gives the discovery curve a
+legitimate home instead of a forced one. Do not revert to a generic "routine and intensity" label
+without re-solving this fit problem.
+
+**The Dashboard-2 range brush (drag-to-select under the waveform) is a deliberate, narrow exception to
+"whole-span charts never re-cut":** dragging it genuinely recomputes the weekday/hour heatmap and a
+four-metric readout (the same four metrics the slopegraph shows — see below) for the EXACT dragged month
+range, via the `monthly_detail` aggregate (see Data files below) — not just an emphasis overlay. It sits
+ALONGSIDE the fixed All/Pre-uni/University toggle, not in place of it (the toggle still drives
+everything else, and still matters for the locked two-period comparison the slopegraph depends on). The
+waveform and discovery curve themselves still only get emphasized/echoed by the brush, never re-cut —
+only the heatmap and the brush's own readout genuinely recompute. This distinction (which panels re-cut
+vs. which only emphasize) is intentional, not inconsistent — don't "fix" it by making everything re-cut
+or everything emphasize without re-checking this note.
+
+**The slopegraph is four metrics, not six:** hours/month, median listening day, days-with-music%, and
+plays-kept-past-30s. "Top-10 artist share" and "different artists" USED to be there too but were cut —
+both are taste/breadth measures, not routine or intensity, and both duplicated content shown elsewhere
+(top-10 share is the headline of Dashboard 1's Top Artist Concentration panel; "different artists"
+duplicates this dashboard's own discovery curve, just as a single before/after snapshot instead of a
+trajectory). Don't re-add them without re-solving that duplication.
 
 ## Stack and hosting
 - pandas for data prep; D3.js for every chart (required). No build step. Static files on GitHub Pages.
@@ -57,10 +89,23 @@ slopegraph's median-day and hours/month slopes).
 ## Colors and state
 - Fixed, colorblind-safe owner colors, strong on a dark background: Orr = bright blue (~`#4EA1FF`),
   Roman = bright orange/amber (~`#FF9F1C`). Same colors in every chart and the legend.
+- **Terminal identity (2026-07-16 pass, owner-driven):** the page's design system is a blue-tinted
+  night terminal, modeled on the owner's own `~/Downloads/dashboard(1).html`. Chrome palette: bg
+  `#0f1117`, panel `#151926`, border `#232a3a`, ink `#c8d0e0`. IBM Plex Mono is the BODY typeface
+  (13px), Space Grotesk only for the hero h1/question and side h2s. Panels are FLAT (1px border, 8px
+  radius, no gradients/shadows — an earlier gradient-card look was tried and rejected as "web-ie").
+  Panel titles are one-line small-caps mono rows: `▍` accent + colored track number + name, with a
+  terse right-aligned functional sub-label INSTEAD of hint paragraphs (hints only survive where a
+  correctness explanation genuinely needs a sentence, e.g. the per-listener heatmap scale). A mono
+  prompt line (`orr@apple-music × roman@spotify ~/two-listeners · jan 2021 → may 2026`) sits above the
+  hero title. A `method` footer (mono, muted) closes the page: provenance, genre-external caveat,
+  shared rule, 30-second skip rule, tooling — it carries the required genre disclosure, don't remove it.
+- The legend is a CONTROL: clicking a listener chip solos him (state.solo; the other listener's marks
+  drop to 0.15 opacity in every panel via soloOp(), chip gets `.off`); clicking again un-solos.
 - In a single-person chart with categories, use only LIGHTNESS steps of that person's single hue —
   never a second categorical palette. Muted gray for inactive marks.
-- Heatmap cells ramp from a visible floor (`#242634`), not the page background, with a subtle grid so
-  empty cells read as empty rather than invisible.
+- Heatmap cells ramp from a visible floor (`--floor: #232b3d`), not the page background, with a subtle
+  grid so empty cells read as empty rather than invisible.
 - State is kept PER DASHBOARD (independent stacked sections), each with its own period filter, reset,
   and removable filter chips:
   `{ d1: {period, selectedFamily, selectedArtist}, d2: {period, selectedWindow} }`.
@@ -73,6 +118,15 @@ slopegraph's median-day and hours/month slopes).
 - Aggregates (full-history, re-cut to 2021+ in prep): `owner_summary`, `artist_totals(_with_genre)`,
   `monthly_totals`, `daily_totals`, `hour_weekday(_year)`, `hourly_profile`, `genre_monthly`,
   `plays_daily(_with_genre)`.
+- `EMBEDDED_DATA.monthly_detail` (in `data.js`, built by `prep.py`'s `monthly_detail()`) — per-owner,
+  per-month breakdown (hours/plays/under-30-plays/active-days, sparse weekday×hour play counts, and a
+  dated active-day series). Still a compact aggregate, NOT the event table — bounded by (weekday, hour,
+  month) triples that actually occurred. Exists solely to let the Dashboard-2 range brush recompute the
+  heatmap and the four slopegraph-equivalent metrics for an arbitrary custom month range client-side.
+  Deliberately has NO per-artist breakdown — that would only feed top-10-share/unique-artist recomputes,
+  and those metrics were cut from the slopegraph as taste/breadth duplicates (see above), so there was
+  nothing left to justify shipping it. Replaced the old unused `daily` field (bare per-cut value arrays
+  with no date labels, never referenced in `index.html` — dead code, not a data loss).
 
 ## Sanity anchors (FULL history — recompute on 2021+, do NOT hardcode)
 Expect the 2021+ numbers to differ; these are only rough checks.
