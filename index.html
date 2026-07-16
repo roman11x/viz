@@ -790,13 +790,13 @@
 
         <div class="grid">
           <div class="panel span2" id="p-families">
-            <h3><span class="track-num">A1</span> Genre Family Distribution
+            <h3><span class="track-num">A1</span> Do we even like the same music?
               <span class="sub">share of minutes · genre tags are external · click families to filter (multi-select)</span></h3>
             <div id="families-butterfly"></div>
           </div>
 
           <div class="panel span2" id="p-artists">
-            <h3><span class="track-num">A2</span> Top Artist Concentration
+            <h3><span class="track-num">A2</span> Who does each of us play on repeat?
               <span class="sub">hours in range · ring = artist the other one plays too · click for details</span></h3>
             <div class="duo">
               <div id="artists-Or"></div>
@@ -806,8 +806,8 @@
           </div>
 
           <div class="panel span2" id="p-overlap">
-            <h3><span class="track-num">A3</span> Minutes-Weighted Shared Listening
-              <span class="sub">same artists, two different worlds · click a line for details</span></h3>
+            <h3><span class="track-num">A3</span> When we share an artist, do we share the listening?
+              <span class="sub">overlap weighted by minutes · click a line for details</span></h3>
             <div class="shared-rule">
               <label for="shared-min">shared if both of us played the artist ≥</label>
               <input type="range" id="shared-min" min="1" max="60" step="1" value="3" />
@@ -847,7 +847,7 @@
 
         <div class="grid">
           <div class="panel span2" id="p-monthly">
-            <h3><span class="track-num">B1</span> Monthly Listening Volume
+            <h3><span class="track-num">B1</span> How much did each of us listen, month by month?
               <span class="sub">hours per month · Orr above the line, Roman below</span></h3>
             <div id="monthly-chart"></div>
             <div class="scrub-wrap">
@@ -861,7 +861,7 @@
           </div>
 
           <div class="panel" id="p-routine">
-            <h3><span class="track-num">B2</span> When Each of Us Listens
+            <h3><span class="track-num">B2</span> When in the week does music happen?
               <span class="sub">plays by weekday × hour · per-listener color scale · click a cell</span></h3>
             <p class="hint">
               Each listener has his own color scale, so the shapes of the routines compare even though the
@@ -872,7 +872,7 @@
           </div>
 
           <div class="panel" id="p-discovery">
-            <h3><span class="track-num">B3</span> Cumulative Artist Discovery
+            <h3><span class="track-num">B3</span> Did breaking routine make us explore more?
               <span class="sub">distinct artists heard, running total</span></h3>
             <p class="hint">
               If breaking routine comes with more exploring, a line should visibly bend at the university
@@ -1577,6 +1577,13 @@
           .attr("x", mL)
           .attr("y", 10)
           .text(`top shared artists (${PLABEL[c]}) · minutes, log scale`);
+        // In-chart dot key ("legend close to the display"): the two dot colors
+        // must be decodable here, not only via the sticky page legend.
+        const key = svg.append("text").attr("class", "val").attr("x", w - mR).attr("y", 10).attr("text-anchor", "end");
+        key.append("tspan").attr("fill", COLOR.Or).text("● ");
+        key.append("tspan").text(`${NAME.Or}   `);
+        key.append("tspan").attr("fill", COLOR.Roman).text("● ");
+        key.append("tspan").text(NAME.Roman);
         // Log ticks at 1m / 10m / 1h / 10h / 100h where in range
         const ticks = [1, 10, 60, 600, 6000].filter((t) => t >= lo && t <= hi);
         svg
