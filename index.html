@@ -539,7 +539,7 @@
       </div>
 
       <section class="dash" id="d1">
-        <h2>Taste Profile and Shared Listening</h2>
+        <h2>Dashboard 1: Taste Profile and Shared Listening</h2>
 
         <div class="chips" id="d1-chips"></div>
 
@@ -547,10 +547,7 @@
           <div class="panel span2" id="p-families">
             <h3>Genre Family Distribution</h3>
             <p class="hint">
-              Bars show what percent of each person's minutes goes to each genre family (genre data comes
-              from an external source).
-              <br />
-              Click a family to filter the artist lists.
+              Bars show what percent of each person's minutes goes to each genre family. Click a family to filter the artist lists.
             </p>
             <div class="duo">
               <div id="families-Or"></div>
@@ -593,13 +590,13 @@
       </section>
 
       <section class="dash" id="d2">
-        <h2>Routine and Listening Intensity</h2>
+        <h2>Dashboard 2: Routine and Listening Intensity</h2>
 
         <div class="grid">
           <div class="panel span2" id="p-monthly">
             <h3>Monthly Listening Volume</h3>
             <p class="hint">
-              Monthly hours from 2021 onward. Orr is plotted above the baseline and Roman is plotted below it.
+              Orr is plotted above the baseline and Roman is plotted below it.
             </p>
             <div id="monthly-chart"></div>
           </div>
@@ -636,11 +633,6 @@
           </div>
         </div>
       </section>
-
-      <footer class="foot">
-        Data: our personal Apple Music and Spotify export files, January 2021 to May 2026. Genre labels
-        were added afterwards from an external source and are only partial.
-      </footer>
     </div>
     <div id="tooltip"></div>
 
@@ -1096,7 +1088,7 @@
         const tbl = d3.select("#shared-table").html("");
         const t = tbl.append("table");
         t.append("tr")
-          .html(`<th>top 10 shared artists (${PLABEL[c]}, ${D.meta.shared_min_minutes}+ min each)</th>
+          .html(`<th>top 10 shared artists (${PLABEL[c]})</th>
     <th style="color:${COLOR.Or}">Orr</th><th style="color:${COLOR.Roman}">Roman</th>`);
         const tr = t
           .selectAll("tr.row")

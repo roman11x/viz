@@ -3,3 +3,4 @@ __pycache__/
 # raw exports (~110 MB) stay out of git; copy DATA/*.csv back manually if you
 # need to re-run prep.py — the committed data.js is enough to run the site
 DATA/*.csv
+~$*

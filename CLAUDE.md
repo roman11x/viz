@@ -39,8 +39,9 @@ slopegraph's median-day and hours/month slopes).
   Electronic/Dance, Hip-Hop/R&B + "Other"). A curated map in `prep.py` extends it for top unclassified
   artists — only confident assignments; the uncertain rest stays "Other", always visible. Mark genre as
   external/provisional wherever it appears.
-- "Shared" artists require REAL listening on both sides (≥1 over-30s play each), not name-only matches.
-  Overlap is weighted by minutes, never artist count (79 shared artists, but 39% of Or's minutes vs ~1% of Roman's).
+- "Shared" artists require REAL listening on both sides (≥1 over-30s play each AND 3+ minutes each),
+  not name-only matches. Overlap is weighted by minutes, never artist count (40 shared artists, but
+  35.4% of Or's minutes vs 0.5% of Roman's).
 - Skip behavior appears in the UI only as the comparable `under_30s` measure (shown as "plays kept past
   30 s" = 100 − under30_pct, in kpis and the slopegraph) — never native skip counters (Apple and Spotify
   count skips differently).
@@ -77,8 +78,24 @@ slopegraph's median-day and hours/month slopes).
 Expect the 2021+ numbers to differ; these are only rough checks.
 - Or ≈ 2,802 h / 97,000 plays / 1,436 artists / top artist Imagine Dragons.
 - Roman ≈ 3,491 h / 83,003 plays / 4,036 artists / top artist Sleep Token.
-- 2021+ computed: Or 1,962.9 h / 1,108 artists; Roman 3,393.8 h / 3,756 artists; 79 truly-shared artists;
-  shared minutes 38.8% (Or) vs 1.1% (Roman); family "Other" ≈ 15% (Or) / 23% (Roman) after curation.
+- 2021+ computed: Or 1,962.9 h / 1,108 artists; Roman 3,393.8 h / 3,756 artists; 40 truly-shared artists
+  (130 name-only matches); shared minutes 35.4% (Or) vs 0.5% (Roman); family "Other" 8.0% (Or) /
+  14.2% (Roman) after curation.
+
+## Verified single-month facts (do not restate differently)
+Recomputed from the fact CSV. Narrative text (report, tooltips, annotations) must quote these exactly.
+- Roman record month: 105.7 h (2024-05). Roman quietest month: 1.7 h (2021-03). Ratio ~61x.
+  Never describe the record as "12x his quietest" — that figure came from dividing by Or's quietest
+  month (8.8 h) by mistake.
+- Or quietest month: 8.8 h (2026-03). It is NOT the last month of the window; 2026-04 and 2026-05
+  rebounded (29.1 h, 34.4 h). Do not describe Or's listening as still fading based on 2026-03 alone.
+- October 2023 timing nuance (window-level, verified): Roman's volume level-shift (33-month
+  pre-Oct-2023 average 31.5 h/month -> 73.6 h/month from Oct 2023 on) and his move into night
+  listening (22:00–05:59 share of minutes 17–20% in Jul–Sep 2023 -> 39–53% in Oct–Dec 2023) both
+  begin in October 2023, three months before the calendar period boundary. Or played 0 minutes on
+  2023-10-07 and discovered zero new artists in both 2023-10 and 2023-11 (the only consecutive
+  zero-discovery months in the window). The dashboards keep the locked two-period split; this note
+  exists so narrative text never attributes these specific shifts to the university calendar alone.
 
 ## Gotchas
 - The SAMPLE trap: for any event-level work use the full `fact_plays_with_genre.csv`, not the 300-row sample.
