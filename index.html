@@ -511,6 +511,11 @@
         font-size: 11px;
         fill: var(--ink2);
       }
+      .annot {
+        font-size: 9.5px;
+        fill: #e6ebf5;
+        opacity: 0.92;
+      }
       .axis text {
         fill: var(--ink2);
         font-size: 10.5px;
@@ -1121,6 +1126,13 @@
         const host = d3.select("#families-butterfly").html("");
         const byFam = {};
         for (const o of OWNERS) byFam[o] = new Map(D.families[c][o].map((d) => [d.family, d]));
+        // Ghost ticks (bullet-chart idiom): when one period is selected, mark the
+        // OTHER period's share on each bar so taste drift is a visible gap, not a
+        // memory exercise across toggle clicks.
+        const otherCut = c === "pre_uni" ? "university" : c === "university" ? "pre_uni" : null;
+        const byFamOther = {};
+        if (otherCut)
+          for (const o of OWNERS) byFamOther[o] = new Map(D.families[otherCut][o].map((d) => [d.family, d]));
         // Union of families, largest either-side share first; drop rows both
         // sides round to zero.
         const fams = [...new Set(OWNERS.flatMap((o) => D.families[c][o].map((d) => d.family)))]
@@ -1212,6 +1224,16 @@
             .attr("fill", (d) => (dimmed(d) ? "var(--muted)" : ownerShade(o, fams.indexOf(d), fams.length)))
             .attr("stroke", stroke)
             .attr("stroke-dasharray", dash);
+          if (otherCut)
+            side
+              .append("line")
+              .attr("x1", (d) => xEnd(byFamOther[o].get(d.family)?.pct ?? 0))
+              .attr("x2", (d) => xEnd(byFamOther[o].get(d.family)?.pct ?? 0))
+              .attr("y1", -1)
+              .attr("y2", barH + 5)
+              .attr("stroke", "#E6EBF5")
+              .attr("stroke-width", 1.4)
+              .attr("opacity", 0.85);
           side
             .append("text")
             .attr("class", "val")
@@ -1226,6 +1248,14 @@
               return r ? fm1(r.pct) + "%" : "—";
             });
         }
+        if (otherCut)
+          svg
+            .append("text")
+            .attr("class", "val")
+            .attr("x", w / 2)
+            .attr("y", 13)
+            .attr("text-anchor", "middle")
+            .text(`▏= ${PLABEL[otherCut]} share`);
         g.on("click", (ev, d) => toggleFamily(d.family))
           .on("mouseover", function (ev, d) {
             g.attr("opacity", (r) => (r === d ? 1 : 0.38));
@@ -1234,10 +1264,16 @@
               `<div class="t">${d.family}</div>` +
                 OWNERS.map((o) => {
                   const r = byFam[o].get(d.family);
-                  return `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}: ` +
+                  let line =
+                    `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}: ` +
                     (r
                       ? `${fmin(r.minutes)} · <span class="num">${r.pct}%</span> · most played ${r.top_artist}`
                       : "nothing here");
+                  if (otherCut) {
+                    const ro = byFamOther[o].get(d.family);
+                    line += ` <span style="color:var(--ink2)">(${PLABEL[otherCut]}: ${ro ? fm1(ro.pct) : 0}%)</span>`;
+                  }
+                  return line;
                 }).join("<br>") +
                 `<br><span style="color:var(--ink2)">${famHas(d.family) ? "click to remove from filter" : "click to add to filter"}</span>`,
             );
@@ -1888,6 +1924,76 @@
           .style("font-weight", 700)
           .text("Roman");
 
+        // --- Event annotations. The dates are locked verified facts (see
+        // CLAUDE.md); every NUMBER is recomputed from the data at render time,
+        // never hardcoded. Drawn after the period-dim overlays so the marks
+        // stay visible whichever period is selected.
+        const annG = svg.append("g").attr("pointer-events", "none");
+        // Both of Roman's routine shifts (volume level-shift, move into night
+        // listening) and Or's discovery stall begin 2023-10 — three months
+        // BEFORE the calendar period boundary.
+        const BREAK_YM = "2023-10";
+        const bx = x(parseYM(BREAK_YM));
+        annG
+          .append("line")
+          .attr("x1", bx)
+          .attr("x2", bx)
+          .attr("y1", mT)
+          .attr("y2", h - mB)
+          .attr("stroke", "#E6EBF5")
+          .attr("stroke-width", 1)
+          .attr("stroke-dasharray", "1.5 3.5")
+          .attr("opacity", 0.85);
+        annG
+          .append("text")
+          .attr("class", "annot")
+          .attr("x", bx - 7)
+          .attr("y", mT + 10)
+          .attr("text-anchor", "end")
+          .text("Oct 2023 — both routines break, 3 months before uni");
+        // Roman's record month. The hours are computed from the data; the
+        // record-to-quietest ratio is the LOCKED narrative constant (~61×,
+        // from unrounded source minutes) — recomputing it from the shipped
+        // 0.1-rounded monthly values inflates it to 62×, which the verified-
+        // facts rule forbids quoting.
+        let recYM = null,
+          recH = 0;
+        for (const m of months) {
+          const v = val("Roman", m);
+          if (v > recH) [recH, recYM] = [v, m];
+        }
+        annG
+          .append("text")
+          .attr("class", "annot")
+          .attr("x", x(parseYM(recYM)) + 7)
+          .attr("y", y(-recH) + 3)
+          .text(`${fm1t(recH)} h — Roman's record, ~61× his quietest month`);
+        // Or's quietest month (with the rebound made explicit — see the locked
+        // note about not reading it as a one-way fade).
+        let oqYM = null,
+          oqH = Infinity;
+        for (const m of months) {
+          const v = val("Or", m);
+          if (v > 0 && v < oqH) [oqH, oqYM] = [v, m];
+        }
+        const ox = x(parseYM(oqYM));
+        annG
+          .append("line")
+          .attr("x1", ox)
+          .attr("x2", ox)
+          .attr("y1", y(oqH) - 46)
+          .attr("y2", y(oqH) - 3)
+          .attr("stroke", "#E6EBF5")
+          .attr("stroke-width", 0.8)
+          .attr("opacity", 0.55);
+        annG
+          .append("text")
+          .attr("class", "annot")
+          .attr("x", ox + 4)
+          .attr("y", y(oqH) - 50)
+          .attr("text-anchor", "end")
+          .text(`Orr's quietest — ${fm1t(oqH)} h, then rebounds`);
+
         // Echo of the scrubber's custom range (see renderRangeScrub below) — drawn
         // as a dashed outline so a drag-selected range shows up on the main chart
         // too, not just in the strip underneath it.
@@ -2446,6 +2552,47 @@
           .attr("class", "axis")
           .attr("transform", `translate(0,${h - mB})`)
           .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
+
+        // --- Event annotation: Or's only run of 2+ consecutive months with
+        // ZERO new artists (verified fact: Oct-Nov 2023). Derived from the
+        // data — find the run rather than hardcode it.
+        const zeroRuns = [];
+        let run = [];
+        for (const d of D.discovery.Or) {
+          if (d.new === 0) run.push(d.ym);
+          else {
+            if (run.length >= 2) zeroRuns.push([...run]);
+            run = [];
+          }
+        }
+        if (run.length >= 2) zeroRuns.push(run);
+        const fMon = d3.timeFormat("%b");
+        for (const zr of zeroRuns) {
+          const [z0, z1] = [zr[0], zr[zr.length - 1]];
+          const cy = y(byYM.Or.get(z1).cum);
+          const annG = svg.append("g").attr("pointer-events", "none");
+          annG
+            .append("line")
+            .attr("x1", x(parseYM(z0)) - 2)
+            .attr("x2", x(parseYM(z1)) + 2)
+            .attr("y1", cy + 4)
+            .attr("y2", cy + 4)
+            .attr("stroke", "#E6EBF5")
+            .attr("stroke-width", 2.5)
+            .attr("opacity", 0.9);
+          const lbl = annG
+            .append("text")
+            .attr("class", "annot")
+            .attr("x", x(parseYM(z1)) + 2)
+            .attr("y", cy - 21)
+            .attr("text-anchor", "end");
+          lbl.append("tspan").text("Orr discovers no one");
+          lbl
+            .append("tspan")
+            .attr("x", x(parseYM(z1)) + 2)
+            .attr("dy", 12)
+            .text(`${fMon(parseYM(z0))}–${fMon(parseYM(z1))} ${z1.split("-")[0]}`);
+        }
 
         discoveryCross = svg
           .append("line")

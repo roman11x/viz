@@ -24,7 +24,16 @@ is the page's signature motif) / lollipop dot-plot / 100% strip + LOG-SCALE DUMB
 285h-vs-15min asymmetry is the project's headline and deserves a chart, not a table row) / mirrored
 equalizer-bar waveform / heatmap / cumulative discovery curve / slopegraph small-multiples
 (Pre-uni → University change). Panel titles are human questions. No takeaway lines (considered and
-explicitly declined by the owner).
+explicitly declined by the owner) — but date-anchored EVENT ANNOTATIONS on the charts are IN
+(owner-approved 2026-07-16, distinct from takeaways: marks on data points, not conclusion sentences):
+B1 carries the Oct-2023 routine-break line (neutral-factual wording — "both routines break, 3 months
+before uni"; the owner chose NOT to name the war explicitly), Roman's record month (value computed,
+but the ~61× ratio is quoted from the locked facts, NOT recomputed — the shipped 0.1-rounded monthlies
+inflate it to 62×), and Or's quietest month with its rebound; B3 marks Or's only 2+-month zero-discovery
+run (derived from the data, not hardcoded dates). A1 shows GHOST TICKS (bullet-chart idiom) when one
+period is selected: a thin mark at the other period's share per bar, so taste drift is visible without
+toggling back and forth. Rationale: the audit found the page showed patterns but hid its discoveries —
+the verified findings existed only in narrative text.
 
 **Side-A filters (owner-driven 2026-07-16 upgrade — the old single-click filter was judged "low
 level"):** the genre-family filter is a MULTI-SELECT union (click families to accumulate, one removable
