@@ -54,12 +54,36 @@
       }
 
       .hero {
+        position: relative;
+        overflow: hidden;
         padding: 48px 0 26px;
         border-bottom: 1px solid var(--border);
+      }
+      #hero-wave {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 72px;
+        opacity: 0.16;
+        pointer-events: none;
+      }
+      .hero h1,
+      .hero .question,
+      .hero .subquestion {
+        position: relative;
+        z-index: 1;
       }
       .hero h1 {
         font: 700 clamp(30px, 4.5vw, 46px)/1.1 var(--display);
         letter-spacing: 0.5px;
+        background: linear-gradient(90deg, var(--or), var(--roman));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      @supports not (background-clip: text) {
+        .hero h1 {
+          color: var(--ink);
+        }
       }
       .hero .question {
         font: 500 clamp(17px, 2.2vw, 22px)/1.45 var(--display);
@@ -128,9 +152,102 @@
       section.dash {
         padding: 34px 0 8px;
       }
-      section.dash > h2 {
+      .dash-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+      }
+      .dash-head h2 {
         font: 700 24px/1.2 var(--display);
         letter-spacing: 0.4px;
+        display: flex;
+        align-items: center;
+      }
+      .eq-icon {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 15px;
+        margin-right: 10px;
+      }
+      .eq-icon i {
+        display: block;
+        width: 3px;
+        border-radius: 1px;
+        background: linear-gradient(var(--or), var(--roman));
+        transform-origin: bottom;
+      }
+      .eq-icon i:nth-child(1) {
+        height: 45%;
+      }
+      .eq-icon i:nth-child(2) {
+        height: 100%;
+      }
+      .eq-icon i:nth-child(3) {
+        height: 65%;
+      }
+      @keyframes eqbar {
+        0%,
+        100% {
+          transform: scaleY(0.4);
+        }
+        50% {
+          transform: scaleY(1);
+        }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .eq-icon i {
+          animation: eqbar 1.1s ease-in-out infinite;
+        }
+        .eq-icon i:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        .eq-icon i:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+      }
+      .eqpulse {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+      }
+      .clickable:hover .eqpulse {
+        opacity: 1;
+      }
+      .eqpulse.h {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 2px;
+        height: 8px;
+        margin-left: 7px;
+        vertical-align: middle;
+      }
+      .eqpulse.h i {
+        display: block;
+        width: 2px;
+        height: 100%;
+        border-radius: 1px;
+        transform-origin: bottom;
+      }
+      .eqpulse-bar {
+        transform-box: fill-box;
+        transform-origin: bottom;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .eqpulse.h i,
+        .eqpulse-bar {
+          animation: eqbar 0.9s ease-in-out infinite;
+        }
+        .eqpulse.h i:nth-child(2),
+        .eqpulse-bar:nth-child(2) {
+          animation-delay: 0.15s;
+        }
+        .eqpulse.h i:nth-child(3),
+        .eqpulse-bar:nth-child(3) {
+          animation-delay: 0.3s;
+        }
       }
       .periodbar {
         position: sticky;
@@ -175,28 +292,41 @@
         letter-spacing: 0.8px;
       }
       .seg {
-        display: flex;
+        position: relative;
+        display: inline-flex;
+        gap: 2px;
         border: 1px solid var(--border);
-        border-radius: 7px;
-        overflow: hidden;
+        border-radius: 999px;
+        background: var(--panel2);
+        padding: 2px;
+      }
+      .seg-indicator {
+        position: absolute;
+        top: 2px;
+        bottom: 2px;
+        left: 0;
+        z-index: 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--or), var(--roman));
+        transition:
+          transform 0.25s ease,
+          width 0.25s ease;
       }
       .seg button {
+        position: relative;
+        z-index: 1;
         background: transparent;
         border: none;
+        border-radius: 999px;
         color: var(--ink2);
         font: 12.5px var(--sans);
         padding: 6px 14px;
         cursor: pointer;
-        border-right: 1px solid var(--border);
-      }
-      .seg button:last-child {
-        border-right: none;
+        transition: color 0.2s;
       }
       .seg button.on {
-        background: var(--panel2);
-        color: var(--ink);
+        color: #0d0d12;
         font-weight: 700;
-        box-shadow: inset 0 -2px 0 var(--ink);
       }
       .reset {
         background: transparent;
@@ -210,6 +340,88 @@
       .reset:hover {
         color: var(--ink);
         border-color: var(--ink2);
+      }
+      .d1-search {
+        position: relative;
+      }
+      .search-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--ink);
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .search-btn:hover {
+        border-color: var(--ink2);
+      }
+      .search-box {
+        position: absolute;
+        right: 0;
+        top: 40px;
+        z-index: 8;
+        width: 250px;
+        flex-direction: column;
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      }
+      .search-box input {
+        width: 100%;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--ink);
+        padding: 7px 9px;
+        font: 13px var(--sans);
+        outline: none;
+      }
+      .search-box input:focus {
+        border-color: var(--ink2);
+      }
+      .search-results {
+        display: none;
+        flex-direction: column;
+        margin-top: 6px;
+        max-height: 220px;
+        overflow-y: auto;
+      }
+      .search-results.show {
+        display: flex;
+      }
+      .search-results button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        color: var(--ink);
+        text-align: left;
+        padding: 6px 8px;
+        font: 12.5px var(--sans);
+        cursor: pointer;
+      }
+      .search-results button:hover {
+        background: var(--panel);
+      }
+      .search-results .fam {
+        color: var(--ink2);
+        font-size: 11px;
+        font-family: var(--mono);
+      }
+      .search-empty {
+        color: var(--ink2);
+        font-size: 12px;
+        padding: 6px 8px;
       }
       .chips {
         display: flex;
@@ -431,9 +643,15 @@
       .stable td:first-child {
         font-family: var(--sans);
         text-align: left;
+        max-width: 170px;
+      }
+      .stable .artist-name {
+        display: inline-block;
+        vertical-align: middle;
+        max-width: 140px;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 170px;
+        white-space: nowrap;
       }
       .stable tr.clickable:hover td,
       .stable tr.sel td {
@@ -523,6 +741,7 @@
   <body>
     <div class="wrap">
       <header class="hero">
+        <div id="hero-wave" aria-hidden="true"></div>
         <h1>Two Listeners</h1>
         <p class="question">
           Does similarity between two listeners have to come from musical taste, or can it also be found
@@ -539,7 +758,16 @@
       </div>
 
       <section class="dash" id="d1">
-        <h2>Dashboard 1: Taste Profile and Shared Listening</h2>
+        <div class="dash-head">
+          <h2><span class="eq-icon" aria-hidden="true"><i></i><i></i><i></i></span>Dashboard 1: Taste Profile and Shared Listening</h2>
+          <div class="d1-search">
+            <button class="search-btn" id="artist-search-btn" type="button" aria-label="Search artists" title="Search artists">🔍</button>
+            <div class="search-box" id="artist-search-box" style="display: none">
+              <input type="text" id="artist-search-input" placeholder="Search an artist…" autocomplete="off" />
+              <div class="search-results" id="artist-search-results"></div>
+            </div>
+          </div>
+        </div>
 
         <div class="chips" id="d1-chips"></div>
 
@@ -590,7 +818,11 @@
       </section>
 
       <section class="dash" id="d2">
-        <h2>Dashboard 2: Routine and Listening Intensity</h2>
+        <div class="dash-head">
+          <h2><span class="eq-icon" aria-hidden="true"><i></i><i></i><i></i></span>Dashboard 2: Routine and Listening Intensity</h2>
+        </div>
+
+        <div class="chips" id="d2-chips"></div>
 
         <div class="grid">
           <div class="panel span2" id="p-monthly">
@@ -713,13 +945,25 @@
       const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
       function segControl(el, options, labels, current, onPick) {
-        d3.select(el)
+        const host = d3.select(el);
+        host
           .selectAll("button")
           .data(options)
           .join("button")
           .text((o) => labels[o])
           .classed("on", (o) => o === current)
           .on("click", (ev, o) => onPick(o));
+        let ind = host.select(".seg-indicator");
+        if (ind.empty()) ind = host.insert("span", ":first-child").attr("class", "seg-indicator");
+        const onBtn = host
+          .selectAll("button")
+          .filter((o) => o === current)
+          .node();
+        if (onBtn) {
+          const hb = host.node().getBoundingClientRect(),
+            bb = onBtn.getBoundingClientRect();
+          ind.style("width", bb.width + "px").style("transform", `translateX(${bb.left - hb.left}px)`);
+        }
       }
       function renderChips(el, chips) {
         d3.select(el)
@@ -766,9 +1010,15 @@
       }
 
       function artistFamily(name) {
+        const c = cut();
         for (const o of OWNERS) {
-          const r = D.top_artists[cut()][o].find((a) => a.artist === name);
+          const r = D.top_artists[c][o].find((a) => a.artist === name);
           if (r) return r.family;
+        }
+        for (const o of OWNERS) {
+          for (const f in D.family_artists[c][o]) {
+            if (D.family_artists[c][o][f].some((a) => a.artist === name)) return f;
+          }
         }
         return state.d1.selectedFamily;
       }
@@ -896,6 +1146,18 @@
             .attr("y", 4)
             .attr("text-anchor", "end")
             .text((d) => trunc(d.artist, 16));
+          g.append("g")
+            .attr("class", "eqpulse")
+            .attr("transform", `translate(${mL - 6},0)`)
+            .selectAll("rect")
+            .data([0, 1, 2])
+            .join("rect")
+            .attr("class", "eqpulse-bar")
+            .attr("x", (i) => i * 3)
+            .attr("y", -7)
+            .attr("width", 2)
+            .attr("height", 7)
+            .attr("fill", COLOR[o]);
           g.append("line")
             .attr("x1", x(0))
             .attr("x2", (d) => x(d.minutes))
@@ -1097,16 +1359,22 @@
           .attr("class", (d) => "row clickable" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
           .attr("data-artist", (d) => d.artist)
           .on("click", (ev, d) => pickArtist(d.artist, "overlap"))
-          .on("mousemove", (ev, d) =>
+          .on("mousemove", (ev, d) => {
+            highlightArtist(d.artist);
             showTip(
               ev,
               `<div class="t">${d.artist}</div>
       Orr: <span class="num">${fmin(d.or_minutes)}</span><br>Roman: <span class="num">${fmin(d.roman_minutes)}</span>`,
-            ),
-          )
-          .on("mouseout", hideTip);
+            );
+          })
+          .on("mouseout", () => {
+            highlightArtist(null);
+            hideTip();
+          });
         const cell = (m) => fmin(m);
-        tr.append("td").text((d) => d.artist);
+        const nameTd = tr.append("td");
+        nameTd.append("span").attr("class", "artist-name").text((d) => d.artist);
+        nameTd.append("span").attr("class", "eqpulse h").html("<i></i><i></i><i></i>");
         tr.append("td").text((d) => cell(d.or_minutes));
         tr.append("td").text((d) => cell(d.roman_minutes));
 
@@ -1122,6 +1390,39 @@
       }
 
       const parseYM = d3.timeParse("%Y-%m");
+
+      // Shared hover-link between the monthly waveform and the discovery curve:
+      // they're the only two D2 panels indexed by the same month axis, so hovering
+      // either one drops a synced guide on both and merges both panels' numbers
+      // into one tooltip instead of two independent ones.
+      let monthlyCross = null,
+        monthlyX = null,
+        monthlyByYM = null,
+        discoveryCross = null,
+        discoveryX = null,
+        discoveryByYM = null;
+      function syncMonthHover(ev, m) {
+        if (monthlyCross) monthlyCross.attr("x1", monthlyX(parseYM(m))).attr("x2", monthlyX(parseYM(m))).style("display", null);
+        if (discoveryCross)
+          discoveryCross.attr("x1", discoveryX(parseYM(m))).attr("x2", discoveryX(parseYM(m))).style("display", null);
+        showTip(
+          ev,
+          `<div class="t num">${m}</div>` +
+            OWNERS.map((o) => {
+              const md = monthlyByYM?.[o]?.get(m),
+                dd = discoveryByYM?.[o]?.get(m);
+              return (
+                `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}: <span class="num">${md ? fm1t(md.hours) : 0} h</span>` +
+                (dd ? ` · <span class="num">${fm0(dd.cum)}</span> artists so far (+${fm0(dd.new)})` : "")
+              );
+            }).join("<br>"),
+        );
+      }
+      function clearMonthHover() {
+        if (monthlyCross) monthlyCross.style("display", "none");
+        if (discoveryCross) discoveryCross.style("display", "none");
+        hideTip();
+      }
 
       function renderD2() {
         const chips = [];
@@ -1152,8 +1453,10 @@
         const months = D.monthly.Or.map((d) => d.ym);
         const byYM = {};
         for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map((d) => [d.ym, d]));
+        monthlyByYM = byYM;
         const val = (o, ym) => byYM[o].get(ym)?.hours ?? 0;
         const x = d3.scaleTime([parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)], [mL, w - mR]);
+        monthlyX = x;
         const yMax = d3.max(OWNERS, (o) => d3.max(months, (ym) => val(o, ym))) * 1.05;
         const y = d3.scaleLinear([-yMax, yMax], [h - mB, mT]);
 
@@ -1280,7 +1583,7 @@
           .style("font-weight", 700)
           .text("Roman");
 
-        const cross = svg
+        monthlyCross = svg
           .append("line")
           .attr("y1", mT)
           .attr("y2", h - mB)
@@ -1304,23 +1607,9 @@
                 )
               ];
             if (!m) return;
-            cross
-              .attr("x1", x(parseYM(m)))
-              .attr("x2", x(parseYM(m)))
-              .style("display", null);
-            showTip(
-              ev,
-              `<div class="t num">${m}</div>` +
-                OWNERS.map((o) => {
-                  const d = byYM[o].get(m);
-                  return `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}: <span class="num">${d ? fm1t(d.hours) : 0} h</span> · ${d ? fm0(d.plays) : 0} plays`;
-                }).join("<br>"),
-            );
+            syncMonthHover(ev, m);
           })
-          .on("mouseout", () => {
-            cross.style("display", "none");
-            hideTip();
-          });
+          .on("mouseout", clearMonthHover);
       }
 
       function renderHeatmaps() {
@@ -1484,10 +1773,12 @@
         const months = D.discovery.Or.map((d) => d.ym);
         const byYM = {};
         for (const o of OWNERS) byYM[o] = new Map(D.discovery[o].map((d) => [d.ym, d]));
+        discoveryByYM = byYM;
         const x = d3.scaleTime(
           [parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)],
           [mL, w - mR],
         );
+        discoveryX = x;
         const yMax = d3.max(OWNERS, (o) => D.discovery[o][D.discovery[o].length - 1].cum) * 1.06;
         const y = d3.scaleLinear([0, yMax], [h - mB, mT]);
 
@@ -1571,7 +1862,7 @@
           .attr("transform", `translate(0,${h - mB})`)
           .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
 
-        const cross = svg
+        discoveryCross = svg
           .append("line")
           .attr("y1", mT)
           .attr("y2", h - mB)
@@ -1589,22 +1880,9 @@
             const [mx] = d3.pointer(ev, this);
             const m = months[d3.bisectCenter(months.map((s) => +parseYM(s)), +x.invert(mx))];
             if (!m) return;
-            cross.attr("x1", x(parseYM(m))).attr("x2", x(parseYM(m))).style("display", null);
-            showTip(
-              ev,
-              `<div class="t num">${m}</div>` +
-                OWNERS.map((o) => {
-                  const d = byYM[o].get(m);
-                  return `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}:
-                    <span class="num">${fm0(d.cum)}</span> artists ·
-                    <span class="num">${fm0(d.new)}</span> new this month`;
-                }).join("<br>"),
-            );
+            syncMonthHover(ev, m);
           })
-          .on("mouseout", () => {
-            cross.style("display", "none");
-            hideTip();
-          });
+          .on("mouseout", clearMonthHover);
       }
 
       // Slopegraph: pre_uni -> university per metric, one line per listener.
@@ -1759,6 +2037,117 @@
           });
         }
       }
+
+      // Purely decorative: a quiet echo of the Dashboard-2 waveform, built from the
+      // same real monthly hours, sitting behind the hero text. Not a data panel —
+      // no axis, no tooltip, no interaction — so it can't be mistaken for an 8th chart.
+      function renderHeroWave() {
+        const el = d3.select("#hero-wave");
+        if (el.empty()) return;
+        const w = 1160,
+          h = 90;
+        const svg = el
+          .append("svg")
+          .attr("viewBox", `0 0 ${w} ${h}`)
+          .attr("preserveAspectRatio", "none")
+          .style("width", "100%")
+          .style("height", "100%");
+        const months = D.monthly.Or.map((d) => d.ym);
+        const byYM = {};
+        for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map((d) => [d.ym, d]));
+        const x = d3.scalePoint(months, [0, w]);
+        const yMax = d3.max(OWNERS, (o) => d3.max(D.monthly[o], (d) => d.hours)) * 1.05;
+        const y = d3.scaleLinear([-yMax, yMax], [h - 2, 2]);
+        for (const o of OWNERS) {
+          const sign = o === "Or" ? 1 : -1;
+          svg
+            .append("path")
+            .datum(months)
+            .attr(
+              "d",
+              d3
+                .area()
+                .x((m) => x(m))
+                .y0(y(0))
+                .y1((m) => y(sign * (byYM[o].get(m)?.hours ?? 0)))
+                .curve(d3.curveMonotoneX),
+            )
+            .attr("fill", COLOR[o])
+            .attr("fill-opacity", 0.55)
+            .attr("stroke", "none");
+        }
+      }
+      renderHeroWave();
+
+      // Artist search: a friendly lookup over the artist universe already shipped
+      // to the browser (top artists + per-family lists + shared artists for the
+      // current period cut). Selecting a hit reuses pickArtist(), so it plugs into
+      // every existing D1 link (family outline, overlap highlight, detail card).
+      function artistUniverse() {
+        const c = cut();
+        const known = new Map();
+        const add = (name, family) => {
+          if (!known.has(name)) known.set(name, { name, family: family || null });
+          else if (family && !known.get(name).family) known.get(name).family = family;
+        };
+        for (const o of OWNERS) {
+          for (const a of D.top_artists[c][o]) add(a.artist, a.family);
+          for (const f in D.family_artists[c][o]) for (const a of D.family_artists[c][o][f]) add(a.artist, f);
+        }
+        for (const s of D.shared.top_shared[c]) add(s.artist, null);
+        return [...known.values()];
+      }
+      function renderSearchResults(query) {
+        const box = d3.select("#artist-search-results");
+        const q = query.trim().toLowerCase();
+        if (!q) {
+          box.html("").classed("show", false);
+          return;
+        }
+        const hits = artistUniverse()
+          .filter((a) => a.name.toLowerCase().includes(q))
+          .sort((a, b) => a.name.toLowerCase().indexOf(q) - b.name.toLowerCase().indexOf(q))
+          .slice(0, 8);
+        box.classed("show", true);
+        if (!hits.length) {
+          box.html('<div class="search-empty">No artist matches in this period.</div>');
+          return;
+        }
+        box
+          .selectAll("button")
+          .data(hits, (d) => d.name)
+          .join("button")
+          .html((d) => `<span>${d.name}</span>${d.family ? `<span class="fam">${d.family}</span>` : ""}`)
+          .on("click", (ev, d) => {
+            pickArtist(d.name, "artists");
+            closeSearch();
+          });
+      }
+      function closeSearch() {
+        d3.select("#artist-search-box").style("display", "none");
+        d3.select("#artist-search-input").property("value", "");
+        d3.select("#artist-search-results").html("").classed("show", false);
+      }
+      d3.select("#artist-search-btn").on("click", () => {
+        const box = d3.select("#artist-search-box");
+        const opening = box.style("display") === "none";
+        if (opening) {
+          box.style("display", "flex");
+          d3.select("#artist-search-input").node().focus();
+        } else closeSearch();
+      });
+      d3.select("#artist-search-input")
+        .on("input", function () {
+          renderSearchResults(this.value);
+        })
+        .on("keydown", (ev) => {
+          if (ev.key === "Escape") closeSearch();
+        });
+      document.addEventListener("click", (ev) => {
+        const box = document.getElementById("artist-search-box"),
+          btn = document.getElementById("artist-search-btn");
+        if (box && box.style.display !== "none" && !box.contains(ev.target) && ev.target !== btn) closeSearch();
+      });
 
       renderAll();
 
