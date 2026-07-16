@@ -74,25 +74,39 @@ print("== Part B: hardcoded claims in index.html ==")
 html = open("index.html", encoding="utf-8").read()
 prep_src = open("prep.py", encoding="utf-8").read()
 
-# A3's sub-label says "played it N+ min"; the footer says "≥ N minutes".
-shared_min_html = int(re.search(r"played it (\d+)\+ min", html).group(1))
+# The shared-minutes rule appears twice on the page: as the A3 slider's
+# default value and in the method footer. Both must equal prep's constant.
+slider_default = int(re.search(r'id="shared-min"[^>]*value="(\d+)"', html).group(1))
 shared_min_foot = int(re.search(r"≥ (\d+) minutes", html).group(1))
 shared_min_prep = int(re.search(r"SHARED_MIN_MINUTES = (\d+)", prep_src).group(1))
-check("A3 sub 'N+ min' == prep SHARED_MIN_MINUTES", shared_min_html, shared_min_prep)
+check("A3 slider default == prep SHARED_MIN_MINUTES", slider_default, shared_min_prep)
 check("footer '≥ N minutes' == prep SHARED_MIN_MINUTES", shared_min_foot, shared_min_prep)
-check("A3 sub 'N+ min' == data.js meta", shared_min_html, D["meta"]["shared_min_minutes"])
+check("A3 slider default == data.js meta", slider_default, D["meta"]["shared_min_minutes"])
 
-top_n_header = int(re.search(r"top (\d+) shared artists", html).group(1))
 # data-row truncations only: WINDOW_START/UNI_START.slice(0, 7) are string slices
 # of date constants ("2021-01-01" -> "2021-01"), not row limits.
 slices = [int(m.group(1)) for m in re.finditer(r"slice\(0, ?(\d+)\)", html)
           if "_START.slice" not in html[max(0, m.start() - 30):m.end()]]
-check("'top 10 shared artists' header == table slice", top_n_header, slices.count(10) >= 1 and 10)
-check("all top-artist/shared slices are 10 (plus one 8 for family lists)",
-      sorted(slices), sorted([10, 10, 10, 8]))
-check("shipped top_shared rows cover the 10 shown", True, len(D["shared"]["top_shared"]["all"]) >= 10)
+check("top-artist/dumbbell slices are all 10 (A2 both branches + A3 dumbbell)",
+      sorted(slices), sorted([10, 10, 10]))
 check("shipped top_artists cover the 10 shown", True,
       all(len(D["top_artists"]["all"][o]) >= 10 for o in OWNERS))
+
+# The A3 slider recomputes the shared set client-side from overlap_artists.
+# At the default threshold that formula MUST reproduce prep's shared_overlap()
+# numbers exactly, or the slider would silently disagree with the locked facts.
+for cut_name in ["all", "pre_uni", "university"]:
+    rows_oa = D["shared"]["overlap_artists"][cut_name]
+    T = shared_min_prep
+    client = [r for r in rows_oa
+              if r["or_minutes"] >= T and r["roman_minutes"] >= T
+              and r["or_real"] and r["roman_real"]]
+    check(f"{cut_name}: client shared-set size @default == prep count",
+          len(client), D["shared"]["count_by_cut"][cut_name])
+    for o, key in [("Or", "or_minutes"), ("Roman", "roman_minutes")]:
+        pct = sum(r[key] for r in client) / (D["kpis"][cut_name][o]["hours"] * 60) * 100
+        check(f"{cut_name}/{o}: client shared-pct @default == prep pct",
+              round(pct, 1), D["shared"]["pct_minutes"][cut_name][o], tol=0.1)
 
 thirty = int(re.search(r"past (\d+) s", html).group(1))
 mismatch = int(((full.ms_played < thirty * 1000) != full.under_30s).sum())

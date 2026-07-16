@@ -311,10 +311,29 @@ def shared_overlap(df):
                           "roman_minutes": round(r["Roman"], 1)}
                          for a, r in per_owner.sort_values("total", ascending=False)
                                               .head(SHARED_LIST_N).iterrows()]
+    # Every name-matched artist with both-side minutes and the "real listening"
+    # flags, per cut — lets the page recompute the shared set CLIENT-SIDE for an
+    # arbitrary minutes threshold (the A3 sensitivity slider). At the default
+    # threshold the client formula must reproduce count_by_cut/pct_minutes
+    # exactly; verify_dashboard.py asserts that.
+    overlap_artists = {}
+    for cut, d in cuts(df):
+        real = d[~d["under_30s"]]
+        real_sets = {o: set(real[real["owner"] == o]["artist"].unique()) for o in OWNERS}
+        per_owner = (d.groupby(["artist", "owner"])["minutes_played"].sum()
+                     .unstack(fill_value=0).reindex(columns=OWNERS, fill_value=0))
+        both = per_owner[(per_owner["Or"] > 0) & (per_owner["Roman"] > 0)]
+        overlap_artists[cut] = [{
+            "artist": a,
+            "or_minutes": round(r["Or"], 2), "roman_minutes": round(r["Roman"], 2),
+            "or_real": a in real_sets["Or"], "roman_real": a in real_sets["Roman"],
+        } for a, r in both.sort_values("Or", ascending=False).iterrows()]
+
     return {"count": len(shared_set),
             "count_by_cut": {cut: len(s) for cut, s in shared_by_cut.items()},
             "name_matches": name_only,
-            "pct_minutes": pct, "top_shared": top_shared}, shared_set
+            "pct_minutes": pct, "top_shared": top_shared,
+            "overlap_artists": overlap_artists}, shared_set
 
 
 def monthly_hours(df):

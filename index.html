@@ -582,57 +582,34 @@
         flex-wrap: wrap;
       }
       .overlap-flex > .strips {
-        flex: 1 1 480px;
+        flex: 1 1 420px;
         min-width: 340px;
       }
-      .overlap-flex > .stable {
-        flex: 1 1 320px;
-        min-width: 290px;
+      .overlap-flex > .dumbbell {
+        flex: 1 1 420px;
+        min-width: 340px;
       }
-      .stable table {
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 12.5px;
-      }
-      .stable th {
-        font-size: 11px;
+      .shared-rule {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 11.5px;
         color: var(--ink2);
-        text-transform: uppercase;
-        letter-spacing: 0.6px;
-        text-align: right;
-        padding: 2px 6px;
-        font-weight: 500;
+        margin: 2px 0 10px;
       }
-      .stable th:first-child {
-        text-align: left;
+      .shared-rule input[type="range"] {
+        width: 160px;
+        accent-color: var(--roman);
       }
-      .stable td {
-        padding: 2px 6px;
-        color: var(--ink2);
-        font-family: var(--mono);
-        text-align: right;
-        white-space: nowrap;
-      }
-      .stable td:first-child {
-        font-family: var(--mono);
-        text-align: left;
-        max-width: 170px;
-      }
-      .stable .artist-name {
-        display: inline-block;
-        vertical-align: middle;
-        max-width: 140px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .stable tr.clickable:hover td,
-      .stable tr.sel td {
-        background: var(--panel2);
+      .shared-rule .rule-val b {
         color: var(--ink);
+        font-weight: 700;
       }
-      .stable tr.dim {
-        opacity: 0.32;
+      .shared-rule .rule-note {
+        color: var(--ink2);
+        opacity: 0.8;
+        font-size: 10.5px;
       }
 
       #window-panel {
@@ -814,11 +791,8 @@
         <div class="grid">
           <div class="panel span2" id="p-families">
             <h3><span class="track-num">A1</span> Genre Family Distribution
-              <span class="sub">share of minutes · genre tags are external · click a family to filter</span></h3>
-            <div class="duo">
-              <div id="families-Or"></div>
-              <div id="families-Roman"></div>
-            </div>
+              <span class="sub">share of minutes · genre tags are external · click families to filter (multi-select)</span></h3>
+            <div id="families-butterfly"></div>
           </div>
 
           <div class="panel span2" id="p-artists">
@@ -833,14 +807,20 @@
 
           <div class="panel span2" id="p-overlap">
             <h3><span class="track-num">A3</span> Minutes-Weighted Shared Listening
-              <span class="sub">shared = both of us played it 3+ min in the period</span></h3>
+              <span class="sub">same artists, two different worlds · click a line for details</span></h3>
+            <div class="shared-rule">
+              <label for="shared-min">shared if both of us played the artist ≥</label>
+              <input type="range" id="shared-min" min="1" max="60" step="1" value="3" />
+              <span class="rule-val"><b id="shared-min-val">3</b> min</span>
+              <span class="rule-note">drag to test how sensitive the overlap is to the rule</span>
+            </div>
             <p class="hint"><span id="overlap-filter-note"></span></p>
             <div class="overlap-flex">
               <div class="strips">
                 <div id="overlap-strips"></div>
                 <div class="artist-detail" id="shared-artist-detail"></div>
               </div>
-              <div class="stable" id="shared-table"></div>
+              <div class="dumbbell" id="shared-dumbbell"></div>
             </div>
           </div>
         </div>
@@ -957,12 +937,45 @@
         m > 60 ? (m >= 600 ? fm0(Math.round(m / 60)) : fm1t(m / 60)) + " h" : fm0(Math.round(m)) + " min";
       const fhour = (h) => `${h}:00`;
 
+      const SHARED_MIN_DEFAULT = D.meta.shared_min_minutes;
       const DEFAULTS = {
         period: "all",
-        d1: { selectedFamily: null, selectedArtist: null, selectedArtistSource: null },
+        // selectedFamilies is a multi-select (array of family names);
+        // sharedMin is the A3 "what counts as shared?" threshold in minutes.
+        d1: {
+          selectedFamilies: [],
+          selectedArtist: null,
+          selectedArtistSource: null,
+          sharedMin: SHARED_MIN_DEFAULT,
+        },
         d2: { selectedWindow: null },
       };
-      const state = { period: DEFAULTS.period, solo: null, d1: { ...DEFAULTS.d1 }, d2: { ...DEFAULTS.d2 } };
+      const state = {
+        period: DEFAULTS.period,
+        solo: null,
+        d1: { ...DEFAULTS.d1, selectedFamilies: [] },
+        d2: { ...DEFAULTS.d2 },
+      };
+      // Family filter is a UNION multi-select; helpers keep the array replaced,
+      // never mutated in place.
+      const famActive = () => state.d1.selectedFamilies.length > 0;
+      const famHas = (f) => state.d1.selectedFamilies.includes(f);
+      function toggleFamily(f) {
+        setD1({
+          selectedFamilies: famHas(f)
+            ? state.d1.selectedFamilies.filter((x) => x !== f)
+            : [...state.d1.selectedFamilies, f],
+        });
+      }
+      // Client-side shared set for the current period cut at threshold T —
+      // same rule as prep.py's shared_for(): both sides ≥ T minutes AND both
+      // sides have at least one real (over-30s) play. At T = SHARED_MIN_DEFAULT
+      // this reproduces prep's count/pct exactly (asserted by the verify suite).
+      function sharedRows(c, T) {
+        return D.shared.overlap_artists[c].filter(
+          (r) => r.or_minutes >= T && r.roman_minutes >= T && r.or_real && r.roman_real,
+        );
+      }
       function setPeriod(period) {
         state.period = period;
         renderAll();
@@ -1064,15 +1077,20 @@
 
       function renderD1() {
         const chips = [];
-        if (state.d1.selectedFamily)
+        for (const f of state.d1.selectedFamilies)
           chips.push({
-            label: `Genre: ${state.d1.selectedFamily}`,
-            clear: () => setD1({ selectedFamily: null }),
+            label: `Genre: ${f}`,
+            clear: () => toggleFamily(f),
           });
         if (state.d1.selectedArtist)
           chips.push({
             label: `Artist: ${state.d1.selectedArtist}`,
             clear: () => setD1({ selectedArtist: null, selectedArtistSource: null }),
+          });
+        if (state.d1.sharedMin !== SHARED_MIN_DEFAULT)
+          chips.push({
+            label: `Shared rule: ≥ ${state.d1.sharedMin} min`,
+            clear: () => setSharedMin(SHARED_MIN_DEFAULT),
           });
         renderChips("#d1-chips", chips);
         renderFamilies();
@@ -1091,103 +1109,168 @@
             if (D.family_artists[c][o][f].some((a) => a.artist === name)) return f;
           }
         }
-        return state.d1.selectedFamily;
+        return null;
       }
 
+      // A1 butterfly: ONE mirrored chart — families down a center spine, Orr's
+      // bars growing left, Roman's growing right on a symmetric shared scale,
+      // so the taste gap reads as a shape (echoes the B1 mirrored waveform).
       function renderFamilies() {
         const c = cut();
         const echo = state.d1.selectedArtist ? artistFamily(state.d1.selectedArtist) : null;
-        const xMax = d3.max(OWNERS, (o) => d3.max(D.families[c][o], (g) => g.pct));
+        const host = d3.select("#families-butterfly").html("");
+        const byFam = {};
+        for (const o of OWNERS) byFam[o] = new Map(D.families[c][o].map((d) => [d.family, d]));
+        // Union of families, largest either-side share first; drop rows both
+        // sides round to zero.
+        const fams = [...new Set(OWNERS.flatMap((o) => D.families[c][o].map((d) => d.family)))]
+          .map((f) => ({
+            family: f,
+            Or: byFam.Or.get(f),
+            Roman: byFam.Roman.get(f),
+            maxPct: Math.max(byFam.Or.get(f)?.pct ?? 0, byFam.Roman.get(f)?.pct ?? 0),
+          }))
+          .filter((r) => r.maxPct >= 0.1)
+          .sort((a, b) => b.maxPct - a.maxPct);
+
+        const rowH = 30,
+          barH = 18,
+          w = 1120,
+          cW = 128, // center spine width for family labels
+          mSide = 78, // room for value labels at the outer ends
+          half = (w - cW) / 2;
+        const xLen = d3.scaleLinear([0, d3.max(fams, (r) => r.maxPct)], [0, half - mSide]);
+        const xOr = (v) => w / 2 - cW / 2 - xLen(v); // grows left
+        const xRoman = (v) => w / 2 + cW / 2 + xLen(v); // grows right
+
+        const svg = host
+          .append("svg")
+          .attr("viewBox", `0 0 ${w} ${fams.length * rowH + 26}`)
+          .style("width", "100%");
+        // Owner headers at the outer edges
+        svg
+          .append("text")
+          .attr("x", w / 2 - cW / 2)
+          .attr("y", 13)
+          .attr("text-anchor", "end")
+          .style("font-weight", 700)
+          .attr("fill", COLOR.Or)
+          .attr("opacity", soloOp("Or"))
+          .text(`◀ ${NAME.Or}`)
+          .append("tspan")
+          .attr("class", "val")
+          .attr("fill", "var(--ink2)")
+          .text(`  ${fm0(Math.round(D.kpis[c].Or.hours))} h`);
+        svg
+          .append("text")
+          .attr("x", w / 2 + cW / 2)
+          .attr("y", 13)
+          .style("font-weight", 700)
+          .attr("fill", COLOR.Roman)
+          .attr("opacity", soloOp("Roman"))
+          .text(`${NAME.Roman} ▶`)
+          .append("tspan")
+          .attr("class", "val")
+          .attr("fill", "var(--ink2)")
+          .text(`  ${fm0(Math.round(D.kpis[c].Roman.hours))} h`);
+
+        const g = svg
+          .selectAll("g.frow")
+          .data(fams)
+          .join("g")
+          .attr("class", "frow clickable")
+          .attr("transform", (d, i) => `translate(0,${i * rowH + 22})`);
+        g.append("rect")
+          .attr("width", w)
+          .attr("height", rowH - 1)
+          .attr("fill", "transparent");
+        // Center spine label
+        g.append("text")
+          .attr("class", (d) => "bar-label" + (famHas(d.family) ? " sel" : ""))
+          .attr("x", w / 2)
+          .attr("y", barH - 3)
+          .attr("text-anchor", "middle")
+          .text((d) => d.family);
+        const dimmed = (d) => famActive() && !famHas(d.family);
+        const stroke = (d) => (famHas(d.family) ? "#FFF" : d.family === echo ? "#C9C9D6" : "none");
+        const dash = (d) => (d.family === echo && !famHas(d.family) ? "3 2" : null);
         for (const o of OWNERS) {
-          const host = d3.select(`#families-${o}`).html("").style("opacity", soloOp(o));
-          host
-            .append("h4")
-            .attr("class", "owner-h")
-            .html(`${NAME[o]} <span class="kpi">${fm0(Math.round(D.kpis[c][o].hours))} h</span>`);
-          const rows = D.families[c][o].filter((g) => g.pct >= 0.1);
-          const rowH = 30,
-            barH = 18,
-            mL = 112,
-            w = 330;
-          const x = d3.scaleLinear([0, xMax], [0, w - mL - 56]);
-          const svg = host
-            .append("svg")
-            .attr("viewBox", `0 0 ${w} ${rows.length * rowH + 4}`)
-            .attr("width", w);
-          const g = svg
-            .selectAll("g")
-            .data(rows)
-            .join("g")
-            .attr("transform", (d, i) => `translate(0,${i * rowH + 2})`)
-            .attr("class", "clickable");
-          g.append("rect")
-            .attr("width", w)
-            .attr("height", rowH - 1)
-            .attr("fill", "transparent");
-          g.append("text")
-            .attr("class", (d) => "bar-label" + (d.family === state.d1.selectedFamily ? " sel" : ""))
-            .attr("x", mL - 9)
-            .attr("y", barH - 3)
-            .attr("text-anchor", "end")
-            .text((d) => d.family);
-          g.append("rect")
-            .attr("x", mL + 2)
+          const xEnd = o === "Or" ? xOr : xRoman;
+          const side = g
+            .append("g")
+            .attr("opacity", soloOp(o))
+            .datum((d) => d);
+          side
+            .append("rect")
+            .attr("x", (d) => (o === "Or" ? xEnd(byFam[o].get(d.family)?.pct ?? 0) : w / 2 + cW / 2))
             .attr("y", 2)
             .attr("height", barH)
             .attr("rx", 8)
-            .attr("width", (d) => Math.max(1.5, x(d.pct)))
-            .attr("fill", (d, i) =>
-              state.d1.selectedFamily && d.family !== state.d1.selectedFamily
-                ? "var(--muted)"
-                : ownerShade(o, i, rows.length),
+            .attr("width", (d) =>
+              byFam[o].get(d.family) ? Math.max(1.5, xLen(byFam[o].get(d.family).pct)) : 0,
             )
-            .attr("stroke", (d) =>
-              d.family === state.d1.selectedFamily ? "#FFF" : d.family === echo ? "#C9C9D6" : "none",
-            )
-            .attr("stroke-dasharray", (d) =>
-              d.family === echo && d.family !== state.d1.selectedFamily ? "3 2" : null,
-            );
-          g.append("text")
+            .attr("fill", (d) => (dimmed(d) ? "var(--muted)" : ownerShade(o, fams.indexOf(d), fams.length)))
+            .attr("stroke", stroke)
+            .attr("stroke-dasharray", dash);
+          side
+            .append("text")
             .attr("class", "val")
-            .attr("x", (d) => mL + 8 + Math.max(1.5, x(d.pct)))
-            .attr("y", barH - 3)
-            .text((d) => fm1(d.pct) + "%");
-          g.on("click", (ev, d) =>
-            setD1({ selectedFamily: state.d1.selectedFamily === d.family ? null : d.family }),
-          )
-            .on("mouseover", function (ev, d) {
-              g.attr("opacity", (r) => (r === d ? 1 : 0.38));
-              showTip(
-                ev,
-                `<div class="t">${d.family}</div>${fmin(d.minutes)} · <span class="num">${d.pct}%</span> of ${NAME[o]}'s music<br>Most played: ${d.top_artist}`,
-              );
+            .attr("x", (d) => {
+              const v = byFam[o].get(d.family)?.pct ?? 0;
+              return o === "Or" ? xEnd(v) - 6 : xEnd(v) + 6;
             })
-            .on("mousemove", moveTip)
-            .on("mouseout", () => {
-              g.attr("opacity", 1);
-              hideTip();
+            .attr("y", barH - 3)
+            .attr("text-anchor", o === "Or" ? "end" : "start")
+            .text((d) => {
+              const r = byFam[o].get(d.family);
+              return r ? fm1(r.pct) + "%" : "—";
             });
         }
+        g.on("click", (ev, d) => toggleFamily(d.family))
+          .on("mouseover", function (ev, d) {
+            g.attr("opacity", (r) => (r === d ? 1 : 0.38));
+            showTip(
+              ev,
+              `<div class="t">${d.family}</div>` +
+                OWNERS.map((o) => {
+                  const r = byFam[o].get(d.family);
+                  return `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}: ` +
+                    (r
+                      ? `${fmin(r.minutes)} · <span class="num">${r.pct}%</span> · most played ${r.top_artist}`
+                      : "nothing here");
+                }).join("<br>") +
+                `<br><span style="color:var(--ink2)">${famHas(d.family) ? "click to remove from filter" : "click to add to filter"}</span>`,
+            );
+          })
+          .on("mousemove", moveTip)
+          .on("mouseout", () => {
+            g.attr("opacity", 1);
+            hideTip();
+          });
       }
 
       function renderArtists() {
-        const c = cut(),
-          family = state.d1.selectedFamily;
-        const xMax = d3.max(OWNERS, (ow) => {
-          const l = family ? D.family_artists[c][ow][family] || [] : D.top_artists[c][ow].slice(0, 10);
-          return d3.max(l, (r) => r.minutes) || 0;
-        });
+        const c = cut();
+        const sel = state.d1.selectedFamilies;
+        // Union across all selected families, ranked by minutes.
+        const listFor = (ow) =>
+          famActive()
+            ? sel
+                .flatMap((f) => D.family_artists[c][ow][f] || [])
+                .sort((a, b) => b.minutes - a.minutes)
+                .slice(0, 10)
+            : D.top_artists[c][ow].slice(0, 10);
+        const xMax = d3.max(OWNERS, (ow) => d3.max(listFor(ow), (r) => r.minutes) || 0);
+        const famLabel = sel.join(" + ");
         for (const o of OWNERS) {
           const host = d3.select(`#artists-${o}`).html("").style("opacity", soloOp(o));
-          const list = family
-            ? (D.family_artists[c][o][family] || []).slice(0, 8)
-            : D.top_artists[c][o].slice(0, 10);
-          const kpi = family
-            ? `their ${family} corner`
+          const list = listFor(o);
+          const kpi = famActive()
+            ? `their ${famLabel} corner`
             : `top 10 = ${D.kpis[c][o].top10_share}% of everything`;
           host.append("h4").attr("class", "owner-h").html(`${NAME[o]} <span class="kpi">${kpi}</span>`);
           if (!list.length) {
-            host.append("p").attr("class", "hint").text(`${NAME[o]} has no ${family} in this period.`);
+            host.append("p").attr("class", "hint").text(`${NAME[o]} has no ${famLabel} in this period.`);
             continue;
           }
           const rowH = 23,
@@ -1206,6 +1289,9 @@
             .attr("data-artist", (d) => d.artist)
             .attr("transform", (d, i) => `translate(0,${i * rowH + rowH / 2})`);
           const dim = (d) => state.d1.selectedArtist && d.artist !== state.d1.selectedArtist;
+          // "Shared" ring follows the live A3 threshold, not the baked default.
+          const sharedNow = new Set(sharedRows(c, state.d1.sharedMin).map((r) => r.artist));
+          const isShared = (d) => sharedNow.has(d.artist);
           g.append("rect")
             .attr("y", -rowH / 2)
             .attr("width", w)
@@ -1237,7 +1323,7 @@
             .attr("stroke", (d) => (dim(d) ? "var(--muted)" : COLOR[o]))
             .attr("stroke-width", 2)
             .attr("opacity", 0.55);
-          g.filter((d) => d.shared)
+          g.filter(isShared)
             .append("circle")
             .attr("cx", (d) => x(d.minutes))
             .attr("r", 8)
@@ -1269,7 +1355,7 @@
                 ev,
                 `<div class="t">${d.artist}</div>${fmin(d.minutes)} · <span class="num">${d.share}%</span> of ${NAME[o]}'s music` +
                   (d.plays ? `<br>${fm0(d.plays)} plays` : "") +
-                  (d.shared ? `<br>${NAME[OTHER_OF[o]]} plays them too` : ""),
+                  (isShared(d) ? `<br>${NAME[OTHER_OF[o]]} plays them too` : ""),
               );
             })
             .on("mousemove", moveTip)
@@ -1300,7 +1386,9 @@
           const r = D.family_artists[c][owner][f].find((a) => a.artist === name);
           if (r) return { ...r, family: f };
         }
-        const s = D.shared.top_shared[c].find((a) => a.artist === name);
+        // overlap_artists covers every name-matched artist (~130), far more
+        // than the old top-15 shared list — better detail-card coverage.
+        const s = D.shared.overlap_artists[c].find((a) => a.artist === name);
         if (s) {
           const m = owner === "Or" ? s.or_minutes : s.roman_minutes;
           if (m > 0) return { artist: name, minutes: m, shared: true };
@@ -1350,8 +1438,24 @@
         return null;
       }
 
+      function setSharedMin(T) {
+        state.d1.sharedMin = T;
+        d3.select("#shared-min").property("value", T);
+        d3.select("#shared-min-val").text(T);
+        renderD1(); // strips, dumbbell, A2 rings and the rule chip all follow
+      }
+
       function renderOverlap() {
-        const c = cut();
+        const c = cut(),
+          T = state.d1.sharedMin;
+        // Shared set recomputed client-side at the live threshold. At the
+        // default T this reproduces prep's pct_minutes/count exactly.
+        const shared = sharedRows(c, T);
+        const sharedPctOf = (o) => {
+          const key = o === "Or" ? "or_minutes" : "roman_minutes";
+          return (d3.sum(shared, (r) => r[key]) / (D.kpis[c][o].hours * 60)) * 100;
+        };
+
         const host = d3.select("#overlap-strips").html("");
         const w = 560,
           rowH = 62,
@@ -1363,7 +1467,7 @@
           .style("width", "100%");
         OWNERS.forEach((o, i) => {
           const totalMin = D.kpis[c][o].hours * 60;
-          const sharedPct = D.shared.pct_minutes[c][o];
+          const sharedPct = sharedPctOf(o);
           const stripW = w - 4,
             sharedW = (stripW * sharedPct) / 100;
           const y = mT + i * rowH;
@@ -1385,8 +1489,8 @@
               showTip(
                 ev,
                 `<div class="t">${NAME[o]}: music we share</div>
-        <span class="num">${sharedPct}%</span> of ${NAME[o]}'s minutes · ${fmin((totalMin * sharedPct) / 100)}<br>
-        spent on the ${D.shared.count_by_cut[c]} artists that both of us played for at least ${D.meta.shared_min_minutes} minutes`,
+        <span class="num">${fm1(sharedPct)}%</span> of ${NAME[o]}'s minutes · ${fmin((totalMin * sharedPct) / 100)}<br>
+        spent on the ${shared.length} artists that both of us played for at least ${T} minutes`,
               ),
             )
             .on("mouseout", hideTip);
@@ -1423,48 +1527,139 @@
               .attr("text-anchor", "end")
               .text("non-shared");
         });
+        // Count line under the strips
+        host
+          .append("p")
+          .attr("class", "hint")
+          .style("margin", "6px 0 0")
+          .html(
+            `<b style="color:var(--ink)">${shared.length}</b> shared artists at this rule (${PLABEL[c]}) · ${D.shared.name_matches} name-only matches in the window`,
+          );
 
-        const rows = D.shared.top_shared[c].slice(0, 10);
-        const tbl = d3.select("#shared-table").html("");
-        const t = tbl.append("table");
-        t.append("tr")
-          .html(`<th>top 10 shared artists (${PLABEL[c]})</th>
-    <th style="color:${COLOR.Or}">Orr</th><th style="color:${COLOR.Roman}">Roman</th>`);
-        const tr = t
-          .selectAll("tr.row")
+        renderDumbbell(shared, c);
+
+        const sel = state.d1.selectedFamilies;
+        d3.select("#overlap-filter-note").text(
+          famActive()
+            ? ` The strips always show the total listening. The ${sel.join(" + ")} filter only dims the artists on the right that do not match.`
+            : "",
+        );
+
+        renderArtistDetail("#shared-artist-detail", "overlap");
+      }
+
+      // A3 dumbbell — "same artists, two different worlds": one line per shared
+      // artist from Orr's minutes to Roman's minutes on a LOG scale, because the
+      // asymmetry spans four orders of magnitude (285 h vs 15 min).
+      function renderDumbbell(shared, c) {
+        const host = d3.select("#shared-dumbbell").html("");
+        const rows = [...shared]
+          .sort((a, b) => b.or_minutes + b.roman_minutes - (a.or_minutes + a.roman_minutes))
+          .slice(0, 10);
+        if (!rows.length) {
+          host.append("p").attr("class", "hint").text("No artist clears this rule in the selected period.");
+          return;
+        }
+        const w = 520,
+          rowH = 26,
+          mL = 118,
+          mR = 16,
+          mT = 26,
+          mB = 20;
+        const H = mT + rows.length * rowH + mB;
+        const lo = Math.max(0.8, d3.min(rows, (r) => Math.min(r.or_minutes, r.roman_minutes)) * 0.7);
+        const hi = d3.max(rows, (r) => Math.max(r.or_minutes, r.roman_minutes)) * 1.4;
+        const x = d3.scaleLog([lo, hi], [mL, w - mR]);
+        const svg = host.append("svg").attr("viewBox", `0 0 ${w} ${H}`).style("width", "100%");
+        svg
+          .append("text")
+          .attr("class", "val")
+          .attr("x", mL)
+          .attr("y", 10)
+          .text(`top shared artists (${PLABEL[c]}) · minutes, log scale`);
+        // Log ticks at 1m / 10m / 1h / 10h / 100h where in range
+        const ticks = [1, 10, 60, 600, 6000].filter((t) => t >= lo && t <= hi);
+        svg
+          .selectAll(".dtick")
+          .data(ticks)
+          .join("line")
+          .attr("x1", (t) => x(t))
+          .attr("x2", (t) => x(t))
+          .attr("y1", mT - 6)
+          .attr("y2", H - mB)
+          .attr("stroke", "var(--border)")
+          .attr("stroke-dasharray", "2 3");
+        svg
+          .selectAll(".dtickl")
+          .data(ticks)
+          .join("text")
+          .attr("class", "val")
+          .attr("x", (t) => x(t))
+          .attr("y", H - 6)
+          .attr("text-anchor", "middle")
+          .text((t) => (t < 60 ? `${t}m` : `${t / 60}h`));
+
+        const g = svg
+          .selectAll("g.drow")
           .data(rows)
-          .join("tr")
-          .attr("class", (d) => "row clickable" + (d.artist === state.d1.selectedArtist ? " sel" : ""))
+          .join("g")
+          .attr("class", "drow clickable")
           .attr("data-artist", (d) => d.artist)
-          .on("click", (ev, d) => pickArtist(d.artist, "overlap"))
+          .attr("transform", (d, i) => `translate(0,${mT + i * rowH + rowH / 2})`);
+        const dimF = (d) => famActive() && !famHas(sharedArtistFamily(d.artist));
+        const selA = (d) => d.artist === state.d1.selectedArtist;
+        g.attr("opacity", (d) => (dimF(d) ? 0.3 : 1));
+        g.append("rect")
+          .attr("x", 0)
+          .attr("y", -rowH / 2)
+          .attr("width", w)
+          .attr("height", rowH)
+          .attr("fill", "transparent");
+        g.append("text")
+          .attr("class", (d) => "bar-label" + (selA(d) ? " sel" : ""))
+          .attr("x", mL - 9)
+          .attr("y", 4)
+          .attr("text-anchor", "end")
+          .text((d) => trunc(d.artist, 16));
+        g.append("line")
+          .attr("x1", (d) => x(Math.max(lo, d.roman_minutes)))
+          .attr("x2", (d) => x(Math.max(lo, d.or_minutes)))
+          .attr("y1", 0)
+          .attr("y2", 0)
+          .attr("stroke", "var(--ink2)")
+          .attr("stroke-width", (d) => (selA(d) ? 2 : 1.2))
+          .attr("opacity", 0.7);
+        for (const [o, key] of [
+          ["Or", "or_minutes"],
+          ["Roman", "roman_minutes"],
+        ]) {
+          g.append("circle")
+            .attr("cx", (d) => x(Math.max(lo, d[key])))
+            .attr("r", (d) => (selA(d) ? 6 : 5))
+            .attr("fill", COLOR[o])
+            .attr("stroke", (d) => (selA(d) ? "#FFF" : "var(--panel)"))
+            .attr("stroke-width", (d) => (selA(d) ? 1.6 : 1))
+            .attr("opacity", soloOp(o));
+        }
+        g.on("click", (ev, d) => pickArtist(d.artist, "overlap"))
           .on("mousemove", (ev, d) => {
             highlightArtist(d.artist);
             showTip(
               ev,
               `<div class="t">${d.artist}</div>
-      Orr: <span class="num">${fmin(d.or_minutes)}</span><br>Roman: <span class="num">${fmin(d.roman_minutes)}</span>`,
+      <span style="color:${COLOR.Or}">●</span> Orr: <span class="num">${fmin(d.or_minutes)}</span><br>
+      <span style="color:${COLOR.Roman}">●</span> Roman: <span class="num">${fmin(d.roman_minutes)}</span><br>
+      <span style="color:var(--ink2)">${
+        d.or_minutes > d.roman_minutes
+          ? `Orr plays them ${fm0(Math.round(d.or_minutes / Math.max(1, d.roman_minutes)))}× more`
+          : `Roman plays them ${fm0(Math.round(d.roman_minutes / Math.max(1, d.or_minutes)))}× more`
+      }</span>`,
             );
           })
           .on("mouseout", () => {
             highlightArtist(null);
             hideTip();
           });
-        const cell = (m) => fmin(m);
-        const nameTd = tr.append("td");
-        nameTd.append("span").attr("class", "artist-name").text((d) => d.artist);
-        nameTd.append("span").attr("class", "eqpulse h").html("<i></i><i></i><i></i>");
-        tr.append("td").text((d) => cell(d.or_minutes));
-        tr.append("td").text((d) => cell(d.roman_minutes));
-
-        const fam = state.d1.selectedFamily;
-        tr.classed("dim", (d) => fam && sharedArtistFamily(d.artist) !== fam);
-        d3.select("#overlap-filter-note").text(
-          fam
-            ? ` The strips always show the total listening. The ${fam} filter only dims the artists in the table that do not match.`
-            : "",
-        );
-
-        renderArtistDetail("#shared-artist-detail", "overlap");
       }
 
       const parseYM = d3.timeParse("%Y-%m");
@@ -2467,6 +2662,13 @@
         }
       }
       renderHeroWave();
+
+      d3.select("#shared-min")
+        .property("value", SHARED_MIN_DEFAULT)
+        .on("input", function () {
+          setSharedMin(+this.value);
+        });
+      d3.select("#shared-min-val").text(SHARED_MIN_DEFAULT);
 
       renderAll();
 

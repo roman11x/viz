@@ -17,10 +17,25 @@ Keep this — don't revert to "Dashboard 1: ..." headings.
 1. **Listening DNA** — genre families, obsessions (top artists), minutes-weighted overlap.
 2. **Routine, Disrupted — Before Uni vs. University** — whole-span waveform timeline (equalizer-bar
    style), daily-rhythm heatmap, cumulative artist-discovery curve, slopegraph.
-Seven panels, seven DISTINCT chart shapes: paired family bars / lollipop dot-plot / 100% strip /
-mirrored-area waveform / heatmap / cumulative discovery curve / slopegraph small-multiples
+Seven panels, seven DISTINCT chart shapes: mirrored BUTTERFLY family bars (one shared axis, Orr left /
+Roman right — replaced the old side-by-side paired bars 2026-07-16; the mirror echoes B1's waveform and
+is the page's signature motif) / lollipop dot-plot / 100% strip + LOG-SCALE DUMBBELL of shared artists
+(one line per artist from Orr's minutes to Roman's minutes — replaced the old top-10 shared TABLE; the
+285h-vs-15min asymmetry is the project's headline and deserves a chart, not a table row) / mirrored
+equalizer-bar waveform / heatmap / cumulative discovery curve / slopegraph small-multiples
 (Pre-uni → University change). Panel titles are human questions. No takeaway lines (considered and
-explicitly declined by the owner). EVERY panel responds to the global period filter; whole-span charts
+explicitly declined by the owner).
+
+**Side-A filters (owner-driven 2026-07-16 upgrade — the old single-click filter was judged "low
+level"):** the genre-family filter is a MULTI-SELECT union (click families to accumulate, one removable
+chip each; A2 shows the merged top-10 across selected families). A3 carries the "what counts as
+shared?" SLIDER (1–60 min, default = SHARED_MIN_MINUTES): it recomputes the shared set CLIENT-SIDE from
+`shared.overlap_artists` (every name-matched artist with both-side minutes + real-play flags, per cut)
+and drives the strips, the shared count, the dumbbell, and A2's shared rings together. At the default
+threshold the client formula MUST reproduce prep's count/pct exactly — verify_dashboard.py asserts
+this per cut; don't change either side's rule without the other. A non-default threshold shows a
+removable "Shared rule" chip. The locked 35.4%-vs-0.5% narrative numbers always refer to the DEFAULT
+threshold. EVERY panel responds to the global period filter; whole-span charts
 (river, discovery curve) and the slopegraph respond by EMPHASIZING the selected period's region/side,
 not by re-cutting.
 
@@ -106,9 +121,9 @@ trajectory). Don't re-add them without re-solving that duplication.
   never a second categorical palette. Muted gray for inactive marks.
 - Heatmap cells ramp from a visible floor (`--floor: #232b3d`), not the page background, with a subtle
   grid so empty cells read as empty rather than invisible.
-- State is kept PER DASHBOARD (independent stacked sections), each with its own period filter, reset,
-  and removable filter chips:
-  `{ d1: {period, selectedFamily, selectedArtist}, d2: {period, selectedWindow} }`.
+- State is kept PER DASHBOARD (independent stacked sections) plus the global period and solo:
+  `{ period, solo, d1: {selectedFamilies[], selectedArtist, selectedArtistSource, sharedMin},
+  d2: {selectedWindow} }` — every active filter surfaces as a removable chip.
 - Whole-span charts (Dashboard 2 timeline, discovery curve) always draw the full span; the period
   filter dims the non-selected period band and outlines the selected one (emphasis, not re-cutting).
 
