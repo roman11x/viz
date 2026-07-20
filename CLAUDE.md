@@ -30,15 +30,17 @@ explicitly declined by the owner). **NO TEXT ON CHARTS beyond axes/values/owner 
 event annotations were built and then REMOVED the same day (2026-07-16) — the course lecturer treats
 on-chart narration as chart junk; his philosophy is "the viz displays the data, the reader concludes."
 Do not re-add annotation labels. What survived, and why it's allowed:
-- B1 keeps a MUTE dotted guide at 2023-10 (`BREAK_YM`), styled identically to the university guide.
-  The verified October facts (Roman 31.5→73.6 h/month; night share 17–20%→39–53%; Orr 0 min on Oct 7,
-  zero discoveries Oct–Nov) surface ONLY in the hover tooltip for that month (`BREAK_FACTS` — wording
-  quotes the locked facts exactly; the ~61× record ratio must never be recomputed from the shipped
-  0.1-rounded monthlies, which inflate it to 62×).
-- A1 keeps GHOST TICKS when one period is selected (a thin mark at the other period's share per bar,
-  key "▏= <period> share", drift values in the tooltip). These are DATA MARKS, not narration — the
-  bullet-graph idiom is Stephen Few's own, the same Few the dashboards lecture is built on.
-Findings are made discoverable through interaction (brush, hover, slider, ghost ticks), never through
+- B1's 2023-10 dotted guide (`BREAK_YM`) was REMOVED 2026-07-20 on the owner's instruction — only the
+  university guide remains drawn. `BREAK_YM` itself survives in the JS because the 2023-10 hover
+  tooltip still keys off it: the verified October facts (Roman 31.5→73.6 h/month; night share
+  17–20%→39–53%; Orr 0 min on Oct 7, zero discoveries Oct–Nov) surface ONLY in that tooltip
+  (`BREAK_FACTS` — wording quotes the locked facts exactly; the ~61× record ratio must never be
+  recomputed from the shipped 0.1-rounded monthlies, which inflate it to 62×). Do not redraw the line.
+- A1's GHOST TICKS (thin on-bar marks at the other period's share, with a "▏= …" key) were REMOVED
+  2026-07-20 on the owner's instruction ("we don't like them"). The cross-period drift values still
+  surface in the family hover tooltip ("(Pre-uni: X%)" per listener) — that is now the only place the
+  other period's share appears. Do not redraw the marks or the key.
+Findings are made discoverable through interaction (brush, hover, slider), never through
 on-chart sentences.
 
 **Side-A filters (owner-driven 2026-07-16 upgrade — the old single-click filter was judged "low
@@ -49,7 +51,7 @@ shared?" SLIDER (1–60 min, default = SHARED_MIN_MINUTES): it recomputes the sh
 and drives the strips, the shared count, the dumbbell, and A2's shared rings together. At the default
 threshold the client formula MUST reproduce prep's count/pct exactly — verify_dashboard.py asserts
 this per cut; don't change either side's rule without the other. A non-default threshold shows a
-removable "Shared rule" chip. The locked 35.4%-vs-0.5% narrative numbers always refer to the DEFAULT
+removable "Shared rule" chip. The locked 35.2%-vs-0.5% narrative numbers always refer to the DEFAULT
 threshold. EVERY panel responds to the global period filter; whole-span charts
 (river, discovery curve) and the slopegraph respond by EMPHASIZING the selected period's region/side,
 not by re-cutting.
@@ -65,16 +67,23 @@ listener's exploration rate visibly shifted around it — that's what gives the 
 legitimate home instead of a forced one. Do not revert to a generic "routine and intensity" label
 without re-solving this fit problem.
 
-**The Dashboard-2 range brush (drag-to-select under the waveform) is a deliberate, narrow exception to
-"whole-span charts never re-cut":** dragging it genuinely recomputes the weekday/hour heatmap and a
+**The Dashboard-2 range brush (drag-to-select ON the B1 waveform itself) is a deliberate, narrow
+exception to "whole-span charts never re-cut":** since 2026-07-20 the brush surface IS the river — the
+separate strip that used to sit under the waveform was removed on the owner's instruction. Dragging
+horizontally across the river (either direction) selects that month range; a bare click selects a
+single month; the selection shows as a dashed outline on the river with the unselected months dimmed.
+Hover and drag coexist: the synced month tooltip shows only while no drag is in progress, and goes
+quiet from mousedown to release. Dragging genuinely recomputes the weekday/hour heatmap and a
 four-metric readout (the same four metrics the slopegraph shows — see below) for the EXACT dragged month
 range, via the `monthly_detail` aggregate (see Data files below) — not just an emphasis overlay. It sits
 ALONGSIDE the fixed All/Pre-uni/University toggle, not in place of it (the toggle still drives
-everything else, and still matters for the locked two-period comparison the slopegraph depends on). The
-waveform and discovery curve themselves still only get emphasized/echoed by the brush, never re-cut —
-only the heatmap and the brush's own readout genuinely recompute. This distinction (which panels re-cut
-vs. which only emphasize) is intentional, not inconsistent — don't "fix" it by making everything re-cut
-or everything emphasize without re-checking this note.
+everything else, and still matters for the locked two-period comparison the slopegraph depends on).
+Changing the period CLEARS an active range (and its chip) — changed 2026-07-20; a range used to survive
+the toggle, but that masked the period toggle's effect on the heatmap, which made the toggle look
+broken on that panel. The waveform and discovery curve themselves still only get emphasized/echoed by
+the brush, never re-cut — only the heatmap and the brush's own readout genuinely recompute. This
+distinction (which panels re-cut vs. which only emphasize) is intentional, not inconsistent — don't
+"fix" it by making everything re-cut or everything emphasize without re-checking this note.
 
 **The slopegraph is four metrics, not six:** hours/month, median listening day, days-with-music%, and
 plays-kept-past-30s. "Top-10 artist share" and "different artists" USED to be there too but were cut —
@@ -89,7 +98,11 @@ trajectory). Don't re-add them without re-solving that duplication.
   Do NOT ship the ~180k-row event table to the browser.
 
 ## Locked constants
-- Data window: **2021-01 onward** (earlier data dropped; pre-2021 is thin/uneven for Roman).
+- Data window: **2021-01 .. 2026-04** (earlier data dropped; pre-2021 is thin/uneven for Roman.
+  2026-05 was dropped WHOLE 2026-07-20 on the owner's instruction — it is a partial month, the
+  exports stop 2026-05-22 for Or and 2026-05-10 for Roman — so the last plotted month is never an
+  artificially quiet one; `WINDOW_END_EXCL = "2026-05-01"` in both `prep.py` and
+  `verify_dashboard.py`).
 - Periods: `pre_uni` = 2021-01..2023-12; `university` = 2024-01 onward. Define as documented constants
   in both `prep.py` and the JS.
 
@@ -102,15 +115,15 @@ trajectory). Don't re-add them without re-solving that duplication.
   artists — only confident assignments; the uncertain rest stays "Other", always visible. Mark genre as
   external/provisional wherever it appears.
 - "Shared" artists require REAL listening on both sides (≥1 over-30s play each AND 3+ minutes each),
-  not name-only matches. Overlap is weighted by minutes, never artist count (40 shared artists, but
-  35.4% of Or's minutes vs 0.5% of Roman's).
+  not name-only matches. Overlap is weighted by minutes, never artist count (39 shared artists, but
+  35.2% of Or's minutes vs 0.5% of Roman's — updated when 2026-05 was dropped from the window).
 - Skip behavior appears in the UI only as the comparable `under_30s` measure (shown as "plays kept past
   30 s" = 100 − under30_pct, in the B1 range-brush readout and the slopegraph) — never native skip counters (Apple and Spotify
   count skips differently).
 - Heatmaps use a PER-LISTENER color scale (own max across periods): the panel compares routine shape,
   and one absolute scale would let Roman's volume wash out Orr's pattern.
 - Absolute, natural units by default; percentages only where Roman's higher volume would mislead: the
-  overlap strips, A1's family shares (and ghost ticks), and the two rate metrics in the slopegraph and
+  overlap strips, A1's family shares, and the two rate metrics in the slopegraph and
   brush readout. No global absolute/normalized toggle.
 - No map: city-level location exists only for Or.
 - Keep it minimal. No over-engineering, no speculative abstractions, no extra files. Remove any temporary
@@ -132,7 +145,7 @@ trajectory). Don't re-add them without re-solving that duplication.
   deleted, trimmed, or relocated: A3's slider rule-note ("drag to test how sensitive…"), B1's
   range-scrub drag hint, B2's per-listener heatmap-scale explanation, and B3's how-to-read-the-bend
   guidance). A mono
-  prompt line (`orr@apple-music × roman@spotify ~/two-listeners · jan 2021 → may 2026`) sits above the
+  prompt line (`orr@apple-music × roman@spotify ~/two-listeners · jan 2021 → apr 2026`) sits above the
   hero title. A `method` footer (mono, muted) closes the page: provenance, genre-external caveat,
   shared rule, 30-second skip rule, tooling — it carries the required genre disclosure, don't remove it.
 - The legend is a CONTROL: clicking a listener chip solos him (state.solo; the other listener's marks
@@ -166,9 +179,9 @@ trajectory). Don't re-add them without re-solving that duplication.
 Expect the 2021+ numbers to differ; these are only rough checks.
 - Or ≈ 2,802 h / 97,000 plays / 1,436 artists / top artist Imagine Dragons.
 - Roman ≈ 3,491 h / 83,003 plays / 4,036 artists / top artist Sleep Token.
-- 2021+ computed: Or 1,962.9 h / 1,108 artists; Roman 3,393.8 h / 3,756 artists; 40 truly-shared artists
-  (130 name-only matches); shared minutes 35.4% (Or) vs 0.5% (Roman); family "Other" 8.0% (Or) /
-  14.2% (Roman) after curation.
+- Window (2021-01..2026-04) computed: Or 1,928.5 h / 1,107 artists; Roman 3,367.2 h / 3,703 artists;
+  39 truly-shared artists (129 name-only matches); shared minutes 35.2% (Or) vs 0.5% (Roman); family
+  "Other" 8.0% (Or) / 14.1% (Roman) after curation.
 
 ## Verified single-month facts (do not restate differently)
 Recomputed from the fact CSV. Narrative text (report, tooltips, annotations) must quote these exactly.

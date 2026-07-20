@@ -167,9 +167,16 @@
         flex-wrap: wrap;
         margin-bottom: 4px;
       }
+      /* Side titles read as section markers: larger than body mono and
+         centered across the page (their .dash-head child spans full width). */
+      .dash-head > div {
+        flex: 1 1 100%;
+        min-width: 0;
+      }
       .side-label {
-        font: 700 11px var(--mono);
-        letter-spacing: 3px;
+        font: 700 16px var(--mono);
+        letter-spacing: 4px;
+        text-align: center;
         text-transform: uppercase;
         color: var(--roman);
         margin-bottom: 6px;
@@ -211,8 +218,8 @@
         gap: 14px;
         margin: 40px 0 -6px;
         color: var(--ink2);
-        font: 700 11px var(--mono);
-        letter-spacing: 3px;
+        font: 700 16px var(--mono);
+        letter-spacing: 4px;
         text-transform: uppercase;
       }
       .flip-divider::before,
@@ -409,18 +416,28 @@
          name on the left, a terse functional sub-label on the right. */
       .panel h3 {
         display: flex;
+        flex-wrap: wrap;
         align-items: baseline;
-        gap: 8px;
-        font: 500 11px var(--mono);
+        gap: 3px 8px;
+        font: 500 13.5px var(--mono);
         text-transform: uppercase;
-        letter-spacing: 1.6px;
-        color: var(--ink2);
+        letter-spacing: 1px;
+        /* Heading-weight titles, still terminal: the name itself never wraps
+           (nowrap); when space runs out the right-aligned .sub moves to its
+           own line instead (flex-wrap) and may wrap internally (.sub resets
+           white-space). */
+        white-space: nowrap;
+        color: var(--ink);
         margin-bottom: 8px;
       }
-      .panel h3::before {
+      /* The ▍ accent lives on .t (the one-flex-item title unit: accent +
+         track number + name) so the title can never split across lines —
+         only the .sub may move or wrap. */
+      .panel h3 .t::before {
         content: "▍";
         color: var(--or);
         letter-spacing: 0;
+        margin-right: 8px;
       }
       .panel h3 .track-num {
         color: var(--roman);
@@ -432,6 +449,7 @@
         text-align: right;
         text-transform: none;
         letter-spacing: 0;
+        white-space: normal; /* the title is nowrap; the sub may wrap */
         font-size: 10.5px;
         /* ink2, not muted: these subs carry the interaction instructions, and
            muted measures ~2.1:1 on the panel surface — below legible. */
@@ -673,11 +691,10 @@
       .scrub-hint {
         margin: 0 0 8px;
       }
-      #range-scrub {
-        cursor: pointer;
+      /* The waveform itself is the brush surface (the old #range-scrub strip
+         was removed 2026-07-20): no text selection or touch-pan mid-drag. */
+      #monthly-chart svg {
         user-select: none;
-      }
-      #range-scrub svg {
         touch-action: none;
       }
       .scrub-readout {
@@ -741,12 +758,28 @@
           transform: none;
         }
       }
-      @media (max-width: 900px) {
+      /* Collapses earlier than the old 900px: at heading size, B3's one-line
+         title needs ~430px, which the 2fr column only offers above ~1220px
+         viewport (the 11px design silently wrapped in that band too). */
+      @media (max-width: 1219px) {
         .grid {
           grid-template-columns: 1fr;
         }
+      }
+      @media (max-width: 900px) {
         .duo > div {
           min-width: 100%;
+        }
+      }
+      /* Below this width the longest title (B4) can't hold one line at
+         13.5px: step the size down and let titles wrap rather than bleed
+         past the panel border (phone widths never held them pre-change
+         either). */
+      @media (max-width: 640px) {
+        .panel h3 {
+          font-size: 11.5px;
+          letter-spacing: 1px;
+          white-space: normal;
         }
       }
     </style>
@@ -755,11 +788,7 @@
     <div class="wrap">
       <header class="hero">
         <div id="hero-wave" aria-hidden="true"></div>
-        <div class="prompt">
-          <span class="u1">orr@apple-music</span> × <span class="u2">roman@spotify</span>
-          <span class="path">~/two-listeners · jan 2021 → may 2026</span>
-        </div>
-        <h1>Two Listeners</h1>
+        <h1>Two Listeners- Two Worlds</h1>
         <p class="question">
           Does similarity between two listeners have to come from musical taste, or can it also be found
           in listening patterns, routines and how strongly each person is connected to music?
@@ -770,10 +799,10 @@
         <span class="ctl"><label>Period:</label><span class="seg" id="global-period"></span></span>
         <div class="legend">
           <button class="chip" id="chip-Or" type="button" title="Click to solo Orr">
-            <i style="--c: var(--or)"></i>Orr <small>Apple Music</small>
+            <i style="--c: var(--or)"></i>Orr
           </button>
           <button class="chip" id="chip-Roman" type="button" title="Click to solo Roman">
-            <i style="--c: var(--roman)"></i>Roman <small>Spotify</small>
+            <i style="--c: var(--roman)"></i>Roman
           </button>
         </div>
       </div>
@@ -790,14 +819,14 @@
 
         <div class="grid">
           <div class="panel span2" id="p-families">
-            <h3><span class="track-num">A1</span> Do we even like the same music?
+            <h3><span class="t"><span class="track-num">A1</span> Do we even like the same music?</span>
               <span class="sub">share of minutes · genre tags are external · click families to filter (multi-select)</span></h3>
             <div id="families-butterfly"></div>
           </div>
 
           <div class="panel span2" id="p-artists">
-            <h3><span class="track-num">A2</span> Who does each of us play on repeat?
-              <span class="sub">hours in range · ring = artist the other one plays too · click for details</span></h3>
+            <h3><span class="t"><span class="track-num">A2</span> Who does each of us play on repeat?</span>
+              <span class="sub">hours in range · ring = artist the other one plays too · click for filter and details</span></h3>
             <div class="duo">
               <div id="artists-Or"></div>
               <div id="artists-Roman"></div>
@@ -806,13 +835,13 @@
           </div>
 
           <div class="panel span2" id="p-overlap">
-            <h3><span class="track-num">A3</span> When we share an artist, do we share the listening?
-              <span class="sub">overlap weighted by minutes · click a line for details</span></h3>
+            <h3><span class="t"><span class="track-num">A3</span> When we share an artist, do we share the listening?</span>
+              <span class="sub">overlap weighted by minutes · click a line for filter and details</span></h3>
             <div class="shared-rule">
               <label for="shared-min">shared if both of us played the artist ≥</label>
               <input type="range" id="shared-min" min="1" max="60" step="1" value="3" />
               <span class="rule-val"><b id="shared-min-val">3</b> min</span>
-              <span class="rule-note">drag to test how sensitive the overlap is to the rule</span>
+              <span class="rule-note">drag to test how sensitive the overlap is to the threshold</span>
             </div>
             <p class="hint"><span id="overlap-filter-note"></span></p>
             <div class="overlap-flex">
@@ -826,7 +855,7 @@
         </div>
       </section>
 
-      <div class="flip-divider" aria-hidden="true"><span>flip the record — side b</span></div>
+      <div class="flip-divider" aria-hidden="true"><span>flip the record</span></div>
 
       <section class="dash" id="d2">
         <div class="dash-head">
@@ -835,73 +864,40 @@
             <h2><span class="eq-icon" aria-hidden="true"><i></i><i></i><i></i></span>Routine, Disrupted — Before Uni vs. University</h2>
           </div>
         </div>
-        <p class="hint d2-intro">
-          Moving from home life into university broke both listeners' routines. Research on listening
-          behavior finds that when a personal routine is disrupted, people don't retreat to old favorites —
-          they explore more (Kim et al., <i>PNAS</i> 2024). The four panels below ask: how much did each
-          person listen, when did they listen, did the routine break come with a burst of exploration, and
-          how much did each habit shift overall?
-        </p>
 
         <div class="chips" id="d2-chips"></div>
 
         <div class="grid">
           <div class="panel span2" id="p-monthly">
-            <h3><span class="track-num">B1</span> How much did each of us listen, month by month?
-              <span class="sub">hours per month · Orr above the line, Roman below · hover a month for exact numbers</span></h3>
+            <h3><span class="t"><span class="track-num">B1</span> How much did each of us listen, month by month?</span>
+              <span class="sub">hours per month · hover a month for more details · drag to select any custom range</span></h3>
             <div id="monthly-chart"></div>
             <div class="scrub-wrap">
-              <p class="hint scrub-hint">
-                drag to select any custom range — recomputes the B2 grid and the stats below for exactly
-                those months
-              </p>
-              <div id="range-scrub"></div>
-              <div class="scrub-readout" id="scrub-readout">Drag or click a month to inspect it.</div>
             </div>
           </div>
 
           <div class="panel" id="p-routine">
-            <h3><span class="track-num">B2</span> When in the week does music happen?
-              <span class="sub">plays by weekday × hour · per-listener color scale · click a cell</span></h3>
-            <p class="hint">
-              Each listener has his own color scale, so the shapes of the routines compare even though the
-              volumes are very different.
-            </p>
+            <h3><span class="t"><span class="track-num">B2</span> When in the week does music happen?</span>
+              <span class="sub">plays by weekday × hour · click a cell for details</span></h3>
+
             <div class="duo" id="heatmaps"></div>
             <div id="window-panel"></div>
           </div>
 
           <div class="panel" id="p-discovery">
-            <h3><span class="track-num">B3</span> Did breaking routine make us explore more?
-              <span class="sub">distinct artists heard, running total · hover a month for exact numbers (synced with B1)</span></h3>
-            <p class="hint">
-              If breaking routine comes with more exploring, a line should visibly bend at the university
-              marker; no bend means the disruption didn't change how adventurously that person listened.
-            </p>
+            <h3><span class="t"><span class="track-num">B3</span> Did breaking routine make us explore more?</span>
+              <span class="sub">distinct artists heard· hover a month for exact numbers </span></h3>
             <div id="discovery-chart"></div>
           </div>
 
           <div class="panel span2" id="p-change">
-            <h3><span class="track-num">B4</span> Before Uni vs University: Same Direction or Opposite?
-              <span class="sub">one line per listener · parallel = same way, crossing = opposite · zero-based axes · hover a line for the exact change</span></h3>
+            <h3><span class="t"><span class="track-num">B4</span> Before Uni vs University: Same Direction or Opposite?</span>
+              <span class="sub"> parallel = same way, crossing = opposite · click a line for detail</span></h3>
             <div id="slopes"></div>
+            <div class="artist-detail" id="slope-detail"></div>
           </div>
         </div>
       </section>
-
-      <footer class="foot">
-        <b>method</b> · orr's apple music play activity + roman's spotify extended history (full exports)
-        → one pandas fact table, cut to jan 2021+ (138,894 plays), local time asia/jerusalem. the window
-        starts at 2021 because roman's earlier months are sparse and uneven; the two periods also differ
-        in length (36 vs 29 months), so cross-period comparisons use rates and averages, never raw
-        totals. genre is an
-        external, partial add-on collapsed into ~6 broad families — treat it as provisional; the honest
-        residual stays "Other". shared = both listeners played the artist ≥ 3 minutes in the period,
-        weighted by minutes, never by artist count. skips are compared only via the same 30-second rule
-        computed from played-milliseconds on both sides — never the platforms' own skip counters. one
-        period filter + one range brush drive the page; every displayed number is recomputed from the
-        source table by an automated check suite. built with d3 v7.
-      </footer>
     </div>
     <div id="tooltip"></div>
 
@@ -956,7 +952,8 @@
           selectedArtistSource: null,
           sharedMin: SHARED_MIN_DEFAULT,
         },
-        d2: { selectedWindow: null },
+        // selectedSlope is B4's click-detail selection: {owner, metric} or null.
+        d2: { selectedWindow: null, selectedSlope: null },
       };
       const state = {
         period: DEFAULTS.period,
@@ -986,6 +983,10 @@
       }
       function setPeriod(period) {
         state.period = period;
+        // A brushed range used to survive a period toggle, so the heatmap kept
+        // showing the brushed months and the toggle looked broken on that
+        // panel — the range (and its chip) now resets with the period.
+        if (scrubRange) clearScrubRange();
         renderAll();
       }
       // Live legend: clicking a listener chip solos him (dims the other's marks
@@ -1133,24 +1134,30 @@
         const host = d3.select("#families-butterfly").html("");
         const byFam = {};
         for (const o of OWNERS) byFam[o] = new Map(D.families[c][o].map((d) => [d.family, d]));
-        // Ghost ticks (bullet-chart idiom): when one period is selected, mark the
-        // OTHER period's share on each bar so taste drift is a visible gap, not a
-        // memory exercise across toggle clicks.
+        // When one period is selected, the OTHER period's share per family
+        // surfaces in the hover tooltip as a drift value. (The on-bar ghost
+        // tick marks and their ▏ key were removed 2026-07-20 on the owner's
+        // instruction — tooltip only now.)
         const otherCut = c === "pre_uni" ? "university" : c === "university" ? "pre_uni" : null;
         const byFamOther = {};
         if (otherCut)
           for (const o of OWNERS) byFamOther[o] = new Map(D.families[otherCut][o].map((d) => [d.family, d]));
-        // Union of families, largest either-side share first; drop rows both
-        // sides round to zero.
+        // Union of families; drop rows both sides round to zero in THIS cut,
+        // but order by the ALL-period max share so surviving rows sit in the
+        // same position in every cut — per-cut ordering made Rock and Other
+        // swap places between periods and broke cross-cut comparison.
+        const byFamAll = {};
+        for (const o of OWNERS) byFamAll[o] = new Map(D.families.all[o].map((d) => [d.family, d]));
         const fams = [...new Set(OWNERS.flatMap((o) => D.families[c][o].map((d) => d.family)))]
           .map((f) => ({
             family: f,
             Or: byFam.Or.get(f),
             Roman: byFam.Roman.get(f),
             maxPct: Math.max(byFam.Or.get(f)?.pct ?? 0, byFam.Roman.get(f)?.pct ?? 0),
+            allMaxPct: Math.max(byFamAll.Or.get(f)?.pct ?? 0, byFamAll.Roman.get(f)?.pct ?? 0),
           }))
           .filter((r) => r.maxPct >= 0.1)
-          .sort((a, b) => b.maxPct - a.maxPct);
+          .sort((a, b) => b.allMaxPct - a.allMaxPct);
 
         const rowH = 30,
           barH = 18,
@@ -1231,16 +1238,6 @@
             .attr("fill", (d) => (dimmed(d) ? "var(--muted)" : ownerShade(o, fams.indexOf(d), fams.length)))
             .attr("stroke", stroke)
             .attr("stroke-dasharray", dash);
-          if (otherCut)
-            side
-              .append("line")
-              .attr("x1", (d) => xEnd(byFamOther[o].get(d.family)?.pct ?? 0))
-              .attr("x2", (d) => xEnd(byFamOther[o].get(d.family)?.pct ?? 0))
-              .attr("y1", -1)
-              .attr("y2", barH + 5)
-              .attr("stroke", "#E6EBF5")
-              .attr("stroke-width", 1.4)
-              .attr("opacity", 0.85);
           side
             .append("text")
             .attr("class", "val")
@@ -1255,14 +1252,6 @@
               return r ? fm1(r.pct) + "%" : "—";
             });
         }
-        if (otherCut)
-          svg
-            .append("text")
-            .attr("class", "val")
-            .attr("x", w / 2)
-            .attr("y", 13)
-            .attr("text-anchor", "middle")
-            .text(`▏= ${PLABEL[otherCut]} share`);
         g.on("click", (ev, d) => toggleFamily(d.family))
           .on("mouseover", function (ev, d) {
             g.attr("opacity", (r) => (r === d ? 1 : 0.38));
@@ -1571,12 +1560,12 @@
               .text("non-shared");
         });
         // Count line under the strips
-        host
+         host
           .append("p")
           .attr("class", "hint")
           .style("margin", "6px 0 0")
           .html(
-            `<b style="color:var(--ink)">${shared.length}</b> shared artists at this rule (${PLABEL[c]}) · ${D.shared.name_matches} name-only matches in the window`,
+            `<b style="color:var(--ink)">${shared.length}</b> shared artists`
           );
 
         renderDumbbell(shared, c);
@@ -1600,7 +1589,7 @@
           .sort((a, b) => b.or_minutes + b.roman_minutes - (a.or_minutes + a.roman_minutes))
           .slice(0, 10);
         if (!rows.length) {
-          host.append("p").attr("class", "hint").text("No artist clears this rule in the selected period.");
+          host.append("p").attr("class", "hint").text("No artist clears this threshold in the selected period.");
           return;
         }
         const w = 520,
@@ -1619,14 +1608,8 @@
           .attr("class", "val")
           .attr("x", mL)
           .attr("y", 10)
-          .text(`top shared artists (${PLABEL[c]}) · minutes, log scale`);
-        // In-chart dot key ("legend close to the display"): the two dot colors
-        // must be decodable here, not only via the sticky page legend.
-        const key = svg.append("text").attr("class", "val").attr("x", w - mR).attr("y", 10).attr("text-anchor", "end");
-        key.append("tspan").attr("fill", COLOR.Or).text("● ");
-        key.append("tspan").text(`${NAME.Or}   `);
-        key.append("tspan").attr("fill", COLOR.Roman).text("● ");
-        key.append("tspan").text(NAME.Roman);
+          .text(`top shared artists (${PLABEL[c]}) · log scale`);
+  
         // Log ticks at 1m / 10m / 1h / 10h / 100h where in range
         const ticks = [1, 10, 60, 600, 6000].filter((t) => t >= lo && t <= hi);
         svg
@@ -1716,8 +1699,9 @@
 
       // Verified fact (see CLAUDE.md): Roman's volume level-shift and his move
       // into night listening, and Or's two-month discovery stall, all begin
-      // 2023-10 — three months BEFORE the calendar period boundary. Marked on
-      // B1 only as a mute guide; the numbers surface in the hover tooltip.
+      // 2023-10 — three months BEFORE the calendar period boundary. The B1
+      // guide line at this month was removed on the owner's instruction
+      // (2026-07-20); the numbers surface only in the hover tooltip for it.
       const BREAK_YM = "2023-10";
       const BREAK_FACTS =
         "Roman's average steps 31.5 → 73.6 h/month from here and his " +
@@ -1802,11 +1786,14 @@
       function renderD2() {
         renderD2Chips();
         renderMonthly();
-        renderRangeScrub();
         renderHeatmaps();
         renderWindowPanel();
         renderDiscovery();
         renderSlopes();
+        // After every panel exists: position the range echo on both the river
+        // and the discovery curve (during a drag, setScrubRangeLive calls this
+        // directly for live updates).
+        applyScrubHighlight();
       }
 
       function renderMonthly() {
@@ -1944,24 +1931,21 @@
           .style("font-weight", 700)
           .text("Roman");
 
-        // A second MUTE guide at Oct 2023 (labeled annotations were tried and
-        // removed — the lecturer treats on-chart text as junk; the chart shows
-        // data, the reader concludes). Styled identically to the university
-        // guide; the verified facts behind it live in the hover tooltip only.
-        const bx = x(parseYM(BREAK_YM));
-        svg
-          .append("line")
-          .attr("x1", bx)
-          .attr("x2", bx)
-          .attr("y1", mT)
-          .attr("y2", h - mB)
-          .attr("stroke", "#8888A0")
-          .attr("stroke-dasharray", "4 3")
-          .attr("pointer-events", "none");
-
-        // Echo of the scrubber's custom range (see renderRangeScrub below) — drawn
-        // as a dashed outline so a drag-selected range shows up on the main chart
-        // too, not just in the strip underneath it.
+        // The brush selection, drawn on the river itself: a dashed outline
+        // around the selected months plus a dim overlay on everything outside
+        // it (both updated live by applyScrubHighlight during a drag).
+        scrubMonths = months;
+        monthlyPlotX0 = mL;
+        monthlyPlotX1 = w - mR;
+        monthlyDimRects = [0, 1].map(() =>
+          svg
+            .append("rect")
+            .attr("y", mT)
+            .attr("height", h - mT - mB)
+            .attr("fill", "rgba(15,17,23,.58)")
+            .style("display", "none")
+            .attr("pointer-events", "none"),
+        );
         monthlyScrubRect = svg
           .append("rect")
           .attr("y", mT)
@@ -1980,6 +1964,17 @@
           .attr("stroke", "#C9C9D6")
           .attr("stroke-width", 0.7)
           .style("display", "none");
+        // One overlay serves both interactions: hover shows the synced month
+        // tooltip while no drag is in progress; pressing down starts the range
+        // brush (a bare click selects that single month) and silences the
+        // tooltip until release so the two never fight.
+        const ymAt = (mx) =>
+          months[
+            d3.bisectCenter(
+              months.map((s) => +parseYM(s)),
+              +x.invert(mx),
+            )
+          ];
         svg
           .append("rect")
           .attr("x", mL)
@@ -1987,35 +1982,48 @@
           .attr("width", w - mL - mR)
           .attr("height", h - mT - mB)
           .attr("fill", "transparent")
-          .on("mousemove", function (ev) {
-            const [mx] = d3.pointer(ev, this);
-            const m =
-              months[
-                d3.bisectCenter(
-                  months.map((s) => +parseYM(s)),
-                  +x.invert(mx),
-                )
-              ];
+          .style("cursor", "crosshair")
+          .on("mousedown", function (ev) {
+            ev.preventDefault();
+            const m = ymAt(d3.pointer(ev, this)[0]);
             if (!m) return;
-            syncMonthHover(ev, m);
+            scrubDragStartYM = m;
+            scrubDragging = true;
+            clearMonthHover();
+            setScrubRangeLive(m, m);
           })
-          .on("mouseout", clearMonthHover);
+          .on("mousemove", function (ev) {
+            const m = ymAt(d3.pointer(ev, this)[0]);
+            if (!m) return;
+            if (scrubDragging) setScrubRangeLive(scrubDragStartYM, m);
+            else syncMonthHover(ev, m);
+          })
+          .on("mouseout", () => {
+            if (!scrubDragging) clearMonthHover();
+          });
       }
 
-      // Custom range scrubber: an audio-editor-style strip under the waveform.
-      // Deliberately styled differently from the waveform above it (stacked bars,
-      // no mirroring) so the two don't just look like duplicates of each other —
-      // this one's job is letting you drag an arbitrary range the fixed
-      // All/Pre-uni/University toggle can't give you, and totalling it up live.
+      // Custom range brush: the B1 waveform itself is the brush surface (the
+      // separate strip under it was removed 2026-07-20) — dragging horizontally
+      // across the river selects an arbitrary month range the fixed
+      // All/Pre-uni/University toggle can't give you, and totals it up live.
+      // Hover and drag share the overlay: the month tooltip shows only while
+      // no drag is in progress.
       let scrubRange = null; // {startYM, endYM} or null
       let monthlyScrubRect = null,
         monthlyBarW = 0;
-      let scrubX = null,
-        scrubMonths = null,
-        scrubSelRect = null,
-        scrubBarW = 0,
+      let scrubMonths = null,
         scrubDragging = false,
-        scrubDragStartYM = null;
+        scrubDragStartYM = null,
+        monthlyDimRects = null, // [left, right] de-emphasis over unselected months
+        monthlyPlotX0 = 0,
+        monthlyPlotX1 = 0,
+        // Same echo on the B3 discovery curve: outline + dim, driven by the
+        // one applyScrubHighlight pass (emphasis only — B3 never re-cuts).
+        discoveryScrubRect = null,
+        discoveryDimRects = null,
+        discoveryPlotX0 = 0,
+        discoveryPlotX1 = 0;
 
       // Months (inclusive) covered by a [startYM,endYM] scrub selection, in
       // canonical calendar order.
@@ -2082,21 +2090,35 @@
         const readout = d3.select("#scrub-readout");
         if (!scrubRange) {
           if (monthlyScrubRect) monthlyScrubRect.style("display", "none");
-          if (scrubSelRect) scrubSelRect.style("display", "none");
+          if (monthlyDimRects) for (const r of monthlyDimRects) r.style("display", "none");
+          if (discoveryScrubRect) discoveryScrubRect.style("display", "none");
+          if (discoveryDimRects) for (const r of discoveryDimRects) r.style("display", "none");
           readout.text("Drag or click a month to inspect it.");
           return;
         }
         const [a, b] = [scrubRange.startYM, scrubRange.endYM].sort();
-        if (monthlyScrubRect && monthlyX) {
-          const x0 = monthlyX(parseYM(a)) - monthlyBarW / 2,
-            x1 = monthlyX(parseYM(b)) + monthlyBarW / 2;
-          monthlyScrubRect.attr("x", x0).attr("width", Math.max(1, x1 - x0)).style("display", null);
-        }
-        if (scrubSelRect && scrubX) {
-          const x0 = scrubX(parseYM(a)) - scrubBarW / 2,
-            x1 = scrubX(parseYM(b)) + scrubBarW / 2;
-          scrubSelRect.attr("x", x0).attr("width", Math.max(1, x1 - x0)).style("display", null);
-        }
+        // One helper marks a chart: dashed outline over [a,b], dim overlays on
+        // the unselected months either side (same tint the period filter uses).
+        const mark = (x, halfW, outline, dims, plotX0, plotX1) => {
+          if (!outline || !x) return;
+          const x0 = x(parseYM(a)) - halfW,
+            x1 = x(parseYM(b)) + halfW;
+          outline.attr("x", x0).attr("width", Math.max(1, x1 - x0)).style("display", null);
+          if (dims) {
+            const [dl, dr] = dims;
+            dl.attr("x", plotX0)
+              .attr("width", Math.max(0, x0 - plotX0))
+              .style("display", null);
+            dr.attr("x", Math.min(x1, plotX1))
+              .attr("width", Math.max(0, plotX1 - x1))
+              .style("display", null);
+          }
+        };
+        mark(monthlyX, monthlyBarW / 2, monthlyScrubRect, monthlyDimRects, monthlyPlotX0, monthlyPlotX1);
+        const dHalf = scrubMonths && scrubMonths.length > 1
+          ? (discoveryPlotX1 - discoveryPlotX0) / (scrubMonths.length - 1) / 2
+          : 2;
+        mark(discoveryX, dHalf, discoveryScrubRect, discoveryDimRects, discoveryPlotX0, discoveryPlotX1);
         const span = monthsInRange(a, b);
         const label = a === b ? a : `${a} → ${b}`;
         const M = { Or: rangeMetrics("Or", span), Roman: rangeMetrics("Roman", span) };
@@ -2110,7 +2132,7 @@
           ["plays kept past 30 s", (o) => fm1t(100 - M[o].under30_pct) + "%"],
         ];
         readout.html(
-          `<div class="scrub-label"><b>${label}</b> (${span.length} month${span.length === 1 ? "" : "s"}) — recomputed for exactly this range, incl. the weekday/hour grid on the right
+          `<div class="scrub-label"><b>${label}</b> (${span.length} month${span.length === 1 ? "" : "s"}) 
            <button class="clear-btn" id="scrub-clear" type="button">clear ×</button></div>
            <table class="scrub-metrics">
              <tr><th></th><th style="color:${COLOR.Or}">Orr</th><th style="color:${COLOR.Roman}">Roman</th></tr>
@@ -2141,87 +2163,10 @@
         scrubDragging = false;
       });
 
-      function renderRangeScrub() {
-        const el = d3.select("#range-scrub").html("");
-        const w = 1120,
-          h = 58,
-          mL = 52,
-          mR = 14;
-        const svg = el.append("svg").attr("viewBox", `0 0 ${w} ${h}`).style("width", "100%");
-        const months = D.monthly.Or.map((d) => d.ym);
-        scrubMonths = months;
-        const byYM = {};
-        for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map((d) => [d.ym, d]));
-        const x = d3.scaleTime([parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)], [mL, w - mR]);
-        scrubX = x;
-        const totalMax =
-          d3.max(months, (ym) => (byYM.Or.get(ym)?.hours ?? 0) + (byYM.Roman.get(ym)?.hours ?? 0)) * 1.08;
-        const y = d3.scaleLinear([0, totalMax], [h - 2, 2]);
-        const barW = Math.max(1.4, ((w - mL - mR) / months.length) * 0.72);
-        scrubBarW = barW;
-
-        const bars = svg.append("g");
-        for (const ym of months) {
-          const orH = byYM.Or.get(ym)?.hours ?? 0,
-            roH = byYM.Roman.get(ym)?.hours ?? 0;
-          const cx = x(parseYM(ym));
-          bars
-            .append("rect")
-            .attr("x", cx - barW / 2)
-            .attr("width", barW)
-            .attr("y", y(orH))
-            .attr("height", Math.max(0, y(0) - y(orH)))
-            .attr("rx", Math.min(barW / 2, 2))
-            .attr("fill", COLOR.Or)
-            .attr("fill-opacity", 0.85 * soloOp("Or"));
-          bars
-            .append("rect")
-            .attr("x", cx - barW / 2)
-            .attr("width", barW)
-            .attr("y", y(orH + roH))
-            .attr("height", Math.max(0, y(orH) - y(orH + roH)))
-            .attr("rx", Math.min(barW / 2, 2))
-            .attr("fill", COLOR.Roman)
-            .attr("fill-opacity", 0.85 * soloOp("Roman"));
-        }
-
-        scrubSelRect = svg
-          .append("rect")
-          .attr("y", 0)
-          .attr("height", h)
-          .attr("fill", "rgba(255,255,255,.10)")
-          .attr("stroke", "#C9C9D6")
-          .attr("stroke-width", 1)
-          .style("display", "none")
-          .attr("pointer-events", "none");
-
-        const ymAt = (mx) => months[d3.bisectCenter(months.map((s) => +parseYM(s)), +x.invert(mx))];
-        svg
-          .append("rect")
-          .attr("x", mL)
-          .attr("y", 0)
-          .attr("width", w - mL - mR)
-          .attr("height", h)
-          .attr("fill", "transparent")
-          .on("mousedown", function (ev) {
-            const [mx] = d3.pointer(ev, this);
-            scrubDragStartYM = ymAt(mx);
-            scrubDragging = true;
-            setScrubRangeLive(scrubDragStartYM, scrubDragStartYM);
-          })
-          .on("mousemove", function (ev) {
-            if (!scrubDragging) return;
-            const [mx] = d3.pointer(ev, this);
-            setScrubRangeLive(scrubDragStartYM, ymAt(mx));
-          });
-
-        applyScrubHighlight();
-      }
-
       function renderHeatmaps() {
         const grid = d3.select("#heatmaps").html("");
         const p = cut();
-        // A custom scrub range (see renderRangeScrub) genuinely re-filters this
+        // A custom brush range (dragged on the B1 river) genuinely re-filters this
         // panel — real weekday/hour totals for exactly those months, not just
         // the three locked cuts — while All/Pre-uni/University keeps working
         // exactly as before when no custom range is selected.
@@ -2295,7 +2240,7 @@
             .selectAll(".hm-cell")
             .data(cells)
             .join("rect")
-            .attr("class", span ? "hm-cell" : "hm-cell clickable")
+            .attr("class", "hm-cell clickable")
             .attr("data-wd", (d) => d.weekday)
             .attr("x", (d) => mLh + WEEKDAYS.indexOf(d.weekday) * cw)
             .attr("y", (d) => mTh + d.hour * chh)
@@ -2318,11 +2263,6 @@
                 : 0.5,
             )
             .on("click", (ev, d) => {
-              // The per-cell drill-down data only exists for the three fixed
-              // cuts, so while a custom brush range is active a drill-down
-              // would show numbers from a DIFFERENT slice than the cells —
-              // never show mismatched data, so cell selection is off.
-              if (span) return;
               const s = state.d2.selectedWindow;
               setD2({
                 selectedWindow:
@@ -2376,15 +2316,6 @@
       function renderWindowPanel() {
         // The "select a cell" prompt lives in the panel hint; hide the empty box.
         const el = d3.select("#window-panel");
-        // The drill-down aggregates exist only per fixed cut — with a custom
-        // brush range active, showing them would pair range cells with
-        // fixed-cut numbers. Say so instead of showing mismatched data.
-        if (scrubRange) {
-          el.style("display", null).html(
-            `<p class="hint" style="margin:0">Cell drill-down is off while a custom range is selected — clear the range to inspect a single hour of the week.</p>`,
-          );
-          return;
-        }
         el.style("display", state.d2.selectedWindow ? null : "none");
         if (!state.d2.selectedWindow) {
           el.html("");
@@ -2392,6 +2323,32 @@
         }
         const { weekday, hour } = state.d2.selectedWindow,
           p = cut();
+        // With a custom brush range active the drill-down recomputes plays for
+        // exactly those months from monthly_detail. That aggregate deliberately
+        // ships no per-artist breakdown, so minutes and the artist/family lists
+        // exist only for the three fixed cuts — show what's real, say what isn't.
+        if (scrubRange) {
+          const span = monthsInRange(scrubRange.startYM, scrubRange.endYM);
+          const label = span.length === 1 ? span[0] : `${span[0]} → ${span[span.length - 1]}`;
+          let html = `<h4>${weekday} · <span class="num">${hour}:00–${hour + 1}:00</span> · <span class="num">${label}</span></h4>
+    <div class="wcols">`;
+          for (const o of OWNERS) {
+            let cellPlays = 0,
+              totalPlays = 0;
+            for (const ym of span) {
+              const m = D.monthly_detail[o].by_month[ym];
+              if (!m) continue;
+              totalPlays += m.plays;
+              for (const [wd, hr, n] of m.heatmap) if (wd === weekday && hr === hour) cellPlays += n;
+            }
+            const share = totalPlays ? (cellPlays / totalPlays) * 100 : 0;
+            html += `<div class="wcol"><h5 style="color:${COLOR[o]}">${NAME[o]}</h5>
+      <ul><li><b>${fm0(cellPlays)}</b> plays · <b>${share > 0 && share < 0.05 ? "&lt;0.1" : fm1(share)}%</b> of their plays in this range</li></ul></div>`;
+          }
+          html += `</div><p class="hint" style="margin:6px 0 0">artist and family breakdowns exist only for the fixed All / Pre-uni / University cuts — the shipped per-month data counts plays only</p>`;
+          el.html(html);
+          return;
+        }
         const rw = (o) =>
           D.routine_window[`${p}|${o}|${weekday}|${hour}`] || {
             plays: 0,
@@ -2518,6 +2475,30 @@
           .attr("transform", `translate(0,${h - mB})`)
           .call(d3.axisBottom(x).ticks(d3.timeYear.every(1)));
 
+        // Echo of the B1 brush range: dashed outline + dimmed unselected
+        // months, positioned by applyScrubHighlight (emphasis, never re-cut).
+        discoveryPlotX0 = mL;
+        discoveryPlotX1 = w - mR;
+        discoveryDimRects = [0, 1].map(() =>
+          svg
+            .append("rect")
+            .attr("y", mT)
+            .attr("height", h - mT - mB)
+            .attr("fill", "rgba(15,17,23,.58)")
+            .style("display", "none")
+            .attr("pointer-events", "none"),
+        );
+        discoveryScrubRect = svg
+          .append("rect")
+          .attr("y", mT)
+          .attr("height", h - mT - mB)
+          .attr("fill", "none")
+          .attr("stroke", "#C9C9D6")
+          .attr("stroke-width", 1.3)
+          .attr("stroke-dasharray", "3 2")
+          .style("display", "none")
+          .attr("pointer-events", "none");
+
         discoveryCross = svg
           .append("line")
           .attr("y1", mT)
@@ -2643,6 +2624,12 @@
             return ys;
           };
           const ly = [labelY(0), labelY(1)];
+          // B4's click-detail selection (same idiom as the A2/A3 detail cards):
+          // the picked line gets weight and white-ringed dots.
+          const isSel = (o2) =>
+            state.d2.selectedSlope &&
+            state.d2.selectedSlope.owner === o2 &&
+            state.d2.selectedSlope.metric === m.label;
           const groups = OWNERS.map((o, i) => {
             const g = svg.append("g").attr("class", "clickable").attr("opacity", soloOp(o));
             g.append("line")
@@ -2651,7 +2638,7 @@
               .attr("y1", yPos[i][0])
               .attr("y2", yPos[i][1])
               .attr("stroke", COLOR[o])
-              .attr("stroke-width", 2);
+              .attr("stroke-width", isSel(o) ? 3.5 : 2);
             g.selectAll("circle")
               .data([0, 1])
               .join("circle")
@@ -2659,7 +2646,9 @@
               .attr("cy", (s) => yPos[i][s])
               .attr("r", (s) => (sideOn(s) ? 3.5 : 2.8))
               .attr("opacity", (s) => (sideOn(s) ? 1 : 0.4))
-              .attr("fill", COLOR[o]);
+              .attr("fill", COLOR[o])
+              .attr("stroke", isSel(o) ? "#FFF" : "none")
+              .attr("stroke-width", isSel(o) ? 1.4 : 0);
             g.append("text")
               .attr("class", "val num")
               .attr("x", x[0] - 7)
@@ -2677,26 +2666,40 @@
               .text(m.fmt(vals[i][1]));
             return g;
           });
+          // Click only — the hover tooltip was removed 2026-07-20 on the
+          // owner's instruction; the numbers live in the click detail card.
           OWNERS.forEach((o, i) => {
-            const [v0, v1] = vals[i];
-            const delta = ((v1 - v0) / v0) * 100;
-            groups[i]
-              .on("mouseover", (ev) => {
-                groups.forEach((g, j) => g.attr("opacity", (j === i ? 1 : 0.3) * soloOp(OWNERS[j])));
-                showTip(
-                  ev,
-                  `<div class="t">${NAME[o]}: ${m.label}</div>
-                   Pre-uni: <span class="num">${m.fmt(v0)}</span><br>
-                   University: <span class="num">${m.fmt(v1)}</span>
-                   (<span class="num">${delta > 0 ? "+" : ""}${fm1t(delta)}%</span>)`,
-                );
-              })
-              .on("mousemove", moveTip)
-              .on("mouseout", () => {
-                groups.forEach((g, j) => g.attr("opacity", soloOp(OWNERS[j])));
-                hideTip();
-              });
+            groups[i].on("click", (ev) => {
+              // stopPropagation keeps the host's click-away handler from
+              // immediately re-clearing the selection made here.
+              ev.stopPropagation();
+              setD2({ selectedSlope: isSel(o) ? null : { owner: o, metric: m.label } });
+            });
           });
+        }
+        // Clicking away — the panel's empty background — closes the detail,
+        // in addition to re-clicking the selected line itself.
+        host.on("click", () => {
+          if (state.d2.selectedSlope) setD2({ selectedSlope: null });
+        });
+        const det = d3.select("#slope-detail");
+        const s = state.d2.selectedSlope;
+        const mSel = s && metrics.find((mm) => mm.label === s.metric);
+        if (!mSel) {
+          det.html("").classed("show", false);
+        } else {
+          const [v0, v1] = PERIODS.map((p) => mSel.val(s.owner, p));
+          const delta = ((v1 - v0) / v0) * 100;
+          det
+            .html(
+              `<b style="color:${COLOR[s.owner]}">${NAME[s.owner]}</b> <span style="color:var(--ink2)">· ${mSel.label}</span>
+          <div class="cols"><table>
+            <tr><td>Pre-uni</td><td class="num">${mSel.fmt(v0)}</td></tr>
+            <tr><td>University</td><td class="num">${mSel.fmt(v1)}</td></tr>
+            <tr><td>change</td><td class="num">${delta > 0 ? "+" : ""}${fm1t(delta)}%</td></tr>
+          </table></div>`,
+            )
+            .classed("show", true);
         }
       }
 

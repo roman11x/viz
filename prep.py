@@ -15,6 +15,10 @@ import pandas as pd
 # ---------------------------------------------------------------- constants
 # Locked data window and period split (must match the constants in index.html).
 WINDOW_START = "2021-01-01"   # drop everything before 2021 (Roman sparse earlier)
+# 2026-05 is a PARTIAL month (exports stop 2026-05-22 for Or, 2026-05-10 for
+# Roman) — dropped whole on the owner's instruction 2026-07-20 so the last
+# plotted month is never an artificially quiet one.
+WINDOW_END_EXCL = "2026-05-01"
 UNI_START = "2024-01-01"      # pre_uni = 2021-01..2023-12, university = 2024-01+
 PERIODS = ["pre_uni", "university"]
 OWNERS = ["Or", "Roman"]
@@ -172,7 +176,7 @@ def load_fact():
                  "minutes_played", "under_30s", "genre"],
     )
     df["date"] = pd.to_datetime(df["date"])
-    df = df[df["date"] >= WINDOW_START].copy()
+    df = df[(df["date"] >= WINDOW_START) & (df["date"] < WINDOW_END_EXCL)].copy()
     df["period"] = df["date"].map(
         lambda d: "university" if d >= pd.Timestamp(UNI_START) else "pre_uni")
     df["ym"] = df["date"].dt.strftime("%Y-%m")
@@ -466,7 +470,7 @@ def main():
         f.write(js)
 
     # ------------------------------------------------------------ verification
-    print(f"window: {WINDOW_START}+  |  university starts {UNI_START}")
+    print(f"window: {WINDOW_START} .. <{WINDOW_END_EXCL}  |  university starts {UNI_START}")
     print(f"rows in window: {len(df):,}  |  months per period: {months}")
     print(f"wrote {OUT_JS}: {len(js)/1024:.0f} KB\n")
 

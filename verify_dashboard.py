@@ -24,6 +24,9 @@ import pandas as pd
 
 FACT_CSV = "DATA/fact_plays_with_genre.csv"
 WINDOW_START = "2021-01-01"
+# 2026-05 is a partial month (exports stop mid-May) — excluded whole, matching
+# prep.py's WINDOW_END_EXCL (owner instruction 2026-07-20).
+WINDOW_END_EXCL = "2026-05-01"
 UNI_START = "2024-01-01"
 OWNERS = ["Or", "Roman"]
 
@@ -62,10 +65,10 @@ full["date"] = pd.to_datetime(full["date"])
 full["under_30s"] = full["under_30s"].astype(str).eq("True")
 check("full history rows", 180003, len(full))
 
-df = full[full["date"] >= WINDOW_START].copy()
+df = full[(full["date"] >= WINDOW_START) & (full["date"] < WINDOW_END_EXCL)].copy()
 df["period"] = df["date"].map(lambda d: "university" if d >= pd.Timestamp(UNI_START) else "pre_uni")
 df["ym"] = df["date"].dt.strftime("%Y-%m")
-check("window rows", 138894, len(df))
+check("window rows", 137097, len(df))
 
 cuts = {"all": df, "pre_uni": df[df.period == "pre_uni"], "university": df[df.period == "university"]}
 
