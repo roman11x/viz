@@ -29,7 +29,7 @@
         --ink: #c8d0e0;
         --ink2: #8b94a8;
         --muted: #454e63;
-        --floor: #232b3d;
+        --floor: #242634;
         --or: #4ea1ff;
         --roman: #ff9f1c;
         --display: "Space Grotesk", sans-serif;
@@ -848,7 +848,7 @@
         <div class="grid">
           <div class="panel span2" id="p-monthly">
             <h3><span class="track-num">B1</span> How much did each of us listen, month by month?
-              <span class="sub">hours per month · Orr above the line, Roman below</span></h3>
+              <span class="sub">hours per month · Orr above the line, Roman below · hover a month for exact numbers</span></h3>
             <div id="monthly-chart"></div>
             <div class="scrub-wrap">
               <p class="hint scrub-hint">
@@ -873,7 +873,7 @@
 
           <div class="panel" id="p-discovery">
             <h3><span class="track-num">B3</span> Did breaking routine make us explore more?
-              <span class="sub">distinct artists heard, running total</span></h3>
+              <span class="sub">distinct artists heard, running total · hover a month for exact numbers (synced with B1)</span></h3>
             <p class="hint">
               If breaking routine comes with more exploring, a line should visibly bend at the university
               marker; no bend means the disruption didn't change how adventurously that person listened.
@@ -883,7 +883,7 @@
 
           <div class="panel span2" id="p-change">
             <h3><span class="track-num">B4</span> Before Uni vs University: Same Direction or Opposite?
-              <span class="sub">one line per listener · parallel = same way, crossing = opposite · zero-based axes</span></h3>
+              <span class="sub">one line per listener · parallel = same way, crossing = opposite · zero-based axes · hover a line for the exact change</span></h3>
             <div id="slopes"></div>
           </div>
         </div>
@@ -891,7 +891,10 @@
 
       <footer class="foot">
         <b>method</b> · orr's apple music play activity + roman's spotify extended history (full exports)
-        → one pandas fact table, cut to jan 2021+ (138,894 plays), local time asia/jerusalem. genre is an
+        → one pandas fact table, cut to jan 2021+ (138,894 plays), local time asia/jerusalem. the window
+        starts at 2021 because roman's earlier months are sparse and uneven; the two periods also differ
+        in length (36 vs 29 months), so cross-period comparisons use rates and averages, never raw
+        totals. genre is an
         external, partial add-on collapsed into ~6 broad families — treat it as provisional; the honest
         residual stays "Other". shared = both listeners played the artist ≥ 3 minutes in the period,
         weighted by minutes, never by artist count. skips are compared only via the same 30-second rule
@@ -916,6 +919,11 @@
       const NAME = { Or: "Orr", Roman: "Roman" };
       const SRC = { Or: "Apple Music", Roman: "Spotify" };
       const COLOR = { Or: "#4EA1FF", Roman: "#FF9F1C" };
+      // Heatmap ramp floor comes from the CSS variable so the stylesheet stays
+      // the single source of truth for the chrome palette (d3.interpolateLab
+      // cannot take var() directly, so it is resolved once here).
+      const FLOOR =
+        getComputedStyle(document.documentElement).getPropertyValue("--floor").trim() || "#242634";
       const OTHER_OF = { Or: "Roman", Roman: "Or" };
       const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
       const WD3 = {
@@ -1026,6 +1034,10 @@
         return d3.hsl(c.h, c.s, n <= 1 ? l0 : l0 - ((l0 - l1) * i) / Math.max(1, n - 1)).toString();
       }
       const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+      // Bidi guard (see CLAUDE.md gotchas): Hebrew names followed by numeric or
+      // parenthesized text scramble visually in LTR context; an LRM after the
+      // Hebrew run pins the direction. Invisible — adds no visible character.
+      const bidiSafe = (s) => (/[֐-׿]/.test(s) ? s + "‎" : s);
 
       function segControl(el, options, labels, current, onPick) {
         const host = d3.select(el);
@@ -1262,7 +1274,7 @@
                   let line =
                     `<span style="color:${COLOR[o]}">●</span> ${NAME[o]}: ` +
                     (r
-                      ? `${fmin(r.minutes)} · <span class="num">${r.pct}%</span> · most played ${r.top_artist}`
+                      ? `${fmin(r.minutes)} · <span class="num">${r.pct}%</span> · most played ${bidiSafe(r.top_artist)}`
                       : "nothing here");
                   if (otherCut) {
                     const ro = byFamOther[o].get(d.family);
@@ -2278,7 +2290,7 @@
             .attr("text-anchor", "end")
             .style("font-size", "9px")
             .text(fhour);
-          const ramp = d3.interpolateLab("#242634", COLOR[o]);
+          const ramp = d3.interpolateLab(FLOOR, COLOR[o]);
           svg
             .selectAll(".hm-cell")
             .data(cells)
@@ -2394,7 +2406,7 @@
           html += `<div class="wcol"><h5 style="color:${COLOR[o]}">${NAME[o]}</h5>
       <ul><li><b>${fm0(r.plays)}</b> plays · <b>${fmin(r.minutes)}</b></li></ul>
       <div class="sect">what plays here</div><ul>${
-        r.top_artists.map(([a, m]) => `<li>${trunc(a, 18)} <b>${fmin(m)}</b></li>`).join("") || "<li>-</li>"
+        r.top_artists.map(([a, m]) => `<li>${bidiSafe(trunc(a, 18))} <b>${fmin(m)}</b></li>`).join("") || "<li>-</li>"
       }</ul>
       <div class="sect">families <span style="text-transform:none">(external tags)</span></div><ul>${
         r.top_families.map(([f, m]) => `<li>${f} <b>${fmin(m)}</b></li>`).join("") || "<li>-</li>"

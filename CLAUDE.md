@@ -14,7 +14,9 @@ labeled **Side A / Side B** (a vinyl-record framing, not "Dashboard 1/2" — tha
 naming and was flagged as making the whole page feel "web-ie"), with a "flip the record" divider between
 them, and every panel carries a small catalog-style track number (A1–A3, B1–B4) instead of just a title.
 Keep this — don't revert to "Dashboard 1: ..." headings.
-1. **Listening DNA** — genre families, obsessions (top artists), minutes-weighted overlap.
+1. **Taste Profile and Shared Listening** — genre families, obsessions (top artists), minutes-weighted
+   overlap. (This title supersedes the earlier "Listening DNA" 2026-07-20 — the shipped h2 was kept and
+   the spec updated to match; do not rename the Side A heading back.)
 2. **Routine, Disrupted — Before Uni vs. University** — whole-span waveform timeline (equalizer-bar
    style), daily-rhythm heatmap, cumulative artist-discovery curve, slopegraph.
 Seven panels, seven DISTINCT chart shapes: mirrored BUTTERFLY family bars (one shared axis, Orr left /
@@ -103,12 +105,13 @@ trajectory). Don't re-add them without re-solving that duplication.
   not name-only matches. Overlap is weighted by minutes, never artist count (40 shared artists, but
   35.4% of Or's minutes vs 0.5% of Roman's).
 - Skip behavior appears in the UI only as the comparable `under_30s` measure (shown as "plays kept past
-  30 s" = 100 − under30_pct, in kpis and the slopegraph) — never native skip counters (Apple and Spotify
+  30 s" = 100 − under30_pct, in the B1 range-brush readout and the slopegraph) — never native skip counters (Apple and Spotify
   count skips differently).
 - Heatmaps use a PER-LISTENER color scale (own max across periods): the panel compares routine shape,
   and one absolute scale would let Roman's volume wash out Orr's pattern.
-- Absolute, natural units by default; percentages ONLY in the overlap strip (where Roman's higher volume
-  would mislead). No global absolute/normalized toggle.
+- Absolute, natural units by default; percentages only where Roman's higher volume would mislead: the
+  overlap strips, A1's family shares (and ghost ticks), and the two rate metrics in the slopegraph and
+  brush readout. No global absolute/normalized toggle.
 - No map: city-level location exists only for Or.
 - Keep it minimal. No over-engineering, no speculative abstractions, no extra files. Remove any temporary
   scratch scripts at the end.
@@ -123,8 +126,12 @@ trajectory). Don't re-add them without re-solving that duplication.
   (13px), Space Grotesk only for the hero h1/question and side h2s. Panels are FLAT (1px border, 8px
   radius, no gradients/shadows — an earlier gradient-card look was tried and rejected as "web-ie").
   Panel titles are one-line small-caps mono rows: `▍` accent + colored track number + name, with a
-  terse right-aligned functional sub-label INSTEAD of hint paragraphs (hints only survive where a
-  correctness explanation genuinely needs a sentence, e.g. the per-listener heatmap scale). A mono
+  terse right-aligned functional sub-label INSTEAD of hint paragraphs (hints survive where a
+  correctness explanation genuinely needs a sentence AND for interaction instructions or reading
+  guidance — rule widened 2026-07-20 to sanction what ships. Exactly four hints ship and must not be
+  deleted, trimmed, or relocated: A3's slider rule-note ("drag to test how sensitive…"), B1's
+  range-scrub drag hint, B2's per-listener heatmap-scale explanation, and B3's how-to-read-the-bend
+  guidance). A mono
   prompt line (`orr@apple-music × roman@spotify ~/two-listeners · jan 2021 → may 2026`) sits above the
   hero title. A `method` footer (mono, muted) closes the page: provenance, genre-external caveat,
   shared rule, 30-second skip rule, tooling — it carries the required genre disclosure, don't remove it.
@@ -132,7 +139,7 @@ trajectory). Don't re-add them without re-solving that duplication.
   drop to 0.15 opacity in every panel via soloOp(), chip gets `.off`); clicking again un-solos.
 - In a single-person chart with categories, use only LIGHTNESS steps of that person's single hue —
   never a second categorical palette. Muted gray for inactive marks.
-- Heatmap cells ramp from a visible floor (`--floor: #232b3d`), not the page background, with a subtle
+- Heatmap cells ramp from a visible floor (`--floor: #242634`), not the page background, with a subtle
   grid so empty cells read as empty rather than invisible.
 - State is kept PER DASHBOARD (independent stacked sections) plus the global period and solo:
   `{ period, solo, d1: {selectedFamilies[], selectedArtist, selectedArtistSource, sharedMin},
@@ -142,10 +149,9 @@ trajectory). Don't re-add them without re-solving that duplication.
 
 ## Data files (English names)
 - `fact_plays_with_genre.csv` — event-level (~180,003 rows). Prep only; never shipped to the browser.
-- `fact_plays_SAMPLE.csv` — a 300-row schema sample. NOT the real data; do not compute from it.
-- Aggregates (full-history, re-cut to 2021+ in prep): `owner_summary`, `artist_totals(_with_genre)`,
-  `monthly_totals`, `daily_totals`, `hour_weekday(_year)`, `hourly_profile`, `genre_monthly`,
-  `plays_daily(_with_genre)`.
+- Aggregates in `EMBEDDED_DATA` (all built by `prep.py` on the 2021+ window, all read by the browser):
+  `meta`, `kpis`, `families`, `top_artists`, `family_artists`, `shared`, `monthly`, `heatmap`,
+  `monthly_detail`, `discovery`, `routine_window`, `change`.
 - `EMBEDDED_DATA.monthly_detail` (in `data.js`, built by `prep.py`'s `monthly_detail()`) — per-owner,
   per-month breakdown (hours/plays/under-30-plays/active-days, sparse weekday×hour play counts, and a
   dated active-day series). Still a compact aggregate, NOT the event table — bounded by (weekday, hour,
@@ -180,7 +186,6 @@ Recomputed from the fact CSV. Narrative text (report, tooltips, annotations) mus
   exists so narrative text never attributes these specific shifts to the university calendar alone.
 
 ## Gotchas
-- The SAMPLE trap: for any event-level work use the full `fact_plays_with_genre.csv`, not the 300-row sample.
 - Periods differ in length (36 vs 29 months; 1,095 vs 873 days in `meta.period_days`) — compare rates/averages.
 - Hebrew names next to signed/parenthesized numbers get bidi-scrambled; put an LRM (`&lrm;` / `‎`)
   after the Hebrew run.
