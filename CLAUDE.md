@@ -166,35 +166,21 @@ trajectory). Don't re-add them without re-solving that duplication.
   `meta`, `kpis`, `families`, `top_artists`, `family_artists`, `shared`, `monthly`, `heatmap`,
   `monthly_detail`, `discovery`, `routine_window`, `change`.
 - `EMBEDDED_DATA.monthly_detail` (in `data.js`, built by `prep.py`'s `monthly_detail()`) — per-owner,
-  per-month breakdown (hours/plays/under-30-plays/active-days, sparse weekday×hour play counts, and a
+  per-month breakdown (hours/plays/under-30-plays/active-days, sparse weekday×hour cells, and a
   dated active-day series). Still a compact aggregate, NOT the event table — bounded by (weekday, hour,
-  month) triples that actually occurred. Exists solely to let the Dashboard-2 range brush recompute the
-  heatmap and the four slopegraph-equivalent metrics for an arbitrary custom month range client-side.
-  Currently has NO per-artist breakdown — originally left out because it would only have fed
-  top-10-share/unique-artist recomputes, which were cut from the slopegraph as taste/breadth duplicates
-  (see above). Replaced the old unused `daily` field (bare per-cut value arrays with no date labels,
+  month) triples that actually occurred (8,341 across both owners). Exists to let the Dashboard-2 range
+  brush recompute the heatmap, the four slopegraph-equivalent metrics, AND the B2 cell drill-down for
+  an arbitrary custom month range client-side. Since 2026-07-21 each occupied cell also carries its
+  per-month TOP-3 artists by minutes (indices into the shared `monthly_detail.artists` string table)
+  and its COMPLETE per-family minutes (indices into `monthly_detail.families`; ~7 families, so family
+  breakdowns are exact for any range and sum to the cell's exact total minutes). The drill-down's
+  range branch labels the artist list "top artists of each month" and prefixes minutes with "≥" —
+  merged artist minutes are a LOWER BOUND (a month's 4th artist is dropped); never present that list
+  as complete, while the family list IS complete. Full per-artist fidelity would be a disguised event
+  table and stays banned. verify_dashboard.py asserts every cell (play count, complete family minutes,
+  deterministic top-3: minutes desc then name) against the CSV via `prep.load_fact()`.
+  Replaced the old unused `daily` field (bare per-cut value arrays with no date labels,
   never referenced in `index.html` — dead code, not a data loss).
-
-## PENDING TASK (owner decision 2026-07-21 — do this next)
-The B2 cell drill-down is plays-only when a custom B1 range is selected (it shows a caveat sentence
-instead of artist/family lists), because `monthly_detail` ships no per-artist data. The owner wants
-real "what plays here" details for custom ranges. Plan, sized against the shipped data (8,341
-occupied (weekday, hour, month) cells across both owners, ~16 plays each — full per-artist fidelity
-would be a disguised event table and stays banned):
-1. Extend `prep.py`'s `monthly_detail()` with, per occupied (weekday, hour, month) cell: top ~3
-   artists by minutes (name-indexed against a shared string table) + COMPLETE per-family minutes
-   (families are only ~7, so family breakdowns stay exact for any range). Expected data.js growth
-   ~+0.3–0.5 MB.
-2. Update the range branch of `renderWindowPanel()` in `index.html` to render those lists (rank
-   merged artists by summed minutes across the range's months; label the artist list "top artists
-   of each month" — truncated months make artist minutes a lower bound, so never present the artist
-   list as complete; the family list IS complete and can show exact minutes). Remove the
-   "breakdowns exist only for the fixed cuts" caveat sentence.
-3. Update `verify_dashboard.py` to assert the new field against the CSV, re-run prep + the full
-   suite, and re-commit the regenerated `data.js` (Part A byte-identity must pass again).
-BLOCKED ON: `DATA/fact_plays_with_genre.csv` (~110 MB, gitignored) — it lives on the owner's LINUX
-partition; this task must run from there (or after copying DATA/ back into the repo root).
-Until then, do NOT ship JS that reads the new field — data.js does not have it yet.
 
 ## Sanity anchors (FULL history — recompute on 2021+, do NOT hardcode)
 Expect the 2021+ numbers to differ; these are only rough checks.

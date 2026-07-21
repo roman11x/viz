@@ -2353,30 +2353,49 @@
         }
         const { weekday, hour } = state.d2.selectedWindow,
           p = cut();
-        // With a custom brush range active the drill-down recomputes plays for
-        // exactly those months from monthly_detail. That aggregate deliberately
-        // ships no per-artist breakdown, so minutes and the artist/family lists
-        // exist only for the three fixed cuts — show what's real, say what isn't.
+        // With a custom brush range active the drill-down recomputes this cell
+        // for exactly those months from monthly_detail: each occupied cell
+        // ships its per-month top-3 artists (so merged artist minutes are a
+        // LOWER BOUND — a month's 4th artist is dropped; never present that
+        // list as complete) and its COMPLETE per-family minutes (families sum
+        // to the cell's exact total, so minutes and the family list are exact).
         if (scrubRange) {
           const span = monthsInRange(scrubRange.startYM, scrubRange.endYM);
           const label = span.length === 1 ? span[0] : `${span[0]} → ${span[span.length - 1]}`;
+          const ANAMES = D.monthly_detail.artists,
+            FNAMES = D.monthly_detail.families;
           let html = `<h4>${weekday} · <span class="num">${hour}:00–${hour + 1}:00</span> · <span class="num">${label}</span></h4>
     <div class="wcols">`;
           for (const o of OWNERS) {
             let cellPlays = 0,
               totalPlays = 0;
+            const artMin = new Map(),
+              famMin = new Map();
             for (const ym of span) {
               const m = D.monthly_detail[o].by_month[ym];
               if (!m) continue;
               totalPlays += m.plays;
-              for (const [wd, hr, n] of m.heatmap) if (wd === weekday && hr === hour) cellPlays += n;
+              for (const [wd, hr, n, top, fams] of m.heatmap) {
+                if (wd !== weekday || hr !== hour) continue;
+                cellPlays += n;
+                for (const [ai, min] of top) artMin.set(ai, (artMin.get(ai) || 0) + min);
+                for (const [fi, min] of fams) famMin.set(fi, (famMin.get(fi) || 0) + min);
+              }
             }
+            const minutes = d3.sum(famMin.values());
             const share = totalPlays ? (cellPlays / totalPlays) * 100 : 0;
+            const topA = [...artMin.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const famRows = [...famMin.entries()].sort((a, b) => b[1] - a[1]);
             html += `<div class="wcol"><h5 style="color:${COLOR[o]}">${NAME[o]}</h5>
-      <ul><li><b>${fm0(cellPlays)}</b> plays · <b>${share > 0 && share < 0.05 ? "&lt;0.1" : fm1(share)}%</b> of their plays in this range</li></ul></div>`;
+      <ul><li><b>${fm0(cellPlays)}</b> plays · <b>${fmin(minutes)}</b> · <b>${share > 0 && share < 0.05 ? "&lt;0.1" : fm1(share)}%</b> of their plays in this range</li></ul>
+      <div class="sect">top artists of each month</div><ul>${
+        topA.map(([ai, m]) => `<li>${bidiSafe(trunc(ANAMES[ai], 18))} <b>≥${fmin(m)}</b></li>`).join("") || "<li>-</li>"
+      }</ul>
+      <div class="sect">families <span style="text-transform:none">(external tags)</span></div><ul>${
+        famRows.map(([fi, m]) => `<li>${FNAMES[fi]} <b>${fmin(m)}</b></li>`).join("") || "<li>-</li>"
+      }</ul></div>`;
           }
-          html += `</div><p class="hint" style="margin:6px 0 0">artist and family breakdowns exist only for the fixed All / Pre-uni / University cuts — the shipped per-month data counts plays only</p>`;
-          el.html(html);
+          el.html(html + "</div>");
           return;
         }
         const rw = (o) =>
