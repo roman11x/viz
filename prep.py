@@ -15,6 +15,10 @@ import pandas as pd
 # ---------------------------------------------------------------- constants
 # Locked data window and period split (must match the constants in index.html).
 WINDOW_START = "2021-01-01"   # drop everything before 2021 (Roman sparse earlier)
+# 2026-05 is a PARTIAL month (exports stop 2026-05-22 for Or, 2026-05-10 for
+# Roman) — dropped whole on the owner's instruction 2026-07-20 so the last
+# plotted month is never an artificially quiet one.
+WINDOW_END_EXCL = "2026-05-01"
 UNI_START = "2024-01-01"      # pre_uni = 2021-01..2023-12, university = 2024-01+
 PERIODS = ["pre_uni", "university"]
 OWNERS = ["Or", "Roman"]
@@ -172,7 +176,7 @@ def load_fact():
                  "minutes_played", "under_30s", "genre"],
     )
     df["date"] = pd.to_datetime(df["date"])
-    df = df[df["date"] >= WINDOW_START].copy()
+    df = df[(df["date"] >= WINDOW_START) & (df["date"] < WINDOW_END_EXCL)].copy()
     df["period"] = df["date"].map(
         lambda d: "university" if d >= pd.Timestamp(UNI_START) else "pre_uni")
     df["ym"] = df["date"].dt.strftime("%Y-%m")
@@ -311,10 +315,29 @@ def shared_overlap(df):
                           "roman_minutes": round(r["Roman"], 1)}
                          for a, r in per_owner.sort_values("total", ascending=False)
                                               .head(SHARED_LIST_N).iterrows()]
+    # Every name-matched artist with both-side minutes and the "real listening"
+    # flags, per cut — lets the page recompute the shared set CLIENT-SIDE for an
+    # arbitrary minutes threshold (the A3 sensitivity slider). At the default
+    # threshold the client formula must reproduce count_by_cut/pct_minutes
+    # exactly; verify_dashboard.py asserts that.
+    overlap_artists = {}
+    for cut, d in cuts(df):
+        real = d[~d["under_30s"]]
+        real_sets = {o: set(real[real["owner"] == o]["artist"].unique()) for o in OWNERS}
+        per_owner = (d.groupby(["artist", "owner"])["minutes_played"].sum()
+                     .unstack(fill_value=0).reindex(columns=OWNERS, fill_value=0))
+        both = per_owner[(per_owner["Or"] > 0) & (per_owner["Roman"] > 0)]
+        overlap_artists[cut] = [{
+            "artist": a,
+            "or_minutes": round(r["Or"], 2), "roman_minutes": round(r["Roman"], 2),
+            "or_real": a in real_sets["Or"], "roman_real": a in real_sets["Roman"],
+        } for a, r in both.sort_values("Or", ascending=False).iterrows()]
+
     return {"count": len(shared_set),
             "count_by_cut": {cut: len(s) for cut, s in shared_by_cut.items()},
             "name_matches": name_only,
-            "pct_minutes": pct, "top_shared": top_shared}, shared_set
+            "pct_minutes": pct, "top_shared": top_shared,
+            "overlap_artists": overlap_artists}, shared_set
 
 
 def monthly_hours(df):
@@ -338,15 +361,38 @@ def heatmaps(df):
     return out
 
 
-def daily_minutes(df):
-    """Minutes listened per ACTIVE day, per owner+cut — backs the histogram."""
+def monthly_detail(df):
+    """Per-owner, per-month breakdown rich enough to recompute the slopegraph's
+    routine/intensity metrics and the heatmap for an ARBITRARY custom month
+    range client-side — this is what lets the Dashboard-2 range brush genuinely
+    re-filter instead of being limited to the three locked cuts (all/pre_uni/
+    university). Still a compact aggregate, not the event table: bounded by
+    (weekday, hour, month) triples that actually have activity, not raw plays.
+    No per-artist breakdown here — top-10 share and unique-artist count are
+    taste/breadth measures that belong to Dashboard 1 and the discovery curve,
+    not this dashboard, so there's nothing here to recompute them from.
+    """
     out = {}
-    for cut, d in cuts(df):
-        out[cut] = {}
-        for owner in OWNERS:
-            g = d[d["owner"] == owner]
-            daily = g.groupby("date")["minutes_played"].sum()
-            out[cut][owner] = [int(round(v)) for v in daily.values if v > 0]
+    for owner in OWNERS:
+        g_all = df[df["owner"] == owner]
+        by_month = {}
+        for ym, gm in g_all.groupby("ym"):
+            minutes = gm["minutes_played"].sum()
+            daily = gm.groupby("date")["minutes_played"].sum()
+            hm = gm.groupby(["weekday", "hour_local"]).size()
+            by_month[ym] = {
+                "hours": round(minutes / 60, 1),
+                "plays": int(len(gm)),
+                "under30_plays": int(gm["under_30s"].sum()),
+                "active_days": int(len(daily)),
+                "heatmap": [[wd, int(h), int(n)] for (wd, h), n in hm.items()],
+            }
+
+        daily_all = g_all.groupby("date")["minutes_played"].sum()
+        out[owner] = {
+            "by_month": by_month,
+            "daily": [[str(d.date()), round(v, 1)] for d, v in daily_all.items()],
+        }
     return out
 
 
@@ -413,7 +459,7 @@ def main():
         "shared": shared,
         "monthly": monthly_hours(df),
         "heatmap": heatmaps(df),
-        "daily": daily_minutes(df),
+        "monthly_detail": monthly_detail(df),
         "discovery": discovery(df),
         "routine_window": routine_windows(df),
         "change": change,
@@ -424,7 +470,7 @@ def main():
         f.write(js)
 
     # ------------------------------------------------------------ verification
-    print(f"window: {WINDOW_START}+  |  university starts {UNI_START}")
+    print(f"window: {WINDOW_START} .. <{WINDOW_END_EXCL}  |  university starts {UNI_START}")
     print(f"rows in window: {len(df):,}  |  months per period: {months}")
     print(f"wrote {OUT_JS}: {len(js)/1024:.0f} KB\n")
 
