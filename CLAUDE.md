@@ -170,10 +170,31 @@ trajectory). Don't re-add them without re-solving that duplication.
   dated active-day series). Still a compact aggregate, NOT the event table — bounded by (weekday, hour,
   month) triples that actually occurred. Exists solely to let the Dashboard-2 range brush recompute the
   heatmap and the four slopegraph-equivalent metrics for an arbitrary custom month range client-side.
-  Deliberately has NO per-artist breakdown — that would only feed top-10-share/unique-artist recomputes,
-  and those metrics were cut from the slopegraph as taste/breadth duplicates (see above), so there was
-  nothing left to justify shipping it. Replaced the old unused `daily` field (bare per-cut value arrays
-  with no date labels, never referenced in `index.html` — dead code, not a data loss).
+  Currently has NO per-artist breakdown — originally left out because it would only have fed
+  top-10-share/unique-artist recomputes, which were cut from the slopegraph as taste/breadth duplicates
+  (see above). Replaced the old unused `daily` field (bare per-cut value arrays with no date labels,
+  never referenced in `index.html` — dead code, not a data loss).
+
+## PENDING TASK (owner decision 2026-07-21 — do this next)
+The B2 cell drill-down is plays-only when a custom B1 range is selected (it shows a caveat sentence
+instead of artist/family lists), because `monthly_detail` ships no per-artist data. The owner wants
+real "what plays here" details for custom ranges. Plan, sized against the shipped data (8,341
+occupied (weekday, hour, month) cells across both owners, ~16 plays each — full per-artist fidelity
+would be a disguised event table and stays banned):
+1. Extend `prep.py`'s `monthly_detail()` with, per occupied (weekday, hour, month) cell: top ~3
+   artists by minutes (name-indexed against a shared string table) + COMPLETE per-family minutes
+   (families are only ~7, so family breakdowns stay exact for any range). Expected data.js growth
+   ~+0.3–0.5 MB.
+2. Update the range branch of `renderWindowPanel()` in `index.html` to render those lists (rank
+   merged artists by summed minutes across the range's months; label the artist list "top artists
+   of each month" — truncated months make artist minutes a lower bound, so never present the artist
+   list as complete; the family list IS complete and can show exact minutes). Remove the
+   "breakdowns exist only for the fixed cuts" caveat sentence.
+3. Update `verify_dashboard.py` to assert the new field against the CSV, re-run prep + the full
+   suite, and re-commit the regenerated `data.js` (Part A byte-identity must pass again).
+BLOCKED ON: `DATA/fact_plays_with_genre.csv` (~110 MB, gitignored) — it lives on the owner's LINUX
+partition; this task must run from there (or after copying DATA/ back into the repo root).
+Until then, do NOT ship JS that reads the new field — data.js does not have it yet.
 
 ## Sanity anchors (FULL history — recompute on 2021+, do NOT hardcode)
 Expect the 2021+ numbers to differ; these are only rough checks.
@@ -199,7 +220,8 @@ Recomputed from the fact CSV. Narrative text (report, tooltips, annotations) mus
   exists so narrative text never attributes these specific shifts to the university calendar alone.
 
 ## Gotchas
-- Periods differ in length (36 vs 29 months; 1,095 vs 873 days in `meta.period_days`) — compare rates/averages.
+- Periods differ in length (36 vs 28 months; 1,095 vs 851 days in `meta.period_days`, after the
+  2026-05 drop) — compare rates/averages.
 - Hebrew names next to signed/parenthesized numbers get bidi-scrambled; put an LRM (`&lrm;` / `‎`)
   after the Hebrew run.
 - Genre coverage differs per person; do not overclaim genre precision.

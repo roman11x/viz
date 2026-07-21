@@ -788,7 +788,11 @@
     <div class="wrap">
       <header class="hero">
         <div id="hero-wave" aria-hidden="true"></div>
-        <h1>Two Listeners- Two Worlds</h1>
+        <div class="prompt">
+          <span class="u1">orr@apple-music</span> × <span class="u2">roman@spotify</span>
+          <span class="path">~/two-listeners · jan 2021 → apr 2026</span>
+        </div>
+        <h1>Two Listeners — Two Worlds</h1>
         <p class="question">
           Does similarity between two listeners have to come from musical taste, or can it also be found
           in listening patterns, routines and how strongly each person is connected to music?
@@ -873,31 +877,57 @@
               <span class="sub">hours per month · hover a month for more details · drag to select any custom range</span></h3>
             <div id="monthly-chart"></div>
             <div class="scrub-wrap">
+              <p class="hint scrub-hint">
+                drag to select any custom range — recomputes the B2 grid and the stats below for exactly
+                those months
+              </p>
+              <div class="scrub-readout" id="scrub-readout">Drag or click a month to inspect it.</div>
             </div>
           </div>
 
           <div class="panel" id="p-routine">
             <h3><span class="t"><span class="track-num">B2</span> When in the week does music happen?</span>
               <span class="sub">plays by weekday × hour · click a cell for details</span></h3>
-
+            <p class="hint">
+              Each listener has his own color scale, so the shapes of the routines compare even though the
+              volumes are very different.
+            </p>
             <div class="duo" id="heatmaps"></div>
             <div id="window-panel"></div>
           </div>
 
           <div class="panel" id="p-discovery">
             <h3><span class="t"><span class="track-num">B3</span> Did breaking routine make us explore more?</span>
-              <span class="sub">distinct artists heard· hover a month for exact numbers </span></h3>
+              <span class="sub">distinct artists heard · hover a month for exact numbers</span></h3>
+            <p class="hint">
+              If breaking routine comes with more exploring, a line should visibly bend at the university
+              marker; no bend means the disruption didn't change how adventurously that person listened.
+            </p>
             <div id="discovery-chart"></div>
           </div>
 
           <div class="panel span2" id="p-change">
             <h3><span class="t"><span class="track-num">B4</span> Before Uni vs University: Same Direction or Opposite?</span>
-              <span class="sub"> parallel = same way, crossing = opposite · click a line for detail</span></h3>
+              <span class="sub">parallel = same way, crossing = opposite · click a line for detail</span></h3>
             <div id="slopes"></div>
             <div class="artist-detail" id="slope-detail"></div>
           </div>
         </div>
       </section>
+
+      <footer class="foot">
+        <b>method</b> · orr's apple music play activity + roman's spotify extended history (full exports)
+        → one pandas fact table, cut to jan 2021 – apr 2026 (137,097 plays), local time asia/jerusalem.
+        the window starts at 2021 because roman's earlier months are sparse and uneven, and ends at apr
+        2026 because both exports stop mid-may; the two periods also differ in length (36 vs 28 months),
+        so cross-period comparisons use rates and averages, never raw totals. genre is an
+        external, partial add-on collapsed into ~6 broad families — treat it as provisional; the honest
+        residual stays "Other". shared = both listeners played the artist ≥ 3 minutes in the period,
+        weighted by minutes, never by artist count. skips are compared only via the same 30-second rule
+        computed from played-milliseconds on both sides — never the platforms' own skip counters. one
+        period filter + one range brush drive the page; every displayed number is recomputed from the
+        source table by an automated check suite. built with d3 v7.
+      </footer>
     </div>
     <div id="tooltip"></div>
 
