@@ -788,7 +788,11 @@
     <div class="wrap">
       <header class="hero">
         <div id="hero-wave" aria-hidden="true"></div>
-        <h1>Two Listeners- Two Worlds</h1>
+        <div class="prompt">
+          <span class="u1">orr@apple-music</span> × <span class="u2">roman@spotify</span>
+          <span class="path">~/two-listeners · jan 2021 → apr 2026</span>
+        </div>
+        <h1>Two Listeners — Two Worlds</h1>
         <p class="question">
           Does similarity between two listeners have to come from musical taste, or can it also be found
           in listening patterns, routines and how strongly each person is connected to music?
@@ -873,31 +877,57 @@
               <span class="sub">hours per month · hover a month for more details · drag to select any custom range</span></h3>
             <div id="monthly-chart"></div>
             <div class="scrub-wrap">
+              <p class="hint scrub-hint">
+                drag to select any custom range — recomputes the B2 grid and the stats below for exactly
+                those months
+              </p>
+              <div class="scrub-readout" id="scrub-readout">Drag or click a month to inspect it.</div>
             </div>
           </div>
 
           <div class="panel" id="p-routine">
             <h3><span class="t"><span class="track-num">B2</span> When in the week does music happen?</span>
               <span class="sub">plays by weekday × hour · click a cell for details</span></h3>
-
+            <p class="hint">
+              Each listener has his own color scale, so the shapes of the routines compare even though the
+              volumes are very different.
+            </p>
             <div class="duo" id="heatmaps"></div>
             <div id="window-panel"></div>
           </div>
 
           <div class="panel" id="p-discovery">
             <h3><span class="t"><span class="track-num">B3</span> Did breaking routine make us explore more?</span>
-              <span class="sub">distinct artists heard· hover a month for exact numbers </span></h3>
+              <span class="sub">distinct artists heard · hover a month for exact numbers</span></h3>
+            <p class="hint">
+              If breaking routine comes with more exploring, a line should visibly bend at the university
+              marker; no bend means the disruption didn't change how adventurously that person listened.
+            </p>
             <div id="discovery-chart"></div>
           </div>
 
           <div class="panel span2" id="p-change">
             <h3><span class="t"><span class="track-num">B4</span> Before Uni vs University: Same Direction or Opposite?</span>
-              <span class="sub"> parallel = same way, crossing = opposite · click a line for detail</span></h3>
+              <span class="sub">parallel = same way, crossing = opposite · click a line for detail</span></h3>
             <div id="slopes"></div>
             <div class="artist-detail" id="slope-detail"></div>
           </div>
         </div>
       </section>
+
+      <footer class="foot">
+        <b>method</b> · orr's apple music play activity + roman's spotify extended history (full exports)
+        → one pandas fact table, cut to jan 2021 – apr 2026 (137,097 plays), local time asia/jerusalem.
+        the window starts at 2021 because roman's earlier months are sparse and uneven, and ends at apr
+        2026 because both exports stop mid-may; the two periods also differ in length (36 vs 28 months),
+        so cross-period comparisons use rates and averages, never raw totals. genre is an
+        external, partial add-on collapsed into ~6 broad families — treat it as provisional; the honest
+        residual stays "Other". shared = both listeners played the artist ≥ 3 minutes in the period,
+        weighted by minutes, never by artist count. skips are compared only via the same 30-second rule
+        computed from played-milliseconds on both sides — never the platforms' own skip counters. one
+        period filter + one range brush drive the page; every displayed number is recomputed from the
+        source table by an automated check suite. built with d3 v7.
+      </footer>
     </div>
     <div id="tooltip"></div>
 
@@ -2323,30 +2353,49 @@
         }
         const { weekday, hour } = state.d2.selectedWindow,
           p = cut();
-        // With a custom brush range active the drill-down recomputes plays for
-        // exactly those months from monthly_detail. That aggregate deliberately
-        // ships no per-artist breakdown, so minutes and the artist/family lists
-        // exist only for the three fixed cuts — show what's real, say what isn't.
+        // With a custom brush range active the drill-down recomputes this cell
+        // for exactly those months from monthly_detail: each occupied cell
+        // ships its per-month top-3 artists (so merged artist minutes are a
+        // LOWER BOUND — a month's 4th artist is dropped; never present that
+        // list as complete) and its COMPLETE per-family minutes (families sum
+        // to the cell's exact total, so minutes and the family list are exact).
         if (scrubRange) {
           const span = monthsInRange(scrubRange.startYM, scrubRange.endYM);
           const label = span.length === 1 ? span[0] : `${span[0]} → ${span[span.length - 1]}`;
+          const ANAMES = D.monthly_detail.artists,
+            FNAMES = D.monthly_detail.families;
           let html = `<h4>${weekday} · <span class="num">${hour}:00–${hour + 1}:00</span> · <span class="num">${label}</span></h4>
     <div class="wcols">`;
           for (const o of OWNERS) {
             let cellPlays = 0,
               totalPlays = 0;
+            const artMin = new Map(),
+              famMin = new Map();
             for (const ym of span) {
               const m = D.monthly_detail[o].by_month[ym];
               if (!m) continue;
               totalPlays += m.plays;
-              for (const [wd, hr, n] of m.heatmap) if (wd === weekday && hr === hour) cellPlays += n;
+              for (const [wd, hr, n, top, fams] of m.heatmap) {
+                if (wd !== weekday || hr !== hour) continue;
+                cellPlays += n;
+                for (const [ai, min] of top) artMin.set(ai, (artMin.get(ai) || 0) + min);
+                for (const [fi, min] of fams) famMin.set(fi, (famMin.get(fi) || 0) + min);
+              }
             }
+            const minutes = d3.sum(famMin.values());
             const share = totalPlays ? (cellPlays / totalPlays) * 100 : 0;
+            const topA = [...artMin.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const famRows = [...famMin.entries()].sort((a, b) => b[1] - a[1]);
             html += `<div class="wcol"><h5 style="color:${COLOR[o]}">${NAME[o]}</h5>
-      <ul><li><b>${fm0(cellPlays)}</b> plays · <b>${share > 0 && share < 0.05 ? "&lt;0.1" : fm1(share)}%</b> of their plays in this range</li></ul></div>`;
+      <ul><li><b>${fm0(cellPlays)}</b> plays · <b>${fmin(minutes)}</b> · <b>${share > 0 && share < 0.05 ? "&lt;0.1" : fm1(share)}%</b> of their plays in this range</li></ul>
+      <div class="sect">top artists of each month</div><ul>${
+        topA.map(([ai, m]) => `<li>${bidiSafe(trunc(ANAMES[ai], 18))} <b>≥${fmin(m)}</b></li>`).join("") || "<li>-</li>"
+      }</ul>
+      <div class="sect">families <span style="text-transform:none">(external tags)</span></div><ul>${
+        famRows.map(([fi, m]) => `<li>${FNAMES[fi]} <b>${fmin(m)}</b></li>`).join("") || "<li>-</li>"
+      }</ul></div>`;
           }
-          html += `</div><p class="hint" style="margin:6px 0 0">artist and family breakdowns exist only for the fixed All / Pre-uni / University cuts — the shipped per-month data counts plays only</p>`;
-          el.html(html);
+          el.html(html + "</div>");
           return;
         }
         const rw = (o) =>

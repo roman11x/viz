@@ -31,6 +31,7 @@ FAMILY_ARTISTS_N = 8      # artists listed per family (backs the genre->artist f
 SHARED_LIST_N = 15        # top shared artists shown by name
 WINDOW_TOP_ARTISTS = 5    # per heatmap cell
 WINDOW_TOP_FAMILIES = 3   # per heatmap cell
+CELL_TOP_ARTISTS = 3      # per (weekday, hour, month) cell in monthly_detail
 SHARED_MIN_MINUTES = 3    # per listener, per cut
 
 # ---------------------------------------------------------------- genre families
@@ -363,15 +364,28 @@ def heatmaps(df):
 
 def monthly_detail(df):
     """Per-owner, per-month breakdown rich enough to recompute the slopegraph's
-    routine/intensity metrics and the heatmap for an ARBITRARY custom month
-    range client-side — this is what lets the Dashboard-2 range brush genuinely
-    re-filter instead of being limited to the three locked cuts (all/pre_uni/
-    university). Still a compact aggregate, not the event table: bounded by
-    (weekday, hour, month) triples that actually have activity, not raw plays.
-    No per-artist breakdown here — top-10 share and unique-artist count are
-    taste/breadth measures that belong to Dashboard 1 and the discovery curve,
-    not this dashboard, so there's nothing here to recompute them from.
+    routine/intensity metrics, the heatmap, AND the heatmap-cell drill-down for
+    an ARBITRARY custom month range client-side — this is what lets the
+    Dashboard-2 range brush genuinely re-filter instead of being limited to the
+    three locked cuts (all/pre_uni/university). Still a compact aggregate, not
+    the event table: bounded by (weekday, hour, month) triples that actually
+    have activity, not raw plays. Each occupied cell carries its per-month
+    top-3 artists by minutes (indices into the shared `artists` string table —
+    a LOWER BOUND when summed across months, since a month's 4th artist is
+    dropped) and its COMPLETE per-family minutes (indices into `families`;
+    only ~7 families, so family breakdowns stay exact for any range and their
+    sum is the cell's exact total minutes).
     """
+    artist_ids = {}
+
+    def aid(a):
+        if a not in artist_ids:
+            artist_ids[a] = len(artist_ids)
+        return artist_ids[a]
+
+    families_list = sorted(df["family"].unique())
+    fam_id = {f: i for i, f in enumerate(families_list)}
+
     out = {}
     for owner in OWNERS:
         g_all = df[df["owner"] == owner]
@@ -379,13 +393,29 @@ def monthly_detail(df):
         for ym, gm in g_all.groupby("ym"):
             minutes = gm["minutes_played"].sum()
             daily = gm.groupby("date")["minutes_played"].sum()
-            hm = gm.groupby(["weekday", "hour_local"]).size()
+            cells = []
+            for (wd, h), gc in gm.groupby(["weekday", "hour_local"]):
+                # deterministic top-3: minutes desc, then name — so a fresh
+                # verify run reproduces the same pick under exact-minute ties
+                top = (gc.groupby("artist")["minutes_played"].sum()
+                         .reset_index()
+                         .sort_values(["minutes_played", "artist"],
+                                      ascending=[False, True])
+                         .head(CELL_TOP_ARTISTS))
+                fams = (gc.groupby("family")["minutes_played"].sum()
+                          .sort_values(ascending=False))
+                cells.append([
+                    wd, int(h), int(len(gc)),
+                    [[aid(a), round(m, 1)]
+                     for a, m in zip(top["artist"], top["minutes_played"])],
+                    [[fam_id[f], round(m, 1)] for f, m in fams.items()],
+                ])
             by_month[ym] = {
                 "hours": round(minutes / 60, 1),
                 "plays": int(len(gm)),
                 "under30_plays": int(gm["under_30s"].sum()),
                 "active_days": int(len(daily)),
-                "heatmap": [[wd, int(h), int(n)] for (wd, h), n in hm.items()],
+                "heatmap": cells,
             }
 
         daily_all = g_all.groupby("date")["minutes_played"].sum()
@@ -393,6 +423,8 @@ def monthly_detail(df):
             "by_month": by_month,
             "daily": [[str(d.date()), round(v, 1)] for d, v in daily_all.items()],
         }
+    out["artists"] = list(artist_ids)
+    out["families"] = families_list
     return out
 
 

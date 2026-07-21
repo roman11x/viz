@@ -90,8 +90,10 @@ check("A3 slider default == data.js meta", slider_default, D["meta"]["shared_min
 # of date constants ("2021-01-01" -> "2021-01"), not row limits.
 slices = [int(m.group(1)) for m in re.finditer(r"slice\(0, ?(\d+)\)", html)
           if "_START.slice" not in html[max(0, m.start() - 30):m.end()]]
-check("top-artist/dumbbell slices are all 10 (A2 both branches + A3 dumbbell)",
-      sorted(slices), sorted([10, 10, 10]))
+window_top = int(re.search(r"WINDOW_TOP_ARTISTS = (\d+)", prep_src).group(1))
+check("data-row slices: 10 for A2 both branches + A3 dumbbell, WINDOW_TOP_ARTISTS "
+      "for B2's range drill-down artist list",
+      sorted(slices), sorted([10, 10, 10, window_top]))
 check("shipped top_artists cover the 10 shown", True,
       all(len(D["top_artists"]["all"][o]) >= 10 for o in OWNERS))
 
@@ -183,6 +185,42 @@ for o in OWNERS:
     (wd, hr), n = g.idxmax(), int(g.max())
     shipped = next(c["plays"] for c in D["heatmap"]["all"][o] if c["weekday"] == wd and c["hour"] == int(hr))
     check(f"heatmap/{o} busiest cell {wd} {int(hr)}:00", shipped, n)
+
+# monthly_detail per-cell drill-down (backs B2's "what plays here" for custom
+# B1 ranges): every occupied (weekday, hour, month) cell must carry the CSV's
+# exact play count, COMPLETE per-family minutes, and the per-month top-3
+# artists by minutes (prep's deterministic tie-break: minutes desc, then name).
+# Family assignment needs prep's curated map, so reuse prep.load_fact() itself.
+import prep as prep_mod  # noqa: E402  (family logic lives there)
+
+fdf = prep_mod.load_fact()
+md = D["monthly_detail"]
+art_names, fam_names = md["artists"], md["families"]
+for o in OWNERS:
+    g = fdf[fdf.owner == o]
+    n_tbl = g.groupby(["ym", "weekday", "hour_local"]).size()
+    fam_tbl = g.groupby(["ym", "weekday", "hour_local", "family"]).minutes_played.sum()
+    art_tbl = g.groupby(["ym", "weekday", "hour_local", "artist"]).minutes_played.sum()
+    cells = bad_plays = bad_fam = bad_art = 0
+    for ym, m in md[o]["by_month"].items():
+        for wd, hr, n, top, fams in m["heatmap"]:
+            cells += 1
+            if n != int(n_tbl.loc[ym, wd, hr]):
+                bad_plays += 1
+            csv_fam = {f: round(v, 1) for f, v in fam_tbl.loc[ym, wd, hr].items()}
+            if csv_fam != {fam_names[fi]: mn for fi, mn in fams}:
+                bad_fam += 1
+            try:
+                csv_art = art_tbl.loc[ym, wd, hr].items()
+            except KeyError:  # cell whose plays all lack an artist name
+                csv_art = []
+            expect = sorted(csv_art, key=lambda kv: (-kv[1], kv[0]))[:3]
+            if [[a, round(v, 1)] for a, v in expect] != [[art_names[ai], mn] for ai, mn in top]:
+                bad_art += 1
+    check(f"monthly_detail/{o} occupied cells shipped", cells, int(len(n_tbl)))
+    check(f"monthly_detail/{o} per-cell play-count mismatches", 0, bad_plays)
+    check(f"monthly_detail/{o} per-cell family-minutes mismatches (complete)", 0, bad_fam)
+    check(f"monthly_detail/{o} per-cell top-3-artist mismatches", 0, bad_art)
 
 # days-with-music percentages (finding shown via slopegraph 'days with music')
 period_days = D["meta"]["period_days"]

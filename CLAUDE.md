@@ -166,14 +166,21 @@ trajectory). Don't re-add them without re-solving that duplication.
   `meta`, `kpis`, `families`, `top_artists`, `family_artists`, `shared`, `monthly`, `heatmap`,
   `monthly_detail`, `discovery`, `routine_window`, `change`.
 - `EMBEDDED_DATA.monthly_detail` (in `data.js`, built by `prep.py`'s `monthly_detail()`) — per-owner,
-  per-month breakdown (hours/plays/under-30-plays/active-days, sparse weekday×hour play counts, and a
+  per-month breakdown (hours/plays/under-30-plays/active-days, sparse weekday×hour cells, and a
   dated active-day series). Still a compact aggregate, NOT the event table — bounded by (weekday, hour,
-  month) triples that actually occurred. Exists solely to let the Dashboard-2 range brush recompute the
-  heatmap and the four slopegraph-equivalent metrics for an arbitrary custom month range client-side.
-  Deliberately has NO per-artist breakdown — that would only feed top-10-share/unique-artist recomputes,
-  and those metrics were cut from the slopegraph as taste/breadth duplicates (see above), so there was
-  nothing left to justify shipping it. Replaced the old unused `daily` field (bare per-cut value arrays
-  with no date labels, never referenced in `index.html` — dead code, not a data loss).
+  month) triples that actually occurred (8,341 across both owners). Exists to let the Dashboard-2 range
+  brush recompute the heatmap, the four slopegraph-equivalent metrics, AND the B2 cell drill-down for
+  an arbitrary custom month range client-side. Since 2026-07-21 each occupied cell also carries its
+  per-month TOP-3 artists by minutes (indices into the shared `monthly_detail.artists` string table)
+  and its COMPLETE per-family minutes (indices into `monthly_detail.families`; ~7 families, so family
+  breakdowns are exact for any range and sum to the cell's exact total minutes). The drill-down's
+  range branch labels the artist list "top artists of each month" and prefixes minutes with "≥" —
+  merged artist minutes are a LOWER BOUND (a month's 4th artist is dropped); never present that list
+  as complete, while the family list IS complete. Full per-artist fidelity would be a disguised event
+  table and stays banned. verify_dashboard.py asserts every cell (play count, complete family minutes,
+  deterministic top-3: minutes desc then name) against the CSV via `prep.load_fact()`.
+  Replaced the old unused `daily` field (bare per-cut value arrays with no date labels,
+  never referenced in `index.html` — dead code, not a data loss).
 
 ## Sanity anchors (FULL history — recompute on 2021+, do NOT hardcode)
 Expect the 2021+ numbers to differ; these are only rough checks.
@@ -199,7 +206,8 @@ Recomputed from the fact CSV. Narrative text (report, tooltips, annotations) mus
   exists so narrative text never attributes these specific shifts to the university calendar alone.
 
 ## Gotchas
-- Periods differ in length (36 vs 29 months; 1,095 vs 873 days in `meta.period_days`) — compare rates/averages.
+- Periods differ in length (36 vs 28 months; 1,095 vs 851 days in `meta.period_days`, after the
+  2026-05 drop) — compare rates/averages.
 - Hebrew names next to signed/parenthesized numbers get bidi-scrambled; put an LRM (`&lrm;` / `‎`)
   after the Hebrew run.
 - Genre coverage differs per person; do not overclaim genre precision.
