@@ -788,10 +788,6 @@
     <div class="wrap">
       <header class="hero">
         <div id="hero-wave" aria-hidden="true"></div>
-        <div class="prompt">
-          <span class="u1">orr@apple-music</span> × <span class="u2">roman@spotify</span>
-          <span class="path">~/two-listeners · jan 2021 → apr 2026</span>
-        </div>
         <h1>Two Listeners — Two Worlds</h1>
         <p class="question">
           Does similarity between two listeners have to come from musical taste, or can it also be found
@@ -824,7 +820,7 @@
         <div class="grid">
           <div class="panel span2" id="p-families">
             <h3><span class="t"><span class="track-num">A1</span> Do we even like the same music?</span>
-              <span class="sub">share of minutes · genre tags are external · click families to filter (multi-select)</span></h3>
+              <span class="sub">share of minutes · click genre to filter (multi-select)</span></h3>
             <div id="families-butterfly"></div>
           </div>
 
@@ -874,60 +870,33 @@
         <div class="grid">
           <div class="panel span2" id="p-monthly">
             <h3><span class="t"><span class="track-num">B1</span> How much did each of us listen, month by month?</span>
-              <span class="sub">hours per month · hover a month for more details · drag to select any custom range</span></h3>
+              <span class="sub">hours per month · hover a month for more details or drag to select any custom range and click to see details</span></h3>
             <div id="monthly-chart"></div>
-            <div class="scrub-wrap">
-              <p class="hint scrub-hint">
-                drag to select any custom range — recomputes the B2 grid and the stats below for exactly
-                those months
-              </p>
-              <div class="scrub-readout" id="scrub-readout">Drag or click a month to inspect it.</div>
-            </div>
+            <div class="scrub-readout" id="scrub-readout"></div>
           </div>
 
           <div class="panel" id="p-routine">
             <h3><span class="t"><span class="track-num">B2</span> When in the week does music happen?</span>
               <span class="sub">plays by weekday × hour · click a cell for details</span></h3>
-            <p class="hint">
-              Each listener has his own color scale, so the shapes of the routines compare even though the
-              volumes are very different.
-            </p>
             <div class="duo" id="heatmaps"></div>
             <div id="window-panel"></div>
           </div>
 
           <div class="panel" id="p-discovery">
             <h3><span class="t"><span class="track-num">B3</span> Did breaking routine make us explore more?</span>
-              <span class="sub">distinct artists heard · hover a month for exact numbers</span></h3>
-            <p class="hint">
-              If breaking routine comes with more exploring, a line should visibly bend at the university
-              marker; no bend means the disruption didn't change how adventurously that person listened.
-            </p>
+              <span class="sub">distinct artists heard · hover a month, click to pin its detail</span></h3>
             <div id="discovery-chart"></div>
+            <div class="artist-detail" id="discovery-detail"></div>
           </div>
 
           <div class="panel span2" id="p-change">
             <h3><span class="t"><span class="track-num">B4</span> Before Uni vs University: Same Direction or Opposite?</span>
-              <span class="sub">parallel = same way, crossing = opposite · click a line for detail</span></h3>
+              <span class="sub">hover or click a line for detail</span></h3>
             <div id="slopes"></div>
             <div class="artist-detail" id="slope-detail"></div>
           </div>
         </div>
       </section>
-
-      <footer class="foot">
-        <b>method</b> · orr's apple music play activity + roman's spotify extended history (full exports)
-        → one pandas fact table, cut to jan 2021 – apr 2026 (137,097 plays), local time asia/jerusalem.
-        the window starts at 2021 because roman's earlier months are sparse and uneven, and ends at apr
-        2026 because both exports stop mid-may; the two periods also differ in length (36 vs 28 months),
-        so cross-period comparisons use rates and averages, never raw totals. genre is an
-        external, partial add-on collapsed into ~6 broad families — treat it as provisional; the honest
-        residual stays "Other". shared = both listeners played the artist ≥ 3 minutes in the period,
-        weighted by minutes, never by artist count. skips are compared only via the same 30-second rule
-        computed from played-milliseconds on both sides — never the platforms' own skip counters. one
-        period filter + one range brush drive the page; every displayed number is recomputed from the
-        source table by an automated check suite. built with d3 v7.
-      </footer>
     </div>
     <div id="tooltip"></div>
 
@@ -983,7 +952,7 @@
           sharedMin: SHARED_MIN_DEFAULT,
         },
         // selectedSlope is B4's click-detail selection: {owner, metric} or null.
-        d2: { selectedWindow: null, selectedSlope: null },
+        d2: { selectedWindow: null, selectedSlope: null, selectedMonth: null },
       };
       const state = {
         period: DEFAULTS.period,
@@ -1354,6 +1323,15 @@
           // "Shared" ring follows the live A3 threshold, not the baked default.
           const sharedNow = new Set(sharedRows(c, state.d1.sharedMin).map((r) => r.artist));
           const isShared = (d) => sharedNow.has(d.artist);
+          // For the hover tooltip: the OTHER listener's own minutes on this same
+          // artist, so a shared row shows a concrete number rather than a generic
+          // "plays them too" line.
+          const overlapByArtist = new Map(D.shared.overlap_artists[c].map((r) => [r.artist, r]));
+          const otherMinutes = (d) => {
+            const r = overlapByArtist.get(d.artist);
+            if (!r) return 0;
+            return OTHER_OF[o] === "Or" ? r.or_minutes : r.roman_minutes;
+          };
           g.append("rect")
             .attr("y", -rowH / 2)
             .attr("width", w)
@@ -1417,7 +1395,9 @@
                 ev,
                 `<div class="t">${d.artist}</div>${fmin(d.minutes)} · <span class="num">${d.share}%</span> of ${NAME[o]}'s music` +
                   (d.plays ? `<br>${fm0(d.plays)} plays` : "") +
-                  (isShared(d) ? `<br>${NAME[OTHER_OF[o]]} plays them too` : ""),
+                  (isShared(d)
+                    ? `<br>${NAME[OTHER_OF[o]]} logs <span class="num">${fmin(otherMinutes(d))}</span> on them too`
+                    : ""),
               );
             })
             .on("mousemove", moveTip)
@@ -1840,7 +1820,15 @@
         for (const o of OWNERS) byYM[o] = new Map(D.monthly[o].map((d) => [d.ym, d]));
         monthlyByYM = byYM;
         const val = (o, ym) => byYM[o].get(ym)?.hours ?? 0;
-        const x = d3.scaleTime([parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)], [mL, w - mR]);
+        const barW = Math.max(1.6, ((w - mL - mR) / months.length) * 0.62);
+        monthlyBarW = barW;
+        // Inset the range by half a bar so the first/last month sit fully inside
+        // the plot instead of straddling the y-axis (the first bar used to be
+        // centered on mL, so its left half overlapped the axis line).
+        const x = d3.scaleTime(
+          [parseYM(WINDOW_START.slice(0, 7)), parseYM(D.meta.last_month)],
+          [mL + barW / 2, w - mR - barW / 2],
+        );
         monthlyX = x;
         const yMax = d3.max(OWNERS, (o) => d3.max(months, (ym) => val(o, ym))) * 1.05;
         const y = d3.scaleLinear([-yMax, yMax], [h - mB, mT]);
@@ -1858,7 +1846,7 @@
             .attr("y", mT)
             .attr("width", x1 - x0)
             .attr("height", h - mT - mB)
-            .attr("fill", p === "university" ? "rgba(255,255,255,.035)" : "transparent");
+            .attr("fill", "transparent");
           svg
             .append("text")
             .attr("x", x0 + 8)
@@ -1880,9 +1868,8 @@
         // Equalizer-bar rendering: one rounded-cap bar per month per listener,
         // mirrored around the baseline, instead of a smooth filled area — this is
         // the "music bars" look, and it keeps the same scaleTime x so hover/bisect
-        // logic below still works unchanged.
-        const barW = Math.max(1.6, ((w - mL - mR) / months.length) * 0.62);
-        monthlyBarW = barW;
+        // logic below still works unchanged. (barW is computed up top so the x
+        // scale can inset by half a bar.)
         for (const o of OWNERS) {
           const sign = o === "Or" ? 1 : -1;
           svg
@@ -2123,7 +2110,10 @@
           if (monthlyDimRects) for (const r of monthlyDimRects) r.style("display", "none");
           if (discoveryScrubRect) discoveryScrubRect.style("display", "none");
           if (discoveryDimRects) for (const r of discoveryDimRects) r.style("display", "none");
-          readout.text("Drag or click a month to inspect it.");
+          // Idle: leave the readout empty (the sub-label already carries the
+          // drag/click hint), so nothing sits under the chart until a range
+          // is actually selected.
+          readout.html("");
           return;
         }
         const [a, b] = [scrubRange.startYM, scrubRange.endYM].sort();
@@ -2414,7 +2404,7 @@
       <div class="sect">what plays here</div><ul>${
         r.top_artists.map(([a, m]) => `<li>${bidiSafe(trunc(a, 18))} <b>${fmin(m)}</b></li>`).join("") || "<li>-</li>"
       }</ul>
-      <div class="sect">families <span style="text-transform:none">(external tags)</span></div><ul>${
+      <div class="sect">GENRES <span style="text-transform:none">(external tags)</span></div><ul>${
         r.top_families.map(([f, m]) => `<li>${f} <b>${fmin(m)}</b></li>`).join("") || "<li>-</li>"
       }</ul></div>`;
         }
@@ -2452,6 +2442,17 @@
           ["pre_uni", mL, uniX],
           ["university", uniX, w - mR],
         ];
+        // Same period captions B1 carries, so the two month-axis charts read alike.
+        for (const [p, x0] of bands) {
+          svg
+            .append("text")
+            .attr("x", x0 + 8)
+            .attr("y", mT + 13)
+            .attr("class", "val")
+            .style("text-transform", "uppercase")
+            .style("letter-spacing", "1px")
+            .text(PLABEL[p]);
+        }
         svg
           .append("line")
           .attr("x1", uniX)
@@ -2566,6 +2567,7 @@
             .style("display", "none")
             .attr("pointer-events", "none");
         }
+        const ymAtDisc = (mx) => months[d3.bisectCenter(months.map((s) => +parseYM(s)), +x.invert(mx))];
         svg
           .append("rect")
           .attr("x", mL)
@@ -2573,13 +2575,68 @@
           .attr("width", w - mL - mR)
           .attr("height", h - mT - mB)
           .attr("fill", "transparent")
+          .style("cursor", "pointer")
           .on("mousemove", function (ev) {
-            const [mx] = d3.pointer(ev, this);
-            const m = months[d3.bisectCenter(months.map((s) => +parseYM(s)), +x.invert(mx))];
+            const m = ymAtDisc(d3.pointer(ev, this)[0]);
             if (!m) return;
             syncMonthHover(ev, m);
           })
-          .on("mouseout", clearMonthHover);
+          .on("mouseout", clearMonthHover)
+          // Click pins a month's detail below the chart (same idiom as A2/A3/B4);
+          // clicking the same month again clears it.
+          .on("click", function (ev) {
+            const m = ymAtDisc(d3.pointer(ev, this)[0]);
+            if (!m) return;
+            setD2({ selectedMonth: state.d2.selectedMonth === m ? null : m });
+          });
+
+        // Persistent selection: a kept guide line + playhead dots at the pinned
+        // month (the hover version disappears on mouseout), and the detail card.
+        const det = d3.select("#discovery-detail");
+        const selM = state.d2.selectedMonth;
+        if (selM && months.includes(selM)) {
+          const sx = x(parseYM(selM));
+          svg
+            .append("line")
+            .attr("x1", sx)
+            .attr("x2", sx)
+            .attr("y1", mT)
+            .attr("y2", h - mB)
+            .attr("stroke", "#C9C9D6")
+            .attr("stroke-width", 1.1)
+            .attr("stroke-dasharray", "3 2")
+            .attr("pointer-events", "none");
+          for (const o of OWNERS) {
+            const dd = byYM[o].get(selM);
+            if (!dd) continue;
+            svg
+              .append("circle")
+              .attr("cx", sx)
+              .attr("cy", y(dd.cum))
+              .attr("r", 4.5)
+              .attr("fill", "#0f1117")
+              .attr("stroke", COLOR[o])
+              .attr("stroke-width", 2)
+              .attr("opacity", soloOp(o))
+              .attr("pointer-events", "none");
+          }
+          let html = `<b class="num">${selM}</b> <span style="color:var(--ink2)">· distinct artists heard so far</span>
+            <div class="cols">`;
+          for (const o of OWNERS) {
+            const dd = byYM[o].get(selM);
+            const md = monthlyByYM?.[o]?.get(selM);
+            html += `<table><tr><td colspan="2" style="color:${COLOR[o]};font-weight:700">${NAME[o]}</td></tr>
+              <tr><td>artists so far</td><td class="num">${dd ? fm0(dd.cum) : 0}</td></tr>
+              <tr><td>new this month</td><td class="num">${dd ? "+" + fm0(dd.new) : "+0"}</td></tr>
+              <tr><td>listened</td><td class="num">${md ? fm1t(md.hours) + " h" : "0 h"}</td></tr>
+              </table>`;
+          }
+          html += "</div>";
+          if (selM === BREAK_YM) html += `<div style="color:var(--ink2);margin-top:6px">${BREAK_FACTS}</div>`;
+          det.html(html).classed("show", true);
+        } else {
+          det.html("").classed("show", false);
+        }
       }
 
       // Slopegraph: pre_uni -> university per metric, one line per listener.
@@ -2681,13 +2738,26 @@
             state.d2.selectedSlope.metric === m.label;
           const groups = OWNERS.map((o, i) => {
             const g = svg.append("g").attr("class", "clickable").attr("opacity", soloOp(o));
+            // Invisible fat hit-line: catches clicks/hovers in a ~14px band
+            // around the thin visible line so it's easy to target, without
+            // thickening the line itself (pointer-events:stroke = the band).
+            g.append("line")
+              .attr("x1", x[0])
+              .attr("x2", x[1])
+              .attr("y1", yPos[i][0])
+              .attr("y2", yPos[i][1])
+              .attr("stroke", "transparent")
+              .attr("stroke-width", 14)
+              .attr("stroke-linecap", "round")
+              .attr("pointer-events", "stroke");
             g.append("line")
               .attr("x1", x[0])
               .attr("x2", x[1])
               .attr("y1", yPos[i][0])
               .attr("y2", yPos[i][1])
               .attr("stroke", COLOR[o])
-              .attr("stroke-width", isSel(o) ? 3.5 : 2);
+              .attr("stroke-width", isSel(o) ? 3.5 : 2)
+              .attr("pointer-events", "none");
             g.selectAll("circle")
               .data([0, 1])
               .join("circle")
@@ -2715,15 +2785,31 @@
               .text(m.fmt(vals[i][1]));
             return g;
           });
-          // Click only — the hover tooltip was removed 2026-07-20 on the
-          // owner's instruction; the numbers live in the click detail card.
+          // Click pins the detail card; hover previews the same numbers in a
+          // tooltip (so the panel matches B3, where hover and a pinned detail
+          // coexist).
           OWNERS.forEach((o, i) => {
-            groups[i].on("click", (ev) => {
-              // stopPropagation keeps the host's click-away handler from
-              // immediately re-clearing the selection made here.
-              ev.stopPropagation();
-              setD2({ selectedSlope: isSel(o) ? null : { owner: o, metric: m.label } });
-            });
+            const [v0, v1] = vals[i];
+            const delta = ((v1 - v0) / v0) * 100;
+            groups[i]
+              .style("cursor", "pointer")
+              .on("click", (ev) => {
+                // stopPropagation keeps the host's click-away handler from
+                // immediately re-clearing the selection made here.
+                ev.stopPropagation();
+                setD2({ selectedSlope: isSel(o) ? null : { owner: o, metric: m.label } });
+              })
+              .on("mouseover", (ev) =>
+                showTip(
+                  ev,
+                  `<div class="t" style="color:${COLOR[o]}">${NAME[o]}</div>` +
+                    `<span style="color:var(--ink2)">${m.label}</span><br>` +
+                    `Pre-uni <span class="num">${m.fmt(v0)}</span> → University <span class="num">${m.fmt(v1)}</span>` +
+                    `<br><span class="num">${delta > 0 ? "+" : ""}${fm1t(delta)}%</span> ${delta >= 0 ? "up" : "down"}`,
+                ),
+              )
+              .on("mousemove", moveTip)
+              .on("mouseout", hideTip);
           });
         }
         // Clicking away — the panel's empty background — closes the detail,
@@ -2737,16 +2823,28 @@
         if (!mSel) {
           det.html("").classed("show", false);
         } else {
-          const [v0, v1] = PERIODS.map((p) => mSel.val(s.owner, p));
-          const delta = ((v1 - v0) / v0) * 100;
+          // Show BOTH listeners' numbers for this metric — the panel asks "same
+          // direction or opposite?", so the reader compares the two changes and
+          // concludes (no takeaway line, per the project's "show data" rule).
+          // The clicked listener leads; the other follows, dimmed.
+          const rowsFor = (o, lead) => {
+            const [v0, v1] = PERIODS.map((p) => mSel.val(o, p));
+            const diff = v1 - v0;
+            const pct = (diff / v0) * 100;
+            const sign = (n) => (n > 0 ? "+" : "");
+            return `<table${lead ? "" : ' style="opacity:.72"'}>
+              <tr><td colspan="2" style="color:${COLOR[o]};font-weight:700">${NAME[o]}</td></tr>
+              <tr><td>Pre-uni</td><td class="num">${mSel.fmt(v0)}</td></tr>
+              <tr><td>University</td><td class="num">${mSel.fmt(v1)}</td></tr>
+              <tr><td>change</td><td class="num">${sign(pct)}${fm1t(pct)}%</td></tr>
+              <tr><td>difference</td><td class="num">${sign(diff)}${mSel.fmt(diff)}</td></tr>
+            </table>`;
+          };
+          const other = OTHER_OF[s.owner];
           det
             .html(
-              `<b style="color:${COLOR[s.owner]}">${NAME[s.owner]}</b> <span style="color:var(--ink2)">· ${mSel.label}</span>
-          <div class="cols"><table>
-            <tr><td>Pre-uni</td><td class="num">${mSel.fmt(v0)}</td></tr>
-            <tr><td>University</td><td class="num">${mSel.fmt(v1)}</td></tr>
-            <tr><td>change</td><td class="num">${delta > 0 ? "+" : ""}${fm1t(delta)}%</td></tr>
-          </table></div>`,
+              `<b style="color:${COLOR[s.owner]}">${NAME[s.owner]}</b> <span style="color:var(--ink2)">· ${mSel.label} · Pre-uni → University</span>
+          <div class="cols">${rowsFor(s.owner, true)}${rowsFor(other, false)}</div>`,
             )
             .classed("show", true);
         }
